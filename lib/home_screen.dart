@@ -1,6 +1,11 @@
 import 'package:auto_mall/auth/login_screen.dart';
+import 'package:auto_mall/drawer_section/drawer_menu.dart';
+import 'package:auto_mall/main.dart';
+import 'package:auto_mall/utils/all_textstyle.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
+import 'package:auto_mall/widgets/customer_entry_screen.dart';
+import 'package:auto_mall/widgets/sales_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -15,51 +20,46 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
-  // Logout Function
-  Future<void> _logout() async {
-    // Confirmation Dialog
-    bool? confirm = await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to logout?"),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text("Logout"),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      // SharedPreferences clear করা
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.clear(); // সব ডাটা মুছে ফেলবে
-
-      // Login Screen-এ নিয়ে যাওয়া
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LogInPage()), 
-          (route) => false,
-        );
-      }
-    }
+  Future<void> _initializeData() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    userName = sharedPreferences.getString('userName') ?? ''; 
+    userType = "${sharedPreferences.getString('userType')}";
+    salesEntry = '${sharedPreferences.getString("sales")}';
+    salesInvoice = '${sharedPreferences.getString("salesinvoice")}';
+    salesRecord = '${sharedPreferences.getString("salesrecord")}';
+    customerList = '${sharedPreferences.getString("customerlist")}';
+    orderEntry = '${sharedPreferences.getString("order_entry")}';
+    orderRecord = '${sharedPreferences.getString("orderRecord")}';
+    customerEntry = '${sharedPreferences.getString("customer")}';
+    productList = '${sharedPreferences.getString("productlist")}';
+    categoryList = '${sharedPreferences.getString("category")}';
+    currentStock = '${sharedPreferences.getString("currentStock")}';
+    attendanceEntry = '${sharedPreferences.getString("attendanceEntry")}';
+    attendanceRecord = '${sharedPreferences.getString("attendanceRecord")}';
+    visitEntry = '${sharedPreferences.getString("visitEntry")}';
+    visitRecord = '${sharedPreferences.getString("visitEntryRecord")}';
   }
+
+  String? userName = "";
+  String? userImage;
+  String? userType = "";
+  String? salesEntry;
+  String? salesRecord;
+  String? salesInvoice;
+  String? orderEntry;
+  String? orderRecord;
+  String? customerList;
+  String? customerEntry;
+  String? productList;
+  String? categoryList;
+  String? currentStock;
+  String? attendanceEntry;
+  String? attendanceRecord;
+  String? visitEntry;
+  String? visitRecord;
+
   String getGreeting() {
   final hour = DateTime.now().hour;
-
   if (hour >= 5 && hour < 12) {
     return "Good Morning!";
   } else if (hour >= 12 && hour < 17) {
@@ -70,25 +70,154 @@ class _HomeScreenState extends State<HomeScreen> {
     return "Good Night!";
   }
 }
-String? userImage;
-String? userName;
 
+@override
+  void initState() {
+    _initializeData();
+    // TODO: implement initState
+    super.initState();
+  }
+
+var scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: const Color(0xFFF7F8FC),
       appBar: AppBar(
-        title: const Text("Home"),
-        backgroundColor: Colors.blue.shade800,
+        backgroundColor: AppColors.appColor,
         foregroundColor: Colors.white,
+        title: Row(
+          children: [
+            Container(
+              height: 42.h,
+              width: 64.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100.r),
+                image: const DecorationImage(
+                  image: AssetImage("images/splashlogo.png"),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              "Auto Mall",
+              style: TextStyle(
+                fontSize: 18.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.5.w,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          // Logout Button
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: "Logout",
+          Padding(
+            padding: EdgeInsets.only(right: 2.w),
+            child: Row(
+              children: [
+                PopupMenuButton(
+                  child: Container(
+                    height: 20.0.h,
+                    width: 30.0.w,
+                    alignment: Alignment.center,
+                    child: Icon(Icons.arrow_drop_down, color: Colors.white, size: 25.0.sp),
+                  ),
+                  onSelected: (value) {
+                    if (value == 0) {
+                    } else {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Dialog(
+                          child: Container(
+                            height: 160.0.h,
+                            width: double.infinity,
+                            padding: EdgeInsets.only(top: 10.0.h, left: 10.0.w, right: 5.0.w,bottom: 10.0.h),
+                            decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.circular(15.0.r)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                padding: EdgeInsets.only(left: 8.0.w, top: 10.0.h),
+                                child: Text("Logout...!",
+                                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18.0.sp),
+                                ),
+                              ),
+                                Padding(
+                                padding: EdgeInsets.only(left: 8.0.w, top: 10.0.h),
+                                child: Text("Are you sure want to Logout?",
+                                    style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16.0.sp)),
+                              ),
+                              SizedBox(height: 25.0.h),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Container(
+                                        height: 28.0.h,
+                                        width: 60.0.w,
+                                        decoration: BoxDecoration(color:  Colors.indigo,borderRadius: BorderRadius.circular(5.0.r)),
+                                        child: Center(child: Text("NO", style: AllTextStyle.saveButtonTextStyle)),
+                                      ),
+                                    ),
+                                    SizedBox(width: 10.0.w),
+                                    InkWell(
+                                      onTap: () async {
+                                        SharedPreferences prefs = await SharedPreferences.getInstance();
+                                          await prefs.clear();
+                                          Navigator.of(context).pushAndRemoveUntil(
+                                            MaterialPageRoute(builder: (context) => const LogInPage()),
+                                            (route) => false,
+                                          );
+                                      // LogoutService.fetchLogout(context);
+                                        },
+                                      child: Container(
+                                        height: 28.0.h,
+                                        width: 60.0.w,
+                                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(5.0.r)),
+                                        child: Center(child: Text("YES", style: AllTextStyle.saveButtonTextStyle)),
+                                      ),
+                                    ),
+                                    SizedBox(width: 10.0.w),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    });
+                  }
+                },
+                itemBuilder: (BuildContext bc) {
+                  return [
+                    PopupMenuItem(
+                      height: 25.0.h,
+                      value: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Icon(Icons.logout_outlined,size: 16.0.r,color: Colors.black),
+                          Text("Logout", style: TextStyle(fontSize: 16.0.sp, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ];
+                  },
+                )
+                ],
+              ),
           ),
         ],
       ),
+      drawer: DrawerDemoPage(),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +260,7 @@ String? userName;
                               )
                             : Icon(
                                 Icons.person_rounded,          // ← ইউজার না থাকলে আইকন
-                                color: AppColors.buttonColor,
+                                color: AppColors.orderCardTitle,
                                 size: 50.r,
                               ))
                         : null,
@@ -256,7 +385,7 @@ String? userName;
                       // } 
                       // else if (index == 8) {
                       //   if (customerEntry == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerEntryPage()));
+                            Navigator.push(context,MaterialPageRoute(builder: (context) => const SaleInvoiceScreen()));
                       //   } else {
                       //     showCustomDialog(context);
                       //   }
@@ -309,16 +438,16 @@ String? userName;
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            height: 50.h,
-                            width: 50.w,
+                            height: 45.h,
+                            width: 45.w,
                             padding: EdgeInsets.all(5.r),
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10.r),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.teal.withOpacity(0.1),
-                                    blurRadius: 6,
+                                    color: AppColors.appColor.withOpacity(0.1),
+                                    blurRadius: 6.r,
                                     spreadRadius: 0.5,
                                     offset: const Offset(0, 3),
                                   ),
@@ -326,8 +455,7 @@ String? userName;
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10.r),
-                                child: Icon(Icons.shopping_bag,color: const Color.fromARGB(255, 4, 87, 155),size: 40.r),
-                                // child: Image.asset("${screenItems[index]["image"]}",fit: BoxFit.contain),
+                                child: Image.asset("${screenItems[index]["image"]}",fit: BoxFit.contain),
                               ),
                             ),
                           ),

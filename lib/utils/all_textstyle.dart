@@ -12,9 +12,9 @@ class AllTextStyle {
   static TextStyle dateFormatStyle = TextStyle(fontSize: 12.sp,color: Colors.grey.shade800,fontWeight: FontWeight.w400);
   static TextStyle menuHeadTextStyle =  TextStyle(color: Colors.black,fontWeight: FontWeight.w600,fontSize: 12.sp);
   static const TextStyle saveButtonTextStyle = TextStyle(letterSpacing: 1.0,color: Colors.white,fontWeight: FontWeight.w500);
-  static TextStyle textFieldHeadStyle = TextStyle(color: Colors.grey.shade800);
+  static TextStyle textFieldHeadStyle = TextStyle(color: Colors.grey.shade800,fontSize: 11.sp);
   static TextStyle dropDownlistStyle = TextStyle(fontSize: 12.sp,fontWeight: FontWeight.w400,color: Colors.grey.shade700);
-  static TextStyle textValueStyle = TextStyle(fontSize: 12.sp, color: Color.fromARGB(255, 126, 125, 125));
+  static TextStyle textValueStyle = TextStyle(fontSize: 11.sp, color: Color.fromARGB(255, 126, 125, 125));
 }
 /// decoration
 class ContDecoration{

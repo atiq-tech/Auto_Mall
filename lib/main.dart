@@ -2,7 +2,6 @@
 import 'package:auto_mall/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late final SharedPreferences sharedPreferences;
@@ -26,7 +25,7 @@ class AutoMallApp extends StatelessWidget {
       designSize: const Size(360, 690),
       builder: (context, child) => MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Alphabet Trade',
+        title: 'Auto Mall',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal.shade900),
           useMaterial3: true,

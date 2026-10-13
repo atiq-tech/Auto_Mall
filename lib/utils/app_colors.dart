@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 class AppColors {
   static const Color cardColor = Color.fromARGB(255, 150, 214, 223);
-  static Color appColor = Color.fromARGB(255, 8, 100, 85);
+  static Color appColor = Colors.blue.shade900;
   static const Color buttonColor = Color(0xff224079);
   static const Color appCard = Color.fromARGB(255, 244, 179, 255);
   static const Color primaryColor = Color(0xff01509F);
