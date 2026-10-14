@@ -4,13 +4,14 @@ import 'package:auto_mall/main.dart';
 import 'package:auto_mall/utils/all_textstyle.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
+import 'package:auto_mall/widgets/customer%20_list_screen.dart';
 import 'package:auto_mall/widgets/customer_entry_screen.dart';
+import 'package:auto_mall/widgets/product_list_screen.dart';
 import 'package:auto_mall/widgets/sales_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'login_screen.dart'; // আপনার LoginScreen এর path দিন
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initializeData() async {
-    sharedPreferences = await SharedPreferences.getInstance();
     userName = sharedPreferences.getString('userName') ?? ''; 
     userType = "${sharedPreferences.getString('userType')}";
     salesEntry = '${sharedPreferences.getString("sales")}';
@@ -38,6 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
     attendanceRecord = '${sharedPreferences.getString("attendanceRecord")}';
     visitEntry = '${sharedPreferences.getString("visitEntry")}';
     visitRecord = '${sharedPreferences.getString("visitEntryRecord")}';
+    setState(() {
+      
+    });
+    print("userName===========$userName");
   }
 
   String? userName = "";
@@ -90,7 +94,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
         title: Row(
           children: [
             Container(
-              height: 42.h,
+              height: 55.h,
               width: 64.w,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100.r),
@@ -223,87 +227,82 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-            padding: EdgeInsets.only(left: 5.w,right: 5.r,top: 5.h,bottom: 5.h),
-            margin: EdgeInsets.only(left: 12.w,right: 12.r,top: 15),
-          //   decoration: BoxDecoration(
-          //     borderRadius: BorderRadius.circular(25.r),
-          //     border: Border.all(color: AppColors.appColor.withOpacity(0.15)),
-          //     gradient: LinearGradient(
-          //     colors: [
-          //       const Color.fromARGB(255, 183, 249, 255),
-          //       const Color.fromARGB(255, 217, 251, 255),
-          //     ],
-          //     begin: Alignment.topLeft,
-          //     end: Alignment.bottomRight,
-          //   ),
-          //  ),
-           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-             children: [
-              Row(
+              padding: EdgeInsets.only(left: 5.w, right: 5.r, top: 5.h, bottom: 5.h),
+              margin: EdgeInsets.only(left: 12.w, right: 12.r, top: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
-                    radius: 30.r,
-                    backgroundColor: AppColors.appColor.withOpacity(0.2),
-                    backgroundImage: userImage != null 
-                        ? NetworkImage(userImage!) 
-                        : null,
-                    child: userImage == null
-                        ? (userName != null && userName!.isNotEmpty
-                            ? Text(
-                                userName![0].toUpperCase(),
+                  // Left side
+                  Flexible(                         
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 28.r,
+                          backgroundColor: AppColors.appColor.withOpacity(0.2),
+                          backgroundImage: userImage != null 
+                              ? NetworkImage(userImage!) 
+                              : null,
+                          child: userImage == null
+                              ? (userName != null && userName!.isNotEmpty
+                                  ? Text(
+                                      userName![0].toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 18.sp,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.appColor,
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.person_rounded,
+                                      color: AppColors.orderCardTitle,
+                                      size: 50.r,
+                                    ))
+                              : null,
+                        ),
+                        SizedBox(width: 10.w),
+                        Flexible(                     
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Hello, ${userName ?? ''}",
+                                maxLines: 2,                    
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 18.sp,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.appColor,
+                                  color: AppColors.orderCardTitle,
                                 ),
-                              )
-                            : Icon(
-                                Icons.person_rounded,          // ← ইউজার না থাকলে আইকন
-                                color: AppColors.orderCardTitle,
-                                size: 50.r,
-                              ))
-                        : null,
-                  ),
-                  SizedBox(width: 10.w),
-                 Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                  Text(
-                    "Hello, Admin",
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.orderCardTitle
+                              ),
+                              Text(
+                                getGreeting(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.isOrder,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  SizedBox(width: 5.w),
                   Text(
-                    getGreeting(),
+                    DateFormat('E d MMMM, yyyy').format(DateTime.now()),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.isOrder
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.isOrder,
                     ),
                   ),
-                ],
-               ),
                 ],
               ),
-               Center(
-                 child: Text(
-                   DateFormat('E d MMMM, yyyy').format(DateTime.now()),
-                   textAlign: TextAlign.center,
-                   style: TextStyle(
-                     fontSize: 11.sp,
-                     fontWeight: FontWeight.w600,
-                     color: AppColors.isOrder,
-                     height: 1.2,
-                   ),
-                 ),
-               ),
-             ],
-           ),
-          ),
+            ),
           
             Expanded(
               child: GridView.builder(
@@ -318,85 +317,89 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                 itemBuilder: (BuildContext context, int index) {
                   return GestureDetector(
                     onTap: () {
-                      // if (index == 0) {
-                      //   setState(() {
-                      //     if (orderEntry == "true" || userType == "m" || userType == "a") {
-                      //       if (userType == 'c') {
-                      //         Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderListScreen()));
-                      //       } else {
-                      //         Navigator.push(context, MaterialPageRoute(builder: (context) => OutletList(totatOrderValue: totatOrdValue,routName: routName,
-                      //          ))).then((value) {
-                      //           setState(() {});
-                      //         });
-                      //       }
-                      //     } else {
-                      //       showCustomDialog(context);
-                      //     }
-                      //   });
-                      // } 
-                      // else if (index == 1) {
-                      //   if (orderRecord == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderRecordScreen()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 2) {
-                      //   if (salesInvoice == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context,MaterialPageRoute(builder: (context) => const AllOrderInvoicePage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 3) {
-                      //   if (salesEntry == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryPage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 4) {
-                      //   if (salesRecord == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordPage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 5) {
-                      //   if (salesInvoice == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context,MaterialPageRoute(builder: (context) => const AllSalesInvoicePage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 6) {
-                      //   if (productList == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductListScreen()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 7) {
-                      //   if (categoryList == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context,MaterialPageRoute(builder: (context) => const CategoryListScreen()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 8) {
-                      //   if (customerEntry == "true" || userType == "m" || userType == "a") {
-                            Navigator.push(context,MaterialPageRoute(builder: (context) => const SaleInvoiceScreen()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 9) {
-                      //   if (customerList == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListPage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
+                      if (index == 0) {
+                        // setState(() {
+                        //   if (orderEntry == "true" || userType == "m" || userType == "a") {
+                        //     if (userType == 'c') {
+                        //       Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderListScreen()));
+                        //     } else {
+                        //       Navigator.push(context, MaterialPageRoute(builder: (context) => OutletList(totatOrderValue: totatOrdValue,routName: routName,
+                        //        ))).then((value) {
+                        //         setState(() {});
+                        //       });
+                        //     }
+                        //   } else {
+                        //     showCustomDialog(context);
+                        //   }
+                        // });
+                      } 
+                      else if (index == 1) {
+                        // if (orderRecord == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderRecordScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 2) {
+                        // if (salesInvoice == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const AllOrderInvoicePage()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 3) {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryScreen()));
+                        // if (salesEntry == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 4) {
+                        // if (salesRecord == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordPage()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 5) {
+                        // if (salesInvoice == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const AllSalesInvoicePage()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 6) {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductListScreen()));
+                        // if (productList == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductListScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 7) {
+                        // if (categoryList == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CategoryListScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 8) {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
+                        // if (customerEntry == "true" || userType == "m" || userType == "a") {
+                        //    Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
+                      else if (index == 9) {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListScreen()));
+                        // if (customerList == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
                       // else if (index == 10) {
                       //   if (visitEntry == "true" || userType == "m" || userType == "a") {
                       //     Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryPage()));
