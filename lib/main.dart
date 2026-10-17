@@ -1,7 +1,9 @@
 
+import 'package:auto_mall/providers/products_provider.dart';
 import 'package:auto_mall/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late final SharedPreferences sharedPreferences;
@@ -23,14 +25,19 @@ class AutoMallApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(360, 690),
-      builder: (context, child) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Auto Mall',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal.shade900),
-          useMaterial3: true,
+      builder: (context, child) => MultiProvider(
+       providers: [
+          ChangeNotifierProvider<ProductsProvider>(create: (_) => ProductsProvider()),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Auto Mall',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal.shade900),
+            useMaterial3: true,
+          ),
+          home:const AnimatedSplashScreen(),
         ),
-        home:const AnimatedSplashScreen(),
       ));
   }
 }

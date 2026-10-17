@@ -4,7 +4,7 @@ String baseUrl = "https://dailypasar.com/";///main
 //String baseUrl = "http://192.168.0.249:8080/";///main
 
 String customers = "${baseUrl}api/v1/customer";
-String products = "${baseUrl}api/v1/product";
+String products = "${baseUrl}api/v1/getAllProducts";
 String categories = "${baseUrl}api/v1/category";
 String visits = "${baseUrl}api/v1/visits";
 String visitRecords = "${baseUrl}api/v1/visits/records";

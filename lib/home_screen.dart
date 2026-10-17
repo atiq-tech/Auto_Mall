@@ -8,6 +8,7 @@ import 'package:auto_mall/widgets/customer%20_list_screen.dart';
 import 'package:auto_mall/widgets/customer_entry_screen.dart';
 import 'package:auto_mall/widgets/product_list_screen.dart';
 import 'package:auto_mall/widgets/sales_entry_screen.dart';
+import 'package:auto_mall/widgets/visit_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -400,13 +401,14 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      // else if (index == 10) {
-                      //   if (visitEntry == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryPage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
+                      else if (index == 10) {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryScreen()));
+                        // if (visitEntry == "true" || userType == "m" || userType == "a") {
+                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryScreen()));
+                        // } else {
+                        //   showCustomDialog(context);
+                        // }
+                      } 
                       // else if (index == 11) {
                       //   if (visitRecord == "true" || userType == "m" || userType == "a") {
                       //     Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitHistoryPage()));
