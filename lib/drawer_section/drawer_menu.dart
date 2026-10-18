@@ -170,7 +170,7 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
                   showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
                 }
               },
-              child: Custom_List_Tile(icon: Icons.pending, icon_name: "Order Record")),
+              child: Custom_List_Tile(icon: Icons.pending, icon_name: "Pending Order")),
           Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){
@@ -237,7 +237,7 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
                   showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
                 }
                 },
-              child: Custom_List_Tile(icon: Icons.category, icon_name: "Category List")),
+              child: Custom_List_Tile(icon: Icons.category, icon_name: "Customer Due")),
           Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){
@@ -281,7 +281,7 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
                   showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
                 }
               },
-              child: Custom_List_Tile(icon: Icons.visibility, icon_name: "Visit History")),
+              child: Custom_List_Tile(icon: Icons.visibility, icon_name: "Visit List")),
           Divider(height: 1.h,thickness: 1.0),
          
           InkWell(

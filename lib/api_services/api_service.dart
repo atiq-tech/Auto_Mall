@@ -23,4 +23,22 @@ class ApiService{
     }
     return null;
   }
+  //==================Product List =======================
+  static fetchCustomersApi() async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(customers,
+          options: Options(headers: {
+            "Content-Type": "application/json",
+            'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+            "Authorization": "Bearer ${sharedPreferences.getString("token")}",
+          }));
+      var item = jsonDecode(response.data);
+      return List.from(item).map((e) => ProductsModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
   }

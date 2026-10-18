@@ -4,10 +4,14 @@ import 'package:auto_mall/main.dart';
 import 'package:auto_mall/utils/all_textstyle.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
+import 'package:auto_mall/widgets/customer_due_list_screen.dart';
+import 'package:auto_mall/widgets/pending_order_record_screen.dart';
 import 'package:auto_mall/widgets/customer%20_list_screen.dart';
 import 'package:auto_mall/widgets/customer_entry_screen.dart';
+import 'package:auto_mall/widgets/order_entry_screen.dart';
 import 'package:auto_mall/widgets/product_list_screen.dart';
 import 'package:auto_mall/widgets/sales_entry_screen.dart';
+import 'package:auto_mall/widgets/sales_record_screen.dart';
 import 'package:auto_mall/widgets/visit_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -319,22 +323,16 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                   return GestureDetector(
                     onTap: () {
                       if (index == 0) {
-                        // setState(() {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderEntryScreen()));
+                        
                         //   if (orderEntry == "true" || userType == "m" || userType == "a") {
-                        //     if (userType == 'c') {
-                        //       Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderListScreen()));
-                        //     } else {
-                        //       Navigator.push(context, MaterialPageRoute(builder: (context) => OutletList(totatOrderValue: totatOrdValue,routName: routName,
-                        //        ))).then((value) {
-                        //         setState(() {});
-                        //       });
-                        //     }
+                        //    Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderEntryScreen()));
                         //   } else {
                         //     showCustomDialog(context);
                         //   }
-                        // });
                       } 
                       else if (index == 1) {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => const PendingOrderRecordScreen()));
                         // if (orderRecord == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderRecordScreen()));
                         // } else {
@@ -342,8 +340,9 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         // }
                       } 
                       else if (index == 2) {
+                        //Navigator.push(context,MaterialPageRoute(builder: (context) => const PendingOrderRecordScreen()));
                         // if (salesInvoice == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const AllOrderInvoicePage()));
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CODRecordScreen()));
                         // } else {
                         //   showCustomDialog(context);
                         // }
@@ -357,6 +356,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         // }
                       } 
                       else if (index == 4) {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordScreen()));
                         // if (salesRecord == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordPage()));
                         // } else {
@@ -379,6 +379,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         // }
                       } 
                       else if (index == 7) {
+                         Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
                         // if (categoryList == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CategoryListScreen()));
                         // } else {
@@ -386,7 +387,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         // }
                       } 
                       else if (index == 8) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerListScreen()));
                         // if (customerEntry == "true" || userType == "m" || userType == "a") {
                         //    Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
                         // } else {
@@ -394,7 +395,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         // }
                       } 
                       else if (index == 9) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListScreen()));
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerDueListScreen()));
                         // if (customerList == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListScreen()));
                         // } else {

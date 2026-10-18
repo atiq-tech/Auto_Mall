@@ -34,27 +34,31 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   Color getColors(Set<WidgetState> states) {
     return Colors.cyan.shade100;
   }
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _paidController = TextEditingController();
-  final TextEditingController _discountPercentController = TextEditingController();
-  final TextEditingController _mobileNumberController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _salesRateController = TextEditingController();
-  final TextEditingController _discountController = TextEditingController();
-  final TextEditingController _vatController = TextEditingController();
-  final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _warrantyController = TextEditingController();
-  final TextEditingController _transportController = TextEditingController();
+  final nameController = TextEditingController();
+  final paidController = TextEditingController();
+  final bankPaidController = TextEditingController();
+  final discountPercentController = TextEditingController();
+  final mobileNumberController = TextEditingController();
+  final addressController = TextEditingController();
+  final salesRateController = TextEditingController();
+  final discountController = TextEditingController();
+  final vatController = TextEditingController();
+  final quantityController = TextEditingController();
+  final warrantyController = TextEditingController();
+  final transportController = TextEditingController();
   final customerController = TextEditingController();
   final empluyeeNameController = TextEditingController();
   final categoryController = TextEditingController();
   final branchController = TextEditingController();
   final routeController = TextEditingController();
   final productController = TextEditingController();
-  final _invoiceNoController = TextEditingController();
-  final TextEditingController _vatPercentageController = TextEditingController();
+  final invoiceNoController = TextEditingController();
+  final vatPercentageController = TextEditingController();
+  final accountController = TextEditingController();
   bool isCredit = false;
-  final TextEditingController creditController = TextEditingController();
+  final creditController = TextEditingController();
+  bool isCourier = false;
+  final courierController = TextEditingController();
 
   var customerSlNo;
   String?  customerType = '';
@@ -80,6 +84,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   double transportCost = 0;
   double paid = 0;
   double total = 0;
+  double cashPaid = 0;
+  double bankPaid = 0;
   double due = 0;
   double paidtotal = 0;
 
@@ -89,12 +95,12 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     total = 0;
     due = 0;
 
-    _vatController.text ='0';
-    _vatPercentageController.text = "0";
-    _discountController.text ='0';
-    _discountPercentController.text ='0';
-    _paidController.text ='0';
-    _transportController.text = '0';
+    vatController.text ='0';
+    vatPercentageController.text = "0";
+    discountController.text ='0';
+    discountPercentController.text ='0';
+    paidController.text ='0';
+    transportController.text = '0';
   }
 
   void  calculateTotal(){
@@ -124,7 +130,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   double Total = 0.0;
   bool isVisible = false;
   bool isEnabled = false;
-  late final Box box;
+  bool isVisibleBankName = false;
+  bool isAdded = false;
   bool isSellBtnClk = false;
 
 
@@ -137,8 +144,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     // Provider.of<RouteProvider>(context, listen: false).getRoute();
     // CustomerListProvider.isCustomerTypeChange = true;
     // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList(level, "","");
-     _quantityController.text = "1";
-    _discountPercentController.text = "0";
+    quantityController.text = "1";
+    discountPercentController.text = "0";
     getOrderInvoice();
 
     firstPickedDate = Utils.formatFrontEndDate(DateTime.now());
@@ -161,9 +168,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
       );
       print(response.data);
       setState(() {
-        _invoiceNoController.text = jsonDecode(response.data);
+        invoiceNoController.text = jsonDecode(response.data);
       });
-      print("invoiceNo Code===========> ${_invoiceNoController.text}");
+      print("invoiceNo Code===========> ${invoiceNoController.text}");
     } catch (e) {
       print(e);
     }
@@ -239,7 +246,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                 decoration: ContDecoration.contDecoration,
                                 child: TextField(
                                   style: AllTextStyle.dateFormatStyle,
-                                  controller: _invoiceNoController,
+                                  controller: invoiceNoController,
                                   decoration: InputDecoration(
                                       contentPadding: EdgeInsets.only(bottom: 14.h,left: 5.w),
                                       border: InputBorder.none,
@@ -584,10 +591,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                         margin: EdgeInsets.only(bottom: 4.h),
                                         child: TextFormField(
                                           style: AllTextStyle.dropDownlistStyle,
-                                          controller: _nameController,
+                                          controller: nameController,
                                           validator: (value) {
                                             if(value != null || value != ''){
-                                              _nameController.text = value.toString();
+                                              nameController.text = value.toString();
                                             }
                                             return null;
                                           },
@@ -621,11 +628,11 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       child: TextFormField(
                                         style: AllTextStyle.dropDownlistStyle,
                                         enabled: isEnabled,
-                                        controller: _mobileNumberController,
+                                        controller: mobileNumberController,
                                         keyboardType: TextInputType.number,
                                         validator: (value) {
                                           if(value != null || value != ''){
-                                            _mobileNumberController.text = value.toString();
+                                            mobileNumberController.text = value.toString();
                                           }
                                           return null;
                                         },
@@ -656,10 +663,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(5.r),color: Colors.grey[200],),
                                       child: TextFormField(
                                         style: AllTextStyle.dropDownlistStyle,
-                                        controller: _addressController,
+                                        controller: addressController,
                                         validator: (value) {
                                           if(value != null || value != ''){
-                                            _addressController.text = value.toString();
+                                            addressController.text = value.toString();
                                           }
                                           return null;
                                         },
@@ -833,7 +840,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _salesRateController,
+                                        controller: salesRateController,
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -847,7 +854,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                         ),
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = double.parse(_salesRateController.text);
+                                            Total = double.parse(salesRateController.text);
                                           });
                                         },
                                       ),
@@ -861,10 +868,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       margin: EdgeInsets.only(left: 5.w, right: 0.w),
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _quantityController,
+                                        controller: quantityController,
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = (double.parse(_quantityController.text) * double.parse(_salesRateController.text));
+                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
                                           });
                                         },
                                         keyboardType: TextInputType.number,
@@ -893,7 +900,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _salesRateController,
+                                        controller: salesRateController,
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -907,7 +914,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                         ),
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = double.parse(_salesRateController.text);
+                                            Total = double.parse(salesRateController.text);
                                           });
                                         },
                                       ),
@@ -921,10 +928,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       margin: EdgeInsets.only(left: 5.w, right: 0.w),
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _quantityController,
+                                        controller: quantityController,
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = (double.parse(_quantityController.text) * double.parse(_salesRateController.text));
+                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
                                           });
                                         },
                                         keyboardType: TextInputType.number,
@@ -990,7 +997,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _warrantyController,
+                                        controller: warrantyController,
                                         onChanged: (value) {
                                           
                                         },
@@ -1014,7 +1021,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                 child: GestureDetector(
                                   onTap: () {
                                     if (productController.text != '' || productController.text.isNotEmpty) {
-                                      if (_quantityController.text != '' || _quantityController.text.isNotEmpty){
+                                      if (quantityController.text != '' || quantityController.text.isNotEmpty){
                                         if (availableStock > 0) {
                                           setState(() {
                                             salesCartList.add(SalesCartModel(
@@ -1022,9 +1029,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               categoryId: "$categoryId",
                                               categoryName: "$ccategoryName",
                                               name: "$cname",
-                                              salesRate: _salesRateController.text,
-                                              vat: _vatController.text,
-                                              quantity: _quantityController.text,
+                                              salesRate: salesRateController.text,
+                                              vat: vatController.text,
+                                              quantity: quantityController.text,
                                               total: "$Total",
                                               purchaseRate: "$cpurchaseRate",
                                               woodName: '$ccategoryName',
@@ -1037,8 +1044,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                             calculateTotal();
                                             categoryController.text = '';
                                             productController.text = '';
-                                            _quantityController.text = '';
-                                            _salesRateController.text = '';
+                                            quantityController.text = '';
+                                            salesRateController.text = '';
                                             setState(() {
                                               Total = 0;
                                               calculateTotal();
@@ -1046,11 +1053,11 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               discountPer=0;
                                               vatAmount=0;
                                               vatPer=0;
-                                              _discountController.text = "";
-                                              _vatController.text = "";
-                                              _discountPercentController.text="";
-                                              _vatPercentageController.text="";
-                                              _transportController.text="";
+                                              discountController.text = "";
+                                              vatController.text = "";
+                                              discountPercentController.text="";
+                                              vatPercentageController.text="";
+                                              transportController.text="";
                                             });
                                             availableStock = 0;
                                           });
@@ -1294,7 +1301,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _salesRateController,
+                                        controller: salesRateController,
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -1308,7 +1315,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                         ),
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = double.parse(_salesRateController.text);
+                                            Total = double.parse(salesRateController.text);
                                           });
                                         },
                                       ),
@@ -1322,10 +1329,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       margin: EdgeInsets.only(left: 5.w, right: 0.w),
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _quantityController,
+                                        controller: quantityController,
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = (double.parse(_quantityController.text) * double.parse(_salesRateController.text));
+                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
                                           });
                                         },
                                         keyboardType: TextInputType.number,
@@ -1362,7 +1369,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                     child: GestureDetector(
                                     onTap: () {
                                       if (productController.text != '' || productController.text.isNotEmpty) {
-                                        if (_quantityController.text != '' || _quantityController.text.isNotEmpty){
+                                        if (quantityController.text != '' || quantityController.text.isNotEmpty){
                                           if (availableStock > 0) {
                                             setState(() {
                                               salesCartList.add(SalesCartModel(
@@ -1370,9 +1377,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                                 categoryId: "$categoryId",
                                                 categoryName: "$ccategoryName",
                                                 name: "$cname",
-                                                salesRate: _salesRateController.text,
-                                                vat: _vatController.text,
-                                                quantity: _quantityController.text,
+                                                salesRate: salesRateController.text,
+                                                vat: vatController.text,
+                                                quantity: quantityController.text,
                                                 total: "$Total",
                                                 purchaseRate: "$cpurchaseRate",
                                                 woodName: '$ccategoryName',
@@ -1385,8 +1392,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               calculateTotal();
                                               categoryController.text = '';
                                               productController.text = '';
-                                              _quantityController.text = '';
-                                              _salesRateController.text = '';
+                                              quantityController.text = '';
+                                              salesRateController.text = '';
                                               setState(() {
                                                 Total = 0;
                                                 calculateTotal();
@@ -1394,11 +1401,11 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                                 discountPer=0;
                                                 vatAmount=0;
                                                 vatPer=0;
-                                                _discountController.text = "";
-                                                _vatController.text = "";
-                                                _discountPercentController.text="";
-                                                _vatPercentageController.text="";
-                                                _transportController.text="";
+                                                discountController.text = "";
+                                                vatController.text = "";
+                                                discountPercentController.text="";
+                                                vatPercentageController.text="";
+                                                transportController.text="";
                                               });
                                               availableStock = 0;
                                             });
@@ -1586,15 +1593,15 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _discountPercentController,
+                                        controller: discountPercentController,
                                         onChanged: (value) {
-                                          _transportController.text = '';
-                                          _paidController.text = '';
+                                          transportController.text = '';
+                                          paidController.text = '';
                                           ///discount per
                                           setState(() {
-                                            discountPer = double.parse(_discountPercentController.text);
+                                            discountPer = double.parse(discountPercentController.text);
                                             discountAmount = (subtotal * discountPer) / 100;
-                                            _discountController.text = double.parse("$discountAmount").toStringAsFixed(2);
+                                            discountController.text = double.parse("$discountAmount").toStringAsFixed(2);
                                             calculateTotal();
                                           });
                                         },
@@ -1617,16 +1624,16 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                     child: SizedBox(
                                       height: 25.h,
                                       child: TextField(style:AllTextStyle.textValueStyle,
-                                        controller: _discountController,
+                                        controller: discountController,
                                         keyboardType: TextInputType.number,
                                         onChanged: (value) {
-                                          _transportController.text = '';
-                                          _paidController.text = '';
+                                          transportController.text = '';
+                                          paidController.text = '';
                                           ///discount Amount
                                           setState(() {
-                                            discountAmount = double.parse(_discountController.text);
+                                            discountAmount = double.parse(discountController.text);
                                             discountPer = (discountAmount * 100) / subtotal;
-                                            _discountPercentController.text = double.parse("$discountPer").toStringAsFixed(2);
+                                            discountPercentController.text = double.parse("$discountPer").toStringAsFixed(2);
                                             calculateTotal();
                                           });
                                         },
@@ -1656,16 +1663,16 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       margin: EdgeInsets.only(top: 4.h),
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _vatPercentageController,
+                                        controller: vatPercentageController,
                                         onChanged: (value) {
-                                          _transportController.text = '';
-                                          _paidController.text = '';
+                                          transportController.text = '';
+                                          paidController.text = '';
                                           setState(() {
                                             ///vatPer
                                             double totalAmount = subtotal - discountAmount;
-                                            vatPer = double.parse(_vatPercentageController.text);
+                                            vatPer = double.parse(vatPercentageController.text);
                                             vatAmount = (totalAmount * vatPer) / 100;
-                                            _vatController.text = double.parse("$vatAmount").toStringAsFixed(2);
+                                            vatController.text = double.parse("$vatAmount").toStringAsFixed(2);
                                             calculateTotal();
                                           });
                                         },
@@ -1690,17 +1697,17 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       margin: EdgeInsets.only(top: 4.h),
                                       child: TextField(style: AllTextStyle.textValueStyle,
-                                        controller: _vatController,
+                                        controller: vatController,
                                         keyboardType: TextInputType.number,
                                         onChanged: (value) {
-                                          _transportController.text = '';
-                                          _paidController.text = '';
+                                          transportController.text = '';
+                                          paidController.text = '';
                                           ///vat amount
                                           setState(() {
                                             double totalAmount = subtotal - discountAmount;
-                                            vatAmount = double.parse(_vatController.text);
+                                            vatAmount = double.parse(vatController.text);
                                             vatPer = (vatAmount * 100) / totalAmount;
-                                            _vatPercentageController.text = double.parse("$vatPer").toStringAsFixed(2);
+                                            vatPercentageController.text = double.parse("$vatPer").toStringAsFixed(2);
                                             calculateTotal();
                                           });
                                         },
@@ -1729,10 +1736,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: _transportController,
+                                        controller: transportController,
                                         onChanged: (value) {
                                           setState(() {
-                                            transportCost = double.parse(_transportController.text);
+                                            transportCost = double.parse(transportController.text);
                                             calculateTotal();
                                           });
                                         },
@@ -1769,38 +1776,152 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                               ),
                               Row(
                                 children: [
-                                  Expanded(flex: 5,child: Text("Bank Paid",style:AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(flex: 5,child: Text("Cash Paid",style:AllTextStyle.textFieldHeadStyle)),
                                   Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
                                   Expanded(
-                                    flex: 14,
+                                    flex: 5,
                                     child: Container(
                                       height: 25.h,
-                                      margin: EdgeInsets.only(bottom: 4.h),
+                                      margin: const EdgeInsets.only(bottom: 4),
+                                      child: TextField(style: AllTextStyle.textValueStyle,
+                                        controller: paidController,
+                                        onChanged: (value) {
+                                        setState(() {
+                                          if (value.trim().isEmpty) {
+                                            cashPaid = 0;
+                                          } else {
+                                            cashPaid = double.tryParse(value) ?? 0;
+                                          }
+                                          isAdded = false;
+                                          calculateTotal();
+                                        });
+                                      },
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                                          hintText: "0",
+                                          hintStyle: TextStyle(fontSize: 13.5,fontWeight: FontWeight.w400,color: Colors.grey.shade600),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
+                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(flex: 4,child: Center(child: Text("Bank Paid",style:AllTextStyle.textFieldHeadStyle))),
+                                  Expanded(
+                                    flex: 5,
+                                    child: Container(
+                                      height: 25.h,
+                                      margin: const EdgeInsets.only(bottom: 4),
                                       child: TextField(
-                                        style:AllTextStyle.textValueStyle,
-                                        controller: _paidController,
+                                        style: AllTextStyle.textValueStyle,
+                                        controller: bankPaidController,
                                         onChanged: (value) {
                                           setState(() {
-                                            paidtotal = double.parse(_paidController.text);
-                                            paid = paidtotal;
-                                            due = total - paidtotal;
+                                            if (bankPaidController.text == "" || bankPaidController.text == '0') {
+                                              isVisibleBankName = false;
+                                              accountController.text = "";
+                                            } else {
+                                              isVisibleBankName = true;
+                                            }
+                                          });
+                                          
+                                          setState(() {
+                                            if (value.trim().isEmpty) {
+                                              bankPaid = 0;
+                                            } else {
+                                              bankPaid = double.tryParse(value) ?? 0;
+                                            }
+                                            isAdded = false;
                                             calculateTotal();
                                           });
                                         },
                                         keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
-                                            hintText: double.parse("$paidtotal").toStringAsFixed(2),
-                                            hintStyle: AllTextStyle.textValueStyle,
-                                            filled: true,
-                                            fillColor: Colors.white,
-                                            border: InputBorder.none,
-                                            focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                            enabledBorder:TextFieldInputBorder.focusEnabledBorder
+                                        decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
+                                          hintText: "0",
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
+                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
                                         ),
                                       ),
                                     ),
                                   ),
                                 ],
+                              ),
+                              Visibility(
+                                visible: isVisibleBankName,
+                                child: Row(
+                                  children: [
+                                  Expanded(flex: 5,child: Text("Bank Acc.",style:AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(
+                                  flex: 14,
+                                  child: Container(
+                                  height: 25.h,
+                                  width: MediaQuery.of(context).size.width / 2,
+                                  margin: const EdgeInsets.only(bottom: 4.0),
+                                  decoration:ContDecoration.contDecoration,
+                                //   child: TypeAheadField<BankAccountModel>(
+                                //   controller: accountController,
+                                //   builder: (context, controller, focusNode) {
+                                //   return TextField(
+                                //     controller: controller,
+                                //     focusNode: focusNode,
+                                //     style: TextStyle(fontSize: 13, color: Colors.grey.shade800, overflow: TextOverflow.ellipsis),
+                                //     decoration: InputDecoration(contentPadding: EdgeInsets.only(left: 5.0, top: 4.0),
+                                //       isDense: true,
+                                //       hintText: 'Select Bank',
+                                //       hintStyle: TextStyle(fontSize: 13),
+                                //       suffixIcon: _selectedAccount == '' || _selectedAccount == 'null' || _selectedAccount == null || controller.text == '' ? null
+                                //           : GestureDetector(
+                                //         onTap: () {
+                                //           setState(() {
+                                //             accountController.clear();
+                                //             controller.clear();
+                                //             _selectedAccount = null;
+                                //           });
+                                //         },
+                                //         child: Padding(padding: EdgeInsets.all(5), child: Icon(Icons.close, size: 16)),
+                                //       ),
+                                //       suffixIconConstraints: BoxConstraints(maxHeight: 30),
+                                //       filled: false,
+                                //       fillColor: Colors.white,
+                                //       border: InputBorder.none,
+                                //     ),
+                                //   );
+                                // },
+                                // suggestionsCallback: (pattern) async {
+                                //   return Future.delayed(const Duration(seconds: 1), () {
+                                // return allBankAccountList
+                                //   .where((element) => element.name.toLowerCase().contains(pattern.toLowerCase()))
+                                // .toList().cast<BankAccountModel>(); 
+                                //   });
+                                //   },
+                              
+                                // itemBuilder: (context, BankAccountModel suggestion) {
+                                //   return Padding(
+                                //     padding: EdgeInsets.symmetric(horizontal: 6,vertical: 4),
+                                //     child: Text("${suggestion.name}-${suggestion.number} (${suggestion.bankName})",
+                                //       style: TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis,
+                                //     ),
+                                //   );
+                                // },
+                                // onSelected: (BankAccountModel suggestion) {
+                                //       setState(() {
+                                //             accountController.text = "${suggestion.name}-${suggestion.number} (${suggestion.bankName})";
+                                //             _selectedAccount = suggestion.id.toString();
+                                //       });
+                                //     },
+                                //   ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -1965,22 +2086,25 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     employeeSlNo="";
     _selectedRoute = '';
     _selectedCustomer='';
-    _invoiceNoController.text="";
+    invoiceNoController.text="";
     empluyeeNameController.text="";
     routeController.text="";
     customerController.text="";
-    _nameController.text = "";
-    _paidController.text = "";
-    _discountPercentController.text = "";
-    _mobileNumberController.text = "";
-    _addressController.text = "";
-    _salesRateController.text = "";
-    _discountController.text = "";
-    _vatController.text = "";
-    _vatPercentageController.text="";
-    _quantityController.text = "";
-    _transportController.text = "";
-    _paidController.text="";
+    nameController.text = "";
+    paidController.text = "";
+    bankPaidController.text = "";
+    discountPercentController.text = "";
+    mobileNumberController.text = "";
+    addressController.text = "";
+    salesRateController.text = "";
+    discountController.text = "";
+    vatController.text = "";
+    vatPercentageController.text="";
+    quantityController.text = "";
+    transportController.text = "";
+    paidController.text="";
+    accountController.text="";
+    creditController.text ="";
     paidtotal=0;
     previousDue = "";
     cartTotal = 0;
@@ -2011,7 +2135,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
       Response response = await Dio().post(link,
         data: {
         "sales": {
-        "invoiceNo": _invoiceNoController.text,
+        "invoiceNo": invoiceNoController.text,
         "employeeId": "$employeeSlNo",
         "customerId": "$_selectedCustomer",
         "route_id": "$_selectedRoute",
@@ -2022,16 +2146,16 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
         "vat": "$vatAmount",
         "transportCost": "$transportCost",
         "subTotal": "$subtotal",
-        "paid":  _paidController.text.toString().isNotEmpty ? _paidController.text : paidtotal,
+        "paid":  paidController.text.toString().isNotEmpty ? paidController.text : paidtotal,
         "due": "$due",
         "prevDue": "$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue",
         "note": ""
        },
           "customer": {
             "Customer_SlNo": _selectedCustomer,
-            "Customer_Name": customerType == "N" || customerType == 'G' ? _nameController.text.trim() : customerController.text.trim(),
-            "Customer_Mobile": _mobileNumberController.text.trim(),
-            "Customer_Address": _addressController.text.trim(),
+            "Customer_Name": customerType == "N" || customerType == 'G' ? nameController.text.trim() : customerController.text.trim(),
+            "Customer_Mobile": mobileNumberController.text.trim(),
+            "Customer_Address": addressController.text.trim(),
             "Customer_Type": "$customerType"
           },
           "cart": studentsmap
