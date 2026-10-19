@@ -1,8 +1,10 @@
 import 'package:auto_mall/common_widget/custom_appbar.dart';
+import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
+import 'package:auto_mall/models/customers_model.dart';
+import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/all_textstyle.dart';
@@ -42,14 +44,14 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
   
   //main dropdowns logic
   bool isAll = true;
-  bool isEmployees = false;
+  //bool isEmployees = false;
   bool isAreas = false;
   bool isCustomers = false;
   bool _isDropdownOpen = false;
   String? _selectedSearchTypes = 'All';
   final List<String> _searchTypes = [
     'All',
-    'By Employee',
+    //'By Employee',
     'By Customer',
     'By Area',
   ];
@@ -119,7 +121,7 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                             Container(
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-                              child: Text(type, style: TextStyle(fontSize: 13.sp)),
+                              child: Text(type, style: AllTextStyle.dropDownlistStyle),
                             ),
                             if (index != _searchTypes.length - 1)
                               Divider(height: 1.h, thickness: 0.8, color: Colors.indigo.shade400),
@@ -141,7 +143,7 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
     setState(() {
       _selectedSearchTypes = selectedValue;
       isAll = selectedValue == "All";
-      isEmployees = selectedValue == "By Employee";
+      //isEmployees = selectedValue == "By Employee";
       isCustomers = selectedValue == "By Customer";
       isAreas = selectedValue == "By Area";
       emtyMethod();
@@ -154,12 +156,15 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback(_getDropdownSize);
     _initializeData();
-    // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList("","","","");
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _getDropdownSize(Duration.zero);
+    if (!mounted) return;
+    Provider.of<CustomersProvider>(context,listen: false).getCustomers("");
     // Provider.of<AreasProvider>(context, listen: false).getAreas();
     // Provider.of<CustomerDueProvider>(context, listen: false).customerDuelist = [];
     // Provider.of<EmployeeProvider>(context, listen: false).getEmployee();
+  });
     super.initState();
   }
 
@@ -179,10 +184,9 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
   
   @override
   Widget build(BuildContext context) {
-    // final allCustomersData = Provider.of<CustomerListProvider>(context)
-    // .customerList
-    // .where((element) => element.customerSlNo != 0)
-    // .toList();
+    final customersData = Provider.of<CustomersProvider>(context).customersList
+    .where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
+    .toList();
 
     // final allAreasData =Provider.of<AreasProvider>(context).areasList;
     // final providerCDueData = Provider.of<CustomerDueProvider>(context).customerDuelist;
@@ -240,7 +244,7 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                               children: [
                                 Text(
                                   _selectedSearchTypes ?? 'Please select a type',
-                                  style: TextStyle(fontSize: 13.sp),
+                                  style: AllTextStyle.dropDownlistStyle,
                                 ),
                                 GestureDetector(
                                   onTap: _toggleDropdown,
@@ -258,107 +262,107 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                     ],
                   ),
                   SizedBox(height: 3.h),
-                  isEmployees == true ? Row(
-                      children: [
-                        Expanded(flex: 1,child: Text("Employee",style: AllTextStyle.textFieldHeadStyle)),
-                        Text(":   ",style:AllTextStyle.textFieldHeadStyle),
-                        Expanded(
-                          flex: 3,
-                          child: userType == "a" || userType == "m" ? Container(
-                            height: 25.0.h,
-                            margin: EdgeInsets.only(bottom: 3.5.h),
-                            decoration: ContDecoration.contDecoration,
-                          //   child: TypeAheadField<EmployeeModel>(
-                          //   controller: employeeController,
-                          //   builder: (context, controller, focusNode) {
-                          //     return TextField(
-                          //       controller: controller,
-                          //       focusNode: focusNode,
-                          //       style: AllTextStyle.textValueStyle,
-                          //       decoration: InputDecoration(
-                          //         contentPadding: EdgeInsets.only(left: 5.w, top: 2.5.h),
-                          //         isDense: true,
-                          //         hintText: 'Select Employee',
-                          //         hintStyle: TextStyle(fontSize: 13.sp),
-                          //         suffixIcon: employeeId == '' || employeeId == 'null' || employeeId == null || controller.text == ''
-                          //             ? null
-                          //             : GestureDetector(
-                          //                 onTap: () {
-                          //                   setState(() {
-                          //                     employeeController.clear();
-                          //                     controller.clear();
-                          //                     employeeId = null;
-                          //                   });
-                          //                   // Clear করার পর নতুনভাবে customer লোড
-                          //                   Provider.of<EmployeeProvider>(context, listen: false).getEmployee();
-                          //                 },
-                          //                 child: Padding(
-                          //                   padding: EdgeInsets.all(5.r),
-                          //                   child: Icon(Icons.close, size: 16.r),
-                          //                 ),
-                          //               ),
-                          //         suffixIconConstraints: BoxConstraints(maxHeight: 30.h),
-                          //         filled: false,
-                          //         fillColor: Colors.white,
-                          //         border: InputBorder.none,
-                          //       ),
-                          //       onTap: () {
-                          //         // কার্সর রাখলেই নতুনভাবে লোড হবে
-                          //         Provider.of<EmployeeProvider>(context, listen: false).getEmployee();
+                  // isEmployees == true ? Row(
+                  //     children: [
+                  //       Expanded(flex: 1,child: Text("Employee",style: AllTextStyle.textFieldHeadStyle)),
+                  //       Text(":   ",style:AllTextStyle.textFieldHeadStyle),
+                  //       Expanded(
+                  //         flex: 3,
+                  //         child: userType == "a" || userType == "m" ? Container(
+                  //           height: 25.0.h,
+                  //           margin: EdgeInsets.only(bottom: 3.5.h),
+                  //           decoration: ContDecoration.contDecoration,
+                  //           child: TypeAheadField<EmployeeModel>(
+                  //           controller: employeeController,
+                  //           builder: (context, controller, focusNode) {
+                  //             return TextField(
+                  //               controller: controller,
+                  //               focusNode: focusNode,
+                  //               style: AllTextStyle.textValueStyle,
+                  //               decoration: InputDecoration(
+                  //                 contentPadding: EdgeInsets.only(left: 5.w, top: 2.5.h),
+                  //                 isDense: true,
+                  //                 hintText: 'Select Employee',
+                  //                 hintStyle: TextStyle(fontSize: 13.sp),
+                  //                 suffixIcon: employeeId == '' || employeeId == 'null' || employeeId == null || controller.text == ''
+                  //                     ? null
+                  //                     : GestureDetector(
+                  //                         onTap: () {
+                  //                           setState(() {
+                  //                             employeeController.clear();
+                  //                             controller.clear();
+                  //                             employeeId = null;
+                  //                           });
+                  //                           // Clear করার পর নতুনভাবে customer লোড
+                  //                           Provider.of<EmployeeProvider>(context, listen: false).getEmployee();
+                  //                         },
+                  //                         child: Padding(
+                  //                           padding: EdgeInsets.all(5.r),
+                  //                           child: Icon(Icons.close, size: 16.r),
+                  //                         ),
+                  //                       ),
+                  //                 suffixIconConstraints: BoxConstraints(maxHeight: 30.h),
+                  //                 filled: false,
+                  //                 fillColor: Colors.white,
+                  //                 border: InputBorder.none,
+                  //               ),
+                  //               onTap: () {
+                  //                 // কার্সর রাখলেই নতুনভাবে লোড হবে
+                  //                 Provider.of<EmployeeProvider>(context, listen: false).getEmployee();
                     
-                          //         // আগের সিলেকশন থাকলে clear হবে
-                          //         if (employeeId != null &&
-                          //             employeeId != '' &&
-                          //             employeeId != 'null') {
-                          //           setState(() {
-                          //             employeeController.clear();
-                          //             controller.clear();
-                          //             employeeId = null;
-                          //           });
-                          //         }
-                          //       },
-                          //     );
-                          //   },
-                          //   suggestionsCallback: (pattern) async {
-                          //     return Future.delayed(const Duration(seconds: 1), () {
-                          //       return allEmployeeData
-                          //           .where((element) => element.displayName
-                          //               .toLowerCase()
-                          //               .contains(pattern.toLowerCase()))
-                          //           .toList()
-                          //           .cast<EmployeeModel>();
-                          //     });
-                          //   },
-                          //   itemBuilder: (context, EmployeeModel suggestion) {
-                          //     return Padding(
-                          //       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
-                          //       child: Text(
-                          //         "${suggestion.displayName}",
-                          //         style: TextStyle(fontSize: 12.sp),
-                          //         maxLines: 1,
-                          //         overflow: TextOverflow.ellipsis,
-                          //       ),
-                          //     );
-                          //   },
-                          //   onSelected: (EmployeeModel suggestion) {
-                          //     employeeController.text = "${suggestion.displayName}";
-                          //     setState(() {
-                          //       employeeId = suggestion.employeeSlNo.toString();
-                          //     });
-                          //   },
-                          // ),
-                          ): Container(
-                              height: 25.h,
-                              margin: EdgeInsets.only(bottom: 3.5.h),
-                              decoration: ContDecoration.contDecoration,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
-                                child: Text("$userEmployeeName - $employeeCode - $designationName",style: AllTextStyle.dateFormatStyle),
-                              )
-                            ),
-                        )
-                      ],
-                    ): SizedBox(height: 0.0.h),
+                  //                 // আগের সিলেকশন থাকলে clear হবে
+                  //                 if (employeeId != null &&
+                  //                     employeeId != '' &&
+                  //                     employeeId != 'null') {
+                  //                   setState(() {
+                  //                     employeeController.clear();
+                  //                     controller.clear();
+                  //                     employeeId = null;
+                  //                   });
+                  //                 }
+                  //               },
+                  //             );
+                  //           },
+                  //           suggestionsCallback: (pattern) async {
+                  //             return Future.delayed(const Duration(seconds: 1), () {
+                  //               return allEmployeeData
+                  //                   .where((element) => element.displayName
+                  //                       .toLowerCase()
+                  //                       .contains(pattern.toLowerCase()))
+                  //                   .toList()
+                  //                   .cast<EmployeeModel>();
+                  //             });
+                  //           },
+                  //           itemBuilder: (context, EmployeeModel suggestion) {
+                  //             return Padding(
+                  //               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+                  //               child: Text(
+                  //                 "${suggestion.displayName}",
+                  //                 style: TextStyle(fontSize: 12.sp),
+                  //                 maxLines: 1,
+                  //                 overflow: TextOverflow.ellipsis,
+                  //               ),
+                  //             );
+                  //           },
+                  //           onSelected: (EmployeeModel suggestion) {
+                  //             employeeController.text = "${suggestion.displayName}";
+                  //             setState(() {
+                  //               employeeId = suggestion.employeeSlNo.toString();
+                  //             });
+                  //           },
+                  //         ),
+                  //         ): Container(
+                  //             height: 25.h,
+                  //             margin: EdgeInsets.only(bottom: 3.5.h),
+                  //             decoration: ContDecoration.contDecoration,
+                  //             child: Padding(
+                  //               padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+                  //               child: Text("$userEmployeeName - $employeeCode - $designationName",style: AllTextStyle.dateFormatStyle),
+                  //             )
+                  //           ),
+                  //       )
+                  //     ],
+                  //   ): SizedBox(height: 0.0.h),
                   isAreas == true? Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -366,25 +370,20 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                       Text(":   ",style:AllTextStyle.textFieldHeadStyle),
                       Expanded(
                       flex: 3,
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 3.h),
-                        height: 25.0.h,
-                        decoration: ContDecoration.contDecoration,
-                          //   child: CommonTypeAheadField<AreasModel>(
-                          //   controller: areaController,
-                          //   suggestionList: allAreasData,
-                          //   hintText: 'Select Area',
-                          //   selectedValueId: areaId,
-                          //   onValueIdChanged: (id) {
-                          //     setState(() {
-                          //       areaId = id;
-                          //     });
-                          //   },
-                          //   displayText: (a) => a.districtName,
-                          //   valueId: (a) => a.districtSlNo.toString(),
-                          // ),
+                        child: CommonTypeAheadField<CustomersModel>(
+                        controller: areaController,
+                        suggestionList: customersData,
+                        hintText: 'Select Area',
+                        selectedValueId: areaId,
+                        onValueIdChanged: (id) {
+                          setState(() {
+                            areaId = id;
+                          });
+                        },
+                        displayText: (a) => a.displayName??"",
+                        valueId: (a) => a.customerSlNo.toString(),
                       )
-                    )
+                      )
                     ],
                   ): Container(),
                   isCustomers == true ? Row(
@@ -394,27 +393,23 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                       Text(":   ",style:AllTextStyle.textFieldHeadStyle),
                       Expanded(
                       flex: 3,
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 3.h),
-                        height: 25.0.h,
-                        decoration: ContDecoration.contDecoration,
-                          //   child: CommonTypeAheadField<CustomersModel>(
-                          //   controller: customerController,
-                          //   suggestionList: allCustomersData,
-                          //   hintText: 'Select Customer',
-                          //   selectedValueId: customerId,
-                          //   onValueIdChanged: (id) {
-                          //     setState(() {
-                          //       customerId = id;
-                          //     });
-                          //   },
-                          //   displayText: (c) => c.displayName,
-                          //   valueId: (c) => c.customerSlNo.toString(),
-                          // ),
+                       child: CommonTypeAheadField<CustomersModel>(
+                        controller: customerController,
+                        suggestionList: customersData,
+                        hintText: 'Select Customer',
+                        selectedValueId: customerId,
+                        onValueIdChanged: (id) {
+                          setState(() {
+                            customerId = id;
+                          });
+                        },
+                        displayText: (c) => c.displayName??"",
+                        valueId: (c) => c.customerSlNo.toString(),
+                       )
                       )
-                    )
                     ],
                   ): Container(),
+                  SizedBox(height: 3.h),
                   Align(
                     alignment: Alignment.bottomRight,
                     child: Container(
@@ -443,7 +438,7 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                         },
 
                         child: Container(
-                          height: 28.0.h,
+                          height: 25.h,
                           width: 102.0.w,
                           decoration: BoxDecoration(
                             color: AppColors.primaryColor,

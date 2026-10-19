@@ -6,35 +6,44 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/base_url.dart';
 
-class LogoutService{
+
+class LogoutService {
   static Future<void> fetchLogout(BuildContext context) async {
     try {
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      String link = "${baseUrl}logout";
-      Response response = await Dio().get(link,
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-        }));
-      var item = response.data;
+      final prefs = await SharedPreferences.getInstance();
+
+      final response = await Dio().get(
+        logout,
+        options: Options(
+          headers: {
+            "Content-Type": "application/json",
+            "Cookie": "ci_session=${prefs.getString("sessionId")}",
+            "Authorization": "${prefs.getString("token")}",
+          },
+        ),
+      );
+
+      final item = response.data;
       print("Logout Response: $item");
-      if (item['success'] == true) {
+
+      if (item["success"] == true) {
+        if (!context.mounted) return;
+
         Utils.showMotionToast(
           context,
           title: "${item["message"]}!",
-          description: "Welcome to the Login Page",
+          description: "Redirecting to Login Page",
           icon: Icons.check_circle,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 2),
         );
-        AuthHelper.userLogout();
+
+        await AuthHelper.userLogout();
       } else {
-        if (item['status'] == 401) {
-          AuthHelper.userLogout();
-        }
+        print("Logout failed: ${item["message"]}");
       }
     } catch (e) {
       print("Logout Error: $e");
     }
   }
 }
+

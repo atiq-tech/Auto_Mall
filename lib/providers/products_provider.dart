@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import '../api_services/api_service.dart';
 
 class ProductsProvider extends ChangeNotifier {
-
   static bool isProductsLoading = false;
 
   List<ProductsModel> productsList = [];

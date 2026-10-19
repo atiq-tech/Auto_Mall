@@ -1,4 +1,4 @@
-import 'package:auto_mall/auth/login_screen.dart';
+import 'package:auto_mall/auth/global_logout.dart';
 import 'package:auto_mall/drawer_section/drawer_menu.dart';
 import 'package:auto_mall/main.dart';
 import 'package:auto_mall/utils/all_textstyle.dart';
@@ -16,7 +16,6 @@ import 'package:auto_mall/widgets/visit_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -178,15 +177,9 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                                     ),
                                     SizedBox(width: 10.0.w),
                                     InkWell(
-                                      onTap: () async {
-                                        SharedPreferences prefs = await SharedPreferences.getInstance();
-                                          await prefs.clear();
-                                          Navigator.of(context).pushAndRemoveUntil(
-                                            MaterialPageRoute(builder: (context) => const LogInPage()),
-                                            (route) => false,
-                                          );
-                                      // LogoutService.fetchLogout(context);
-                                        },
+                                    onTap: () {
+                                        LogoutService.fetchLogout(context);
+                                      },
                                       child: Container(
                                         height: 28.0.h,
                                         width: 60.0.w,

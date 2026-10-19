@@ -1,16 +1,47 @@
-import 'package:auto_mall/models/products_model.dart';
+import 'package:auto_mall/models/customers_model.dart';
 import 'package:flutter/cupertino.dart';
 import '../api_services/api_service.dart';
 
 class CustomersProvider extends ChangeNotifier {
   static bool isCustomersLoading = false;
-  List<ProductsModel> customersList = [];
+  List<CustomersModel> customersList = [];
   
-  getCustomers() async {
-    customersList = await ApiService.fetchCustomersApi();
-    off();
+  
+Future<void> getCustomers(String? customerType) async {
+  isCustomersLoading = true;
+  notifyListeners();
+
+  try {
+    final result = await ApiService.fetchCustomersApi(customerType);
+
+    customersList = [
+      CustomersModel(
+        customerSlNo: "0",
+        customerCode: "",
+        customerName: "Cash Customer",
+        customerType: "G",
+        customerPhone: "",
+        customerAddress: "",
+      ),
+      CustomersModel(
+        customerSlNo: "0",
+        customerCode: "",
+        customerName: "New Customer",
+        customerType: "N",
+        customerPhone: "",
+        customerAddress: "",
+      ),
+      ...result,
+    ];
+  } catch (e) {
+    print("Provider Error: $e");
+    customersList = [];
+  } finally {
+    isCustomersLoading = false;
     notifyListeners();
   }
+}
+
   off(){
     Future.delayed(const Duration(seconds: 1),() {
       print('offff');

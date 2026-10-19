@@ -1,30 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import 'login_screen.dart';
-class AuthHelper{
-  static Future<void>userLogout() async {
+
+class AuthHelper {
+  static Future<void> userLogout() async {
     try {
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+      final SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+
       await sharedPreferences.clear();
       await GetStorage().erase();
-      var box = await Hive.openBox('profile');
-      await box.clear();
+
       print("User data cleared, redirecting to login......");
-      /// Login Page-এ Redirect
-      // Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const LogInPage()), (route) => false,
-      // );
-      navigatorKey.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => LogInPage()),(route) => false,
-      );
+
+      final navigator = navigatorKey.currentState;
+
+      if (navigator != null) {
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => LogInPage(),
+          ),
+          (route) => false,
+        );
+      } else {
+        print("ERROR: navigatorKey.currentState is null");
+      }
     } catch (e) {
       print("Error clearing user data: $e");
     }
   }
 }
+
 
 class SnackbarHelper {
   static void showSnackbar(String message) {

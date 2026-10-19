@@ -1,26 +1,11 @@
+import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/common_widget/custom_appbar.dart';
+import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/utils/all_textstyle.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-class Customer {
-  final int sl;
-  final String customerId;
-  final String customerName;
-  final String type; // Retail / Wholesale
-  final String phone;
-  final String address;
-
-  Customer({
-    required this.sl,
-    required this.customerId,
-    required this.customerName,
-    required this.type,
-    required this.phone,
-    required this.address,
-  });
-}
+import 'package:provider/provider.dart';
 
 class CustomerListScreen extends StatefulWidget {
   const CustomerListScreen({super.key});
@@ -30,6 +15,8 @@ class CustomerListScreen extends StatefulWidget {
 }
 
 class _CustomerListScreenState extends State<CustomerListScreen> {
+Color getBlue(Set<WidgetState> states) {return Colors.indigo.shade100;}
+Color getWhite(Set<WidgetState> states) {return Colors.white;}
 
 bool isEmployeeListClicked = false;
   bool _isDropdownOpen = false;
@@ -131,72 +118,46 @@ final LayerLink _pTypeLayerLink = LayerLink();
       _paymentType = selectValue;
       if (selectValue == "All") {
         getPaymentType = "";
-         isEmployeeListClicked = false;
       }
       if (selectValue == "Retail") {
         getPaymentType = "retail";
-         isEmployeeListClicked = false;
       }
       if (selectValue == "Wholesale") {
         getPaymentType = "wholesale";
-         isEmployeeListClicked = false;
       }
     });
     print("_paymentType======$getPaymentType");
   }
 
+@override
+void initState() {
+  super.initState();
 
-  // All sample customers
-  final List<Customer> allCustomers = [
-    Customer(sl: 1, customerId: 'C-1001', customerName: 'Karim Electronics', type: 'Wholesale', phone: '01711-123456', address: 'Motijheel, Dhaka'),
-    Customer(sl: 2, customerId: 'C-1002', customerName: 'Rahim Store', type: 'Retail', phone: '01812-234567', address: 'Mirpur, Dhaka'),
-    Customer(sl: 3, customerId: 'C-1003', customerName: 'Tech Hub BD', type: 'Wholesale', phone: '01913-345678', address: 'Gulshan, Dhaka'),
-    Customer(sl: 4, customerId: 'C-1004', customerName: 'Mobile Point', type: 'Retail', phone: '01614-456789', address: 'Uttara, Dhaka'),
-    Customer(sl: 5, customerId: 'C-1005', customerName: 'Digital World', type: 'Wholesale', phone: '01515-567890', address: 'Banani, Dhaka'),
-    Customer(sl: 6, customerId: 'C-1006', customerName: 'Smart Gadgets', type: 'Retail', phone: '01316-678901', address: 'Dhanmondi, Dhaka'),
-    Customer(sl: 7, customerId: 'C-1007', customerName: 'Computer Bazar', type: 'Wholesale', phone: '01717-789012', address: 'New Market, Dhaka'),
-    Customer(sl: 8, customerId: 'C-1008', customerName: 'Phone Zone', type: 'Retail', phone: '01818-890123', address: 'Mohammadpur, Dhaka'),
-    Customer(sl: 9, customerId: 'C-1009', customerName: 'Gadget Galaxy', type: 'Wholesale', phone: '01919-901234', address: 'Bashundhara, Dhaka'),
-    Customer(sl: 10, customerId: 'C-1010', customerName: 'Local Mobile Shop', type: 'Retail', phone: '01620-012345', address: 'Farmgate, Dhaka'),
-    Customer(sl: 11, customerId: 'C-1011', customerName: 'Wholesale King', type: 'Wholesale', phone: '01521-123450', address: 'Chittagong Road'),
-    Customer(sl: 12, customerId: 'C-1012', customerName: 'Daily Needs Store', type: 'Retail', phone: '01322-234561', address: 'Khilgaon, Dhaka'),
-  ];
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _getPTypeDropdownSize(Duration.zero);
 
-  List<Customer> filteredCustomers = [];
+    if (!mounted) return;
 
-  @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback(_getPTypeDropdownSize);
-    super.initState();
-    filteredCustomers = List.from(allCustomers); // Initially show all
-  }
+    Provider.of<CustomersProvider>(
+      context,
+      listen: false,
+    ).getCustomers("");
+  });
+}
+
 
   void _searchCustomers() {
     setState(() {
-      if (_paymentType == 'All') {
-        filteredCustomers = List.from(allCustomers);
-      } else {
-        filteredCustomers = allCustomers
-            .where((customer) => customer.type == _paymentType)
-            .toList();
-      }
-
-      // Re-assign serial numbers after filtering
-      for (int i = 0; i < filteredCustomers.length; i++) {
-        filteredCustomers[i] = Customer(
-          sl: i + 1,
-          customerId: filteredCustomers[i].customerId,
-          customerName: filteredCustomers[i].customerName,
-          type: filteredCustomers[i].type,
-          phone: filteredCustomers[i].phone,
-          address: filteredCustomers[i].address,
-        );
-      }
+      CustomersProvider().on();
+      Provider.of<CustomersProvider>(context, listen: false).getCustomers("$getPaymentType");
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final customersData = Provider.of<CustomersProvider>(context).customersList
+    .where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
+    .toList();
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F5),
       appBar: CustomAppBar(title: "Customer List"),
@@ -271,67 +232,41 @@ final LayerLink _pTypeLayerLink = LayerLink();
               ),
             ),
            SizedBox(height: 5.h),
-            // ========== Table Section ==========
             Expanded(
-              child: filteredCustomers.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No customer found',
-                        style: TextStyle(fontSize: 12.sp, color: Colors.grey),
-                      ),
-                    )
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SingleChildScrollView(
-                        child: DataTable(
-                          headingRowHeight: 17.h,
-                          dataRowHeight: 17.h,
-                          headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
-                          showCheckboxColumn: true,
-                          border: TableBorder.all(color: Colors.blueGrey, width: 1.w),
-                          columns: [
-                            DataColumn(label: Text('Sl',style: AllTextStyle.tableHeadTextStyle)),
-                            DataColumn(label: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)),
-                            DataColumn(label: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)),
-                            DataColumn(label: Text('Type',style: AllTextStyle.tableHeadTextStyle)),
-                            DataColumn(label: Text('Phone',style: AllTextStyle.tableHeadTextStyle)),
-                            DataColumn(label: Text('Address',style: AllTextStyle.tableHeadTextStyle)),
+             child: CustomersProvider.isCustomersLoading ? const buildBeautifulLoading() : customersData.isEmpty ? Center(child: Text('No customer found',style: AllTextStyle.nofoundTextStyle),)
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      headingRowHeight: 17.h,
+                      dataRowHeight: 17.h,
+                      headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                      showCheckboxColumn: true,
+                      border: TableBorder.all(color: Colors.blueGrey, width: 1.w),
+                      columns: [
+                        DataColumn(label: Text('Sl',style: AllTextStyle.tableHeadTextStyle)),
+                        DataColumn(label: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)),
+                        DataColumn(label: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)),
+                        DataColumn(label: Text('Address',style: AllTextStyle.tableHeadTextStyle)),
+                        DataColumn(label: Text('Contact No.',style: AllTextStyle.tableHeadTextStyle)),
+                      ],
+                      rows:  customersData.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final customer = entry.value;
+                        return DataRow(
+                          color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getBlue) : WidgetStateProperty.resolveWith(getWhite),
+                          cells: [
+                            DataCell(Text("${index+1}",style: AllTextStyle.tableDataTextStyle)),
+                            DataCell(Text(customer.customerCode,style: AllTextStyle.tableDataTextStyle)),
+                            DataCell(Text(customer.customerName, style: AllTextStyle.tableDataTextStyle)),
+                            DataCell(Text(customer.customerAddress,style: AllTextStyle.tableDataTextStyle)),
+                            DataCell(Text(customer.customerMobile,style: AllTextStyle.tableDataTextStyle)),
                           ],
-                          rows: filteredCustomers.map((customer) {
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(customer.sl.toString())),
-                                DataCell(Text(customer.customerId,style: AllTextStyle.tableDataTextStyle)),
-                                DataCell(Text(customer.customerName,style: AllTextStyle.tableDataTextStyle)),
-                                DataCell(
-                                  Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
-                                    decoration: BoxDecoration(
-                                      color: customer.type == 'Wholesale'
-                                          ? Colors.blue.shade50
-                                          : Colors.green.shade50,
-                                      borderRadius: BorderRadius.circular(5.r),
-                                    ),
-                                    child: Text(
-                                      customer.type,
-                                      style: TextStyle(
-                                        color: customer.type == 'Wholesale'
-                                            ? Colors.blue.shade700
-                                            : Colors.green.shade700,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 11.sp,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                DataCell(Text(customer.phone,style: AllTextStyle.tableDataTextStyle)),
-                                DataCell(Text(customer.address,style: AllTextStyle.tableDataTextStyle)),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                        );
+                      }).toList(),
                     ),
+                  ),
+                )
             ),
           ],
         ),

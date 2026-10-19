@@ -28,6 +28,7 @@ class AutoMallApp extends StatelessWidget {
           ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
         ],
         child: MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           title: 'Auto Mall',
           theme: ThemeData(

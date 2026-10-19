@@ -1,10 +1,12 @@
 
 //String baseUrl = "https://soft.dailypasar.com/";//sub
-String baseUrl = "https://dailypasar.com/api/v1/";///main
+String baseUrl = "https://demo.automallerp.com/";///main
 //String baseUrl = "http://192.168.0.249:8080/";///main
 
-String customers = "${baseUrl}customer";
-String products = "${baseUrl}getAllProducts";
+String login = "${baseUrl}signin";
+String logout = "${baseUrl}signout";
+String customers = "${baseUrl}get-customers";
+String products = "${baseUrl}get-products";
 String categories = "${baseUrl}category";
 String visits = "${baseUrl}visits";
 String visitRecords = "${baseUrl}visits/records";

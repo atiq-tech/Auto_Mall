@@ -1,13 +1,17 @@
 library;
 import 'dart:convert';
 import 'dart:io';
+import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/common_widget/custom_appbar.dart';
+import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/all_textstyle.dart';
 import '../utils/utils.dart';
@@ -21,7 +25,7 @@ class CustomerEntryScreen extends StatefulWidget {
 
 class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
   Color getColor(Set<WidgetState> states) {
-    return Colors.deepPurple.shade100;
+    return Colors.blue.shade200;
   }
 
   Color getColors(Set<WidgetState> states) {
@@ -93,13 +97,16 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
     // TODO: implement initState
     super.initState();
     _initializeData();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+     if(!mounted) return;
+       CustomersProvider().on();
+       Provider.of<CustomersProvider>(context,listen: false).getCustomers("");
     // Provider.of<EmployeeProvider>(context,listen: false).getEmployee();
     // Provider.of<AreaProvider>(context,listen: false).getArea();
     // Provider.of<ZoneProvider>(context,listen: false).getZone();
     // Provider.of<CustomerListProvider>(context, listen: false).customerList = [];
-    // CustomerListProvider.isCustomerTypeChange = true;
-    // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList("","","");
     // Provider.of<RouteProvider>(context, listen: false).getRoute();
+     });
     userName = _employeeCustomerController.text;
     print("eeeeeeeeeeeeeeee======  ${_employeeCustomerController.text}");
   }
@@ -149,8 +156,9 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
     // final allZoneData = Provider.of<ZoneProvider>(context).zoneList;
     // final allRouteData = Provider.of<RouteProvider>(context).allRouteList;
     // final allEmployeeData = Provider.of<EmployeeProvider>(context).allEmployeeList;
-    // //get Customer
-    // final allCustomerList = Provider.of<CustomerListProvider>(context).customerList.where((element) => element.customerSlNo!="").toList();
+    final customersData = Provider.of<CustomersProvider>(context).customersList
+    .where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
+    .toList();
     return Scaffold(
       appBar: CustomAppBar(title: "Customer Entry"),
       body: SingleChildScrollView(
@@ -649,68 +657,71 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
               ),
             ),
             SizedBox(height: 4.h),
-            // CustomerListProvider.isCustomerTypeChange
-            //     ? const Center(child: CircularProgressIndicator(),)
-            //     : Container(
-            //   height: MediaQuery.of(context).size.height / 1.43,
-            //   width: double.infinity,
-            //   padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-            //   child: SizedBox(
-            //     width: double.infinity,
-            //     height: double.infinity,
-            //     child: SingleChildScrollView(
-            //       controller: _listViewScrollController,
-            //       physics: _physics,
-            //       scrollDirection: Axis.vertical,
-            //       child: SingleChildScrollView(
-            //         scrollDirection: Axis.horizontal,
-            //         child: DataTable(
-            //           headingRowHeight: 20.0,
-            //           dataRowHeight: 20.0,
-            //           headingRowColor: WidgetStateColor.resolveWith((states) => Colors.deepPurple),
-            //           showCheckboxColumn: true,
-            //           border: TableBorder.all(color: Colors.black54, width: 1),
-            //           columns: const [
-            //             DataColumn(label: Expanded(child: Center(child: Text('Added Date',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Employee Name',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Owner Name',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Area',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Trade Licence',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Location',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Contact Number',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Customer Type',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Credit Limit',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Latitude',style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Longitude',style: AllTextStyle.tableHeadTextStyle)))),
-            //           ],
-            //           rows: List.generate(
-            //             allCustomerList.length > 100 ? 100 : allCustomerList.length,
-            //                 (int index) => DataRow(
-            //                   color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor) : WidgetStateProperty.resolveWith(getColors),
-            //               cells: <DataCell>[
-            //                 DataCell(Center(child: Text('${allCustomerList[index].addTime}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].customerCode}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].customerName}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].employeeName}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].ownerName}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].districtName}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].tradeLicence}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].location}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].customerMobile}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].customerType}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].customerCreditLimit}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].latitude}'))),
-            //                 DataCell(Center(child: Text('${allCustomerList[index].longitude}'))),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
+            CustomersProvider.isCustomersLoading ? const buildBeautifulLoading() 
+              : Container(
+              height: MediaQuery.of(context).size.height / 1.43,
+              width: double.infinity,
+              padding: EdgeInsets.only(left: 5.w, right: 5.w),
+              child: SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  controller: _listViewScrollController,
+                  physics: _physics,
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      headingRowHeight: 16.h,
+                      dataRowHeight: 16.h,
+                      headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                      showCheckboxColumn: true,
+                      border: TableBorder.all(color: Colors.cyan.shade200, width: 1.w),
+                      columns: [
+                        DataColumn(label: Expanded(child: Center(child: Text('Added Date',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Owner Name',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Area',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Contact Number',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Customer Type',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Credit Limit',style: AllTextStyle.tableHeadTextStyle)))),
+                      ],
+                      rows: List.generate(
+                        customersData.length > 100 ? 100 : customersData.length,
+                            (int index) => DataRow(
+                              color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor) : WidgetStateProperty.resolveWith(getColors),
+                          cells: <DataCell>[
+                            DataCell(
+                              Center(
+                                child: Text(
+                                  customersData[index].addTime == null ||
+                                          customersData[index].addTime.toString().isEmpty
+                                      ? ""
+                                      : DateFormat('dd-MM-yyyy').format(
+                                          DateTime.parse(
+                                            customersData[index].addTime.toString(),
+                                          ),
+                                        ),
+                                  style: AllTextStyle.tableDataTextStyle,
+                                ),
+                              ),
+                            ),
+                            DataCell(Center(child: Text('${customersData[index].customerCode??""}',style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text('${customersData[index].customerName??""}',style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text('${customersData[index].ownerName??""}',style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text('${customersData[index].districtName??""}',style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text('${customersData[index].customerMobile??""}',style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text('${customersData[index].customerType??""}',style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text('${customersData[index].customerCreditLimit??""}',style: AllTextStyle.tableDataTextStyle))),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             SizedBox(height: 15.h),
           ],
         ),
