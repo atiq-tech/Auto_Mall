@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:auto_mall/models/areas_model.dart';
+import 'package:auto_mall/models/customer_due_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/utils/base_url.dart';
@@ -24,35 +26,12 @@ class ApiService{
     }
     return null;
   }
-  //==================Product List =======================
-  // static fetchCustomersApi(String? customerType) async {
-  //   SharedPreferences? sharedPreferences;
-  //   sharedPreferences = await SharedPreferences.getInstance();
-  //   try {
-  //     Response response = await Dio().post(customers,
-  //        data: {
-  //          "customerType": "$customerType",
-  //        },
-  //         options: Options(headers: {
-  //           "Content-Type": "application/json",
-  //           'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-  //           "Authorization": "${sharedPreferences.getString("token")}",
-  //         }));
-  //     var item = response.data;
-  //     return List.from(item).map((e) => CustomersModel.fromMap(e)).toList();
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  //   return null;
-  // }
-  
-static Future<List<CustomersModel>> fetchCustomersApi(
-    String? customerType) async {
-  final prefs = await SharedPreferences.getInstance();
 
+  //==================Product List =======================
+ static Future<List<CustomersModel>> fetchCustomersApi(String? customerType) async {
+  final prefs = await SharedPreferences.getInstance();
   try {
-    final response = await Dio().post(
-      customers,
+    final response = await Dio().post(customers,
       data: {
         "customerType": customerType ?? "",
       },
@@ -66,7 +45,6 @@ static Future<List<CustomersModel>> fetchCustomersApi(
     );
 
     dynamic data = response.data;
-
     // Response String hole JSON decode korbe
     if (data is String) {
       data = jsonDecode(data);
@@ -74,22 +52,55 @@ static Future<List<CustomersModel>> fetchCustomersApi(
 
     // Apnar API response directly List
     if (data is List) {
-      return data
-          .map(
-            (item) => CustomersModel.fromMap(
-              Map<String, dynamic>.from(item as Map),
-            ),
-          )
-          .toList();
+      return data.map((item) => CustomersModel.fromMap(Map<String, dynamic>.from(item as Map))).toList();
     }
 
-    throw FormatException(
-      "Expected List, received ${data.runtimeType}",
-    );
+    throw FormatException("Expected List, received ${data.runtimeType}");
   } catch (e) {
     print("Customers API Error: $e");
     return <CustomersModel>[];
   }
 }
 
+ //==================Customer Due List =======================
+  static fetchCustomerDueApi(String? customerId,String? areaId) async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(customerDue,
+        data: {
+          "customerId": customerId ?? "",
+          "areaId": areaId ?? ""
+        },
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => CustomerDueModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
   }
+  
+  //==================areas List =======================
+  static fetchAreasApi() async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(areas,
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => AreasModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+}

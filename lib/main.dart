@@ -1,4 +1,6 @@
 
+import 'package:auto_mall/providers/areas_provider.dart';
+import 'package:auto_mall/providers/customer_due_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
 import 'package:auto_mall/splash_screen.dart';
@@ -24,8 +26,10 @@ class AutoMallApp extends StatelessWidget {
       designSize: const Size(360, 690),
       builder: (context, child) => MultiProvider(
        providers: [
+          ChangeNotifierProvider<AreasProvider>(create: (_) => AreasProvider()),
           ChangeNotifierProvider<ProductsProvider>(create: (_) => ProductsProvider()),
           ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
+          ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
         ],
         child: MaterialApp(
           navigatorKey: navigatorKey,

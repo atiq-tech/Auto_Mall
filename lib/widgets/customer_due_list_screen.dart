@@ -1,8 +1,14 @@
+import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/common_widget/custom_appbar.dart';
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
+import 'package:auto_mall/models/areas_model.dart';
+import 'package:auto_mall/models/customer_due_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
+import 'package:auto_mall/providers/areas_provider.dart';
+import 'package:auto_mall/providers/customer_due_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
+import 'package:auto_mall/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -161,8 +167,8 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
     _getDropdownSize(Duration.zero);
     if (!mounted) return;
     Provider.of<CustomersProvider>(context,listen: false).getCustomers("");
-    // Provider.of<AreasProvider>(context, listen: false).getAreas();
-    // Provider.of<CustomerDueProvider>(context, listen: false).customerDuelist = [];
+    Provider.of<AreasProvider>(context, listen: false).getAreas();
+    Provider.of<CustomerDueProvider>(context, listen: false).customerDueList = [];
     // Provider.of<EmployeeProvider>(context, listen: false).getEmployee();
   });
     super.initState();
@@ -188,22 +194,13 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
     .where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
     .toList();
 
-    // final allAreasData =Provider.of<AreasProvider>(context).areasList;
-    // final providerCDueData = Provider.of<CustomerDueProvider>(context).customerDuelist;
-    // List<CustomerDueModel> allCustomerDueData = [];
-    // if (customerId == "") {
-    //   allCustomerDueData = providerCDueData.where((item) {
-    //     final due =
-    //         double.tryParse(item.dueAmount ?? "0") ?? 0.0;
-
-    //     return due != 0;
-    //   }).toList();
-    // } else {
-    //   allCustomerDueData = providerCDueData;
-    // }
+    final areasData = Provider.of<AreasProvider>(context).areasList;
    
+    final allCustomerDueData = customerController.text.isEmpty || areaController.text.isEmpty
+    ? Provider.of<CustomerDueProvider>(context).customerDueList.where((customer) => customer.dueAmount != "0").toList()
+    : Provider.of<CustomerDueProvider>(context).customerDueList;
 
-    // final totalDue = allCustomerDueData.fold<double>(0.0, (sum, item) => sum + (double.tryParse(item.dueAmount ?? "0") ?? 0.0));
+    final totalDue = allCustomerDueData.fold<double>(0.0, (sum, item) => sum + (double.tryParse(item.dueAmount ?? "0") ?? 0.0));
     // final allEmployeeData = Provider.of<EmployeeProvider>(context).allEmployeeList;
     return Scaffold(
       appBar: CustomAppBar(title: "Customer Due List"),
@@ -370,9 +367,9 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                       Text(":   ",style:AllTextStyle.textFieldHeadStyle),
                       Expanded(
                       flex: 3,
-                        child: CommonTypeAheadField<CustomersModel>(
+                        child: CommonTypeAheadField<AreasModel>(
                         controller: areaController,
-                        suggestionList: customersData,
+                        suggestionList: areasData,
                         hintText: 'Select Area',
                         selectedValueId: areaId,
                         onValueIdChanged: (id) {
@@ -380,8 +377,8 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                             areaId = id;
                           });
                         },
-                        displayText: (a) => a.displayName??"",
-                        valueId: (a) => a.customerSlNo.toString(),
+                        displayText: (a) => a.districtName??"",
+                        valueId: (a) => a.districtSlNo.toString(),
                       )
                       )
                     ],
@@ -416,25 +413,25 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                       padding: EdgeInsets.all(1.0.r),
                       child: InkWell(
                         onTap: () async {
-                          // if (isAll) {
-                          //   CustomerDueProvider().on();
-                          //   Provider.of<CustomerDueProvider>(context, listen: false).getCustomerDue("", "", "");
-                          //   return;
-                          // }
-                          // if (isCustomers && (customerId == null || customerId!.isEmpty)) {
-                          //   Utils.showTopSnackBar(context, "Please Select Customer");
-                          //   return;
-                          // }
-                          // if (isAreas && (areaId == null || areaId!.isEmpty)) {
-                          //   Utils.showTopSnackBar(context, "Please Select Area");
-                          //   return;
-                          // }
+                          if (isAll) {
+                            CustomerDueProvider().on();
+                            Provider.of<CustomerDueProvider>(context, listen: false).getCustomerDue("", "");
+                            return;
+                          }
+                          if (isCustomers && (customerId == null || customerId!.isEmpty)) {
+                            Utils.showTopSnackBar(context, "Please Select Customer");
+                            return;
+                          }
+                          if (isAreas && (areaId == null || areaId!.isEmpty)) {
+                            Utils.showTopSnackBar(context, "Please Select Area");
+                            return;
+                          }
                           // if (isEmployees && (employeeId == null || employeeId!.isEmpty) && (userType=="m"||userType=="a")) {
                           //   Utils.showTopSnackBar(context, "Please Select Employee");
                           //   return;
                           // }
-                          // CustomerDueProvider().on();
-                          // Provider.of<CustomerDueProvider>(context, listen: false).getCustomerDue(customerId ?? "", areaId ?? "",employeeId ?? "");
+                          CustomerDueProvider().on();
+                          Provider.of<CustomerDueProvider>(context, listen: false).getCustomerDue(customerId ?? "", areaId ?? "");
                         },
 
                         child: Container(
@@ -460,85 +457,85 @@ class _CustomerDueListScreenState extends State<CustomerDueListScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 15.h),
-          //   CustomerDueProvider.isCustomerDueLoading ?
-          //   const Center(child: CircularProgressIndicator(),)
-          //  :allCustomerDueData.isNotEmpty? Expanded(child: Container(
-          //  padding: EdgeInsets.only(bottom: 10.h),
-          //    child: SingleChildScrollView(
-          //      scrollDirection: Axis.vertical,
-          //      child: SingleChildScrollView(
-          //        scrollDirection: Axis.horizontal,
-          //        child: Column(
-          //          crossAxisAlignment: CrossAxisAlignment.start,
-          //          children: [
-          //            DataTable(
-          //              headingRowHeight: 20.h,
-          //              // ignore: deprecated_member_use
-          //              dataRowHeight: 20.h,
-          //              headingRowColor: isAreas == true ? WidgetStateColor.resolveWith((states) => AppColors.isAreas):
-          //              isCustomers == true ? WidgetStateColor.resolveWith((states) => AppColors.isCustomers):
-          //              WidgetStateColor.resolveWith((states) => AppColors.appColor),
-          //              showCheckboxColumn: true,
-          //              border: TableBorder.all(color: Colors.black54, width: 1.w),
-          //              columns: const [
-          //                DataColumn(label: Expanded(child: Center(child: Text('Sl',style:AllTextStyle.tableHeadTextStyle)))),
-          //                DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style:AllTextStyle.tableHeadTextStyle)))),
-          //                DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style:AllTextStyle.tableHeadTextStyle)))),
-          //                DataColumn(label: Expanded(child: Center(child: Text('Owner Name',style:AllTextStyle.tableHeadTextStyle)))),
-          //                DataColumn(label: Expanded(child: Center(child: Text('Address',style:AllTextStyle.tableHeadTextStyle)))),
-          //                DataColumn(label: Expanded(child: Center(child: Text('Customer Mobile',style:AllTextStyle.tableHeadTextStyle)))),
-          //                DataColumn(label: Expanded(child: Center(child: Text('Due Amount',style:AllTextStyle.tableHeadTextStyle)))),
-          //               ],
+            SizedBox(height: 10.h),
+            CustomerDueProvider.isCustomerDueLoading ?
+            const Center(child: buildBeautifulLoading())
+           :allCustomerDueData.isNotEmpty? Expanded(child: Container(
+           padding: EdgeInsets.only(bottom: 6.h),
+             child: SingleChildScrollView(
+               scrollDirection: Axis.vertical,
+               child: SingleChildScrollView(
+                 scrollDirection: Axis.horizontal,
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     DataTable(
+                       headingRowHeight: 16.h,
+                       // ignore: deprecated_member_use
+                       dataRowHeight: 16.h,
+                       headingRowColor: isAreas == true ? WidgetStateColor.resolveWith((states) => AppColors.isAreas):
+                       isCustomers == true ? WidgetStateColor.resolveWith((states) => AppColors.isCustomers):
+                       WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                       showCheckboxColumn: true,
+                       border: TableBorder.all(color: Colors.cyan.shade100, width: 1.w),
+                       columns: [
+                         DataColumn(label: Expanded(child: Center(child: Text('Sl',style:AllTextStyle.tableHeadTextStyle)))),
+                         DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style:AllTextStyle.tableHeadTextStyle)))),
+                         DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style:AllTextStyle.tableHeadTextStyle)))),
+                         DataColumn(label: Expanded(child: Center(child: Text('Owner Name',style:AllTextStyle.tableHeadTextStyle)))),
+                         DataColumn(label: Expanded(child: Center(child: Text('Address',style:AllTextStyle.tableHeadTextStyle)))),
+                         DataColumn(label: Expanded(child: Center(child: Text('Customer Mobile',style:AllTextStyle.tableHeadTextStyle)))),
+                         DataColumn(label: Expanded(child: Center(child: Text('Due Amount',style:AllTextStyle.tableHeadTextStyle)))),
+                        ],
                       
-          //              rows: [
-          //               ...List.generate(
-          //                 allCustomerDueData.length,
-          //                 (int index) => DataRow(
-          //                    color: 
-          //                   isAreas == true ? index % 2 == 0
-          //                           ? WidgetStateProperty.resolveWith(AppColors.getColors)
-          //                           : WidgetStateProperty.resolveWith(AppColors.getArea)
-          //                       : 
-          //                       isCustomers == true ? index % 2 == 0
-          //                               ? WidgetStateProperty.resolveWith(AppColors.getColors)
-          //                               : WidgetStateProperty.resolveWith(AppColors.getCustomer)
-          //                           : index % 2 == 0
-          //                                   ? WidgetStateProperty.resolveWith(AppColors.getColors)
-          //                                   : WidgetStateProperty.resolveWith(AppColors.getAll),
-          //                   cells: <DataCell>[
-          //                     DataCell(Center(child: Text("${index + 1}"))),
-          //                     DataCell(Center(child: Text(allCustomerDueData[index].customerCode ?? ""))),
-          //                     DataCell(Center(child: Text(allCustomerDueData[index].customerName ?? ""))),
-          //                     DataCell(Center(child: Text(allCustomerDueData[index].ownerName ?? ""))),
-          //                     DataCell(Center(child: Text(allCustomerDueData[index].customerAddress ?? ""))),
-          //                     DataCell(Center(child: Text(allCustomerDueData[index].customerMobile ?? ""))),
-          //                     DataCell(Center(child: Text(allCustomerDueData[index].dueAmount ?? ""))),
-          //                   ],
-          //                 ),
-          //               ),
-          //               DataRow(
-          //                 cells: [
-          //                   DataCell(SizedBox()),
-          //                   DataCell(SizedBox()),
-          //                   DataCell(SizedBox()),
-          //                   DataCell(SizedBox()),
-          //                   DataCell(SizedBox()),
-          //                   DataCell(Center(child: Text("Total Due", style: TextStyle(fontWeight: FontWeight.bold)))),
-          //                   DataCell(Center(child: Text(totalDue.toStringAsFixed(2),style: TextStyle(fontWeight: FontWeight.bold),
-          //                   ))),
-          //                 ],
-          //               ),
-          //             ],
+                       rows: [
+                        ...List.generate(
+                          allCustomerDueData.length,
+                          (int index) => DataRow(
+                             color: 
+                            isAreas == true ? index % 2 == 0
+                                    ? WidgetStateProperty.resolveWith(AppColors.getColors)
+                                    : WidgetStateProperty.resolveWith(AppColors.getArea)
+                                : 
+                                isCustomers == true ? index % 2 == 0
+                                        ? WidgetStateProperty.resolveWith(AppColors.getColors)
+                                        : WidgetStateProperty.resolveWith(AppColors.getCustomer)
+                                    : index % 2 == 0
+                                            ? WidgetStateProperty.resolveWith(AppColors.getColors)
+                                            : WidgetStateProperty.resolveWith(AppColors.getAll),
+                            cells: <DataCell>[
+                              DataCell(Center(child: Text("${index + 1}",style:AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(allCustomerDueData[index].customerCode ?? "",style:AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(allCustomerDueData[index].customerName ?? "",style:AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(allCustomerDueData[index].ownerName ?? "",style:AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(allCustomerDueData[index].customerAddress ?? "",style:AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(allCustomerDueData[index].customerMobile ?? "",style:AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(allCustomerDueData[index].dueAmount ?? "",style:AllTextStyle.tableDataTextStyle))),
+                            ],
+                          ),
+                        ),
+                        DataRow(
+                          cells: [
+                            DataCell(SizedBox()),
+                            DataCell(SizedBox()),
+                            DataCell(SizedBox()),
+                            DataCell(SizedBox()),
+                            DataCell(SizedBox()),
+                            DataCell(Center(child: Text("Total Due", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 11.sp)))),
+                            DataCell(Center(child: Text(totalDue.toStringAsFixed(2),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 11.sp),
+                            ))),
+                          ],
+                        ),
+                      ],
 
-          //            ),
-          //            SizedBox(height: 100.h)
-          //          ],
-          //        ),
-          //      ),
-          //    ),
-          //  ),
-          // ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style:AllTextStyle.nofoundTextStyle))), 
+                     ),
+                     SizedBox(height: 100.h)
+                   ],
+                 ),
+               ),
+             ),
+           ),
+          ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style:AllTextStyle.nofoundTextStyle))), 
           
           ],
         ),
