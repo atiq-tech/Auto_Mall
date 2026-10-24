@@ -1,8 +1,16 @@
 
 import 'package:auto_mall/providers/areas_provider.dart';
+import 'package:auto_mall/providers/categories_provider.dart';
 import 'package:auto_mall/providers/customer_due_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
+import 'package:auto_mall/providers/employees_provider.dart';
+import 'package:auto_mall/providers/pending_order_provider.dart';
+import 'package:auto_mall/providers/pending_order_record_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
+import 'package:auto_mall/providers/sale_details_provider.dart';
+import 'package:auto_mall/providers/sale_records_provider.dart';
+import 'package:auto_mall/providers/sales_provider.dart';
+import 'package:auto_mall/providers/users_provider.dart';
 import 'package:auto_mall/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -26,10 +34,19 @@ class AutoMallApp extends StatelessWidget {
       designSize: const Size(360, 690),
       builder: (context, child) => MultiProvider(
        providers: [
+          ChangeNotifierProvider<UsersProvider>(create: (_) => UsersProvider()),
           ChangeNotifierProvider<AreasProvider>(create: (_) => AreasProvider()),
           ChangeNotifierProvider<ProductsProvider>(create: (_) => ProductsProvider()),
-          ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
+          ChangeNotifierProvider<EmployeesProvider>(create: (_) => EmployeesProvider()),
+          ChangeNotifierProvider<CategoriesProvider>(create: (_) => CategoriesProvider()),
           ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
+          ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
+          ChangeNotifierProvider<PendingOrderRecordProvider>(create: (_) => PendingOrderRecordProvider()),
+          ChangeNotifierProvider<PendingOrderProvider>(create: (_) => PendingOrderProvider()),
+          ChangeNotifierProvider<SaleDetailsProvider>(create: (_) => SaleDetailsProvider()),
+          ChangeNotifierProvider<SaleRecordsProvider>(create: (_) => SaleRecordsProvider()),
+          ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
+          ChangeNotifierProvider<SalesProvider>(create: (_) => SalesProvider()),
         ],
         child: MaterialApp(
           navigatorKey: navigatorKey,

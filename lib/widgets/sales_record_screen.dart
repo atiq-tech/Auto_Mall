@@ -1,8 +1,24 @@
 //import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
+import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
+import 'package:auto_mall/models/areas_model.dart';
+import 'package:auto_mall/models/categories_model.dart';
+import 'package:auto_mall/models/customers_model.dart';
+import 'package:auto_mall/models/employees_model.dart';
+import 'package:auto_mall/models/products_model.dart';
+import 'package:auto_mall/models/users_model.dart';
+import 'package:auto_mall/providers/areas_provider.dart';
+import 'package:auto_mall/providers/categories_provider.dart';
+import 'package:auto_mall/providers/customers_provider.dart';
+import 'package:auto_mall/providers/employees_provider.dart';
+import 'package:auto_mall/providers/products_provider.dart';
+import 'package:auto_mall/providers/sale_details_provider.dart';
+import 'package:auto_mall/providers/sale_records_provider.dart';
+import 'package:auto_mall/providers/sales_provider.dart';
+import 'package:auto_mall/providers/users_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -354,41 +370,46 @@ void _onSelectedRecordType(String selectedValue) {
     backEndFirstDate = Utils.formatBackEndDate(DateTime.now());
     secondPickedDate = Utils.formatFrontEndDate(DateTime.now());
     backEndSecondtDate = Utils.formatBackEndDate(DateTime.now());
-    // Provider.of<EmployeeProvider>(context,listen: false).getEmployee();
-    // CustomerListProvider.isCustomerTypeChange = true;
-    // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList("","","");
-    // Provider.of<AllCategoriesProvider>(context, listen: false).getCategories();
-    // Provider.of<ProductListProvider>(context,listen: false).getProduct("","");
-    // Provider.of<AllUserProvider>(context,listen: false).getUser(context);
+    Provider.of<EmployeesProvider>(context,listen: false).getEmployees();
+    Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
+    Provider.of<CategoriesProvider>(context, listen: false).getCategories();
+    Provider.of<ProductsProvider>(context,listen: false).getProducts();
+    Provider.of<AreasProvider>(context, listen: false).getAreas();
+    Provider.of<UsersProvider>(context,listen: false).getUsers();
+    Provider.of<SalesProvider>(context,listen: false).getSales("", "", "", "", "", "", "a");
+    Provider.of<SaleRecordsProvider>(context,listen: false).getSaleRecords("", "", "", "", "", "", "a");
+    Provider.of<SaleDetailsProvider>(context,listen: false).getSaleDetails("", "", "",  "","a");
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // final allCustomerData = Provider.of<CustomerListProvider>(context).customerList.where((element) => element.customerSlNo!="").toList();
-    // final allEmployeeData = Provider.of<EmployeeProvider>(context).allEmployeeList;
-    // final allCategoryData = Provider.of<AllCategoriesProvider>(context).allCategoriesList;
-    // final allProductData = Provider.of<ProductListProvider>(context).allProductList;
-    // final allUserData = Provider.of<AllUserProvider>(context).allUserlist;
-    // //get Sales
-    // final allGetSalesData = Provider.of<GetSalesProvider>(context).getSaleslist;
-    // print("Get Sales length=====> ${allGetSalesData.length} ");
-    // ///Sub total
-    // subTotal=allGetSalesData.map((e) => e.saleMasterSubTotalAmount).fold(0.0, (p, element) => p!+double.parse(element));
-    // vatTotal=allGetSalesData.map((e) => e.saleMasterTaxAmount).fold(0.0, (p, element) => p!+double.parse(element));
-    // discountTotal=allGetSalesData.map((e) => e.saleMasterTotalDiscountAmount).fold(0.0, (p, element) => p!+double.parse(element));
-    // transferCost=allGetSalesData.map((e) => e.saleMasterFreight).fold(0.0, (p, element) => p!+double.parse(element));
-    // totalAmount=allGetSalesData.map((e) => e.saleMasterTotalSaleAmount).fold(0.0, (p, element) => p!+double.parse(element));
-    // paidTotal=allGetSalesData.map((e) => e.saleMasterPaidAmount).fold(0.0, (p, element) => p!+double.parse(element));
-    // dueTotal=allGetSalesData.map((e) => e.saleMasterDueAmount).fold(0.0, (p, element) => p!+double.parse(element));
-    // //get Sales Record
-    // final allGetSalesRecordData = Provider.of<SalesRecordProvider>(context).getSalesRecordlist;
-    // print("Get Sales record length=====> ${allGetSalesRecordData.length} ");
-    // //get Sale_details
-    // final allGetSaleDetailsData = Provider.of<SaleDetailsProvider>(context).getSaleDetailsList;
-    // print("Get Sale_Details length=====> ${allGetSaleDetailsData.length} ");
-    // ///soldQuantity total
-    // soldQuantity=allGetSaleDetailsData.map((e) => e.saleDetailsTotalQuantity).fold(0.0, (p, element) => p!+double.parse(element));
+    final customersData = Provider.of<CustomersProvider>(context).customersList.where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
+    .toList();
+    final areasData = Provider.of<AreasProvider>(context).areasList;
+    final employeesData = Provider.of<EmployeesProvider>(context).employeesList;
+    final categoriesData = Provider.of<CategoriesProvider>(context).categoriesList;
+    final productsData = Provider.of<ProductsProvider>(context).productsList;
+    final usersData = Provider.of<UsersProvider>(context).usersList;
+    //get Sales
+    final salesData = Provider.of<SalesProvider>(context).salesList;
+    print("Sales length=====> ${salesData.length} ");
+    ///Sub total
+    subTotal = salesData.map((e) => e.saleMasterSubTotalAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    vatTotal = salesData.map((e) => e.saleMasterTaxAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    discountTotal = salesData.map((e) => e.saleMasterTotalDiscountAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    transferCost = salesData.map((e) => e.saleMasterFreight).fold(0.0, (p, element) => p!+double.parse(element));
+    totalAmount = salesData.map((e) => e.saleMasterTotalSaleAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    paidTotal = salesData.map((e) => e.saleMasterPaidAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    dueTotal = salesData.map((e) => e.saleMasterDueAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    //get Sales Record
+    final saleRecordsData = Provider.of<SaleRecordsProvider>(context).saleRecordsList;
+    print("Sale records length=====> ${saleRecordsData.length} ");
+    //get Sale_details
+    final saleDetailsData = Provider.of<SaleDetailsProvider>(context).saleDetailsList;
+    print("Sale_Details length=====> ${saleDetailsData.length} ");
+    ///soldQuantity total
+    soldQuantity = saleDetailsData.map((e) => e.saleDetailsTotalQuantity).fold(0.0, (p, element) => p!+double.parse(element));
 
     return Scaffold(
       appBar: CustomAppBar(title:"Sales Record"),
@@ -461,69 +482,20 @@ void _onSelectedRecordType(String selectedValue) {
                         flex: 10,
                         child: Container(
                           height: 25.h,
-                          width: MediaQuery.of(context).size.width / 2,
-                          padding: EdgeInsets.only(left: 5.w),
                           margin: EdgeInsets.only(top: 4.h),
-                          decoration: ContDecoration.contDecoration,
-                          // child: TypeAheadFormField(
-                          //   textFieldConfiguration: TextFieldConfiguration(
-                          //     onChanged: (value){
-                          //       if (value == '') {
-                          //         _selectedCustomer = '';
-                          //       }
-                          //     },
-                          //     style: AllTextStyle.dropDownlistStyle,
-                          //     controller: customerController,
-                          //     decoration: InputDecoration(
-                          //       border: InputBorder.none,
-                          //       contentPadding: EdgeInsets.only(bottom: 10.h),
-                          //       hintText: 'Select Customer',
-                          //       hintStyle: AllTextStyle.dropDownlistStyle,
-                          //       suffixIcon: _selectedCustomer == "null"
-                          //           || _selectedCustomer == ""
-                          //           || customerController.text == ""
-                          //           || _selectedCustomer == null ? null: GestureDetector(
-                          //         onTap: () {
-                          //           setState(() {
-                          //             customerController.text = '';
-                          //           });
-                          //         },
-                          //         child: Padding(
-                          //           padding: EdgeInsets.only(left: 20.w),
-                          //           child: Icon(Icons.close,size: 16.sp),
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ),
-                          //   suggestionsCallback: (pattern) {
-                          //     return allCustomerData.where((element) {
-                          //       String? nameToCheck = (element.displayName == "null" || element.displayName == null || element.displayName!.isEmpty)
-                          //           ? element.customerName : element.displayName;
-                          //       return nameToCheck!.toLowerCase().contains(pattern.toString().toLowerCase());
-                          //     }).toList();
-                          //   },
-                          //   itemBuilder: (context, suggestion) {
-                          //     return SizedBox(
-                          //       child: Padding(
-                          //         padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
-                          //         child: Text(
-                          //           "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}",
-                          //           style: AllTextStyle.dropDownlistStyle,
-                          //           maxLines: 1,overflow: TextOverflow.ellipsis,),
-                          //       ),
-                          //     );
-                          //   },
-                          //   transitionBuilder: (context, suggestionsBox, controller) {
-                          //     return suggestionsBox;
-                          //   },
-                          //   onSuggestionSelected: (CustomerListModel suggestion) {
-                          //     customerController.text = "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}";
-                          //     setState(() {
-                          //       _selectedCustomer = suggestion.customerSlNo.toString();
-                          //     });
-                          //   },
-                          //   onSaved: (value) {},
-                          // ),
+                          child: CommonTypeAheadField<CustomersModel>(
+                            controller: customerController,
+                            suggestionList: customersData,
+                            hintText: 'Select Customer',
+                            selectedValueId: customerId,
+                            onValueIdChanged: (id) {
+                              setState(() {
+                                customerId = id;
+                              });
+                            },
+                            displayText: (c) => c.displayName??"",
+                            valueId: (c) => c.customerSlNo.toString(),
+                          ),
                         ),
                       )
                     ],
@@ -538,69 +510,20 @@ void _onSelectedRecordType(String selectedValue) {
                         flex: 10,
                         child: Container(
                           height: 25.h,
-                          width: MediaQuery.of(context).size.width / 2,
-                          padding: EdgeInsets.only(left: 5.w),
                           margin: EdgeInsets.only(top: 4.h),
-                          decoration: ContDecoration.contDecoration,
-                          // child: TypeAheadFormField(
-                          //   textFieldConfiguration: TextFieldConfiguration(
-                          //     onChanged: (value){
-                          //       if (value == '') {
-                          //         _selectedCustomer = '';
-                          //       }
-                          //     },
-                          //     style: AllTextStyle.dropDownlistStyle,
-                          //     controller: customerController,
-                          //     decoration: InputDecoration(
-                          //       border: InputBorder.none,
-                          //       contentPadding: EdgeInsets.only(bottom: 10.h),
-                          //       hintText: 'Select Customer',
-                          //       hintStyle: AllTextStyle.dropDownlistStyle,
-                          //       suffixIcon: _selectedCustomer == "null"
-                          //           || _selectedCustomer == ""
-                          //           || customerController.text == ""
-                          //           || _selectedCustomer == null ? null: GestureDetector(
-                          //         onTap: () {
-                          //           setState(() {
-                          //             customerController.text = '';
-                          //           });
-                          //         },
-                          //         child: Padding(
-                          //           padding: EdgeInsets.only(left: 20.w),
-                          //           child: Icon(Icons.close,size: 16.sp),
-                          //         ),
-                          //       ),
-                          //     ),
-                          //   ),
-                          //   suggestionsCallback: (pattern) {
-                          //     return allCustomerData.where((element) {
-                          //       String? nameToCheck = (element.displayName == "null" || element.displayName == null || element.displayName!.isEmpty)
-                          //           ? element.customerName : element.displayName;
-                          //       return nameToCheck!.toLowerCase().contains(pattern.toString().toLowerCase());
-                          //     }).toList();
-                          //   },
-                          //   itemBuilder: (context, suggestion) {
-                          //     return SizedBox(
-                          //       child: Padding(
-                          //         padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 10),
-                          //         child: Text(
-                          //           "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}",
-                          //           style: AllTextStyle.dropDownlistStyle,
-                          //           maxLines: 1,overflow: TextOverflow.ellipsis,),
-                          //       ),
-                          //     );
-                          //   },
-                          //   transitionBuilder: (context, suggestionsBox, controller) {
-                          //     return suggestionsBox;
-                          //   },
-                          //   onSuggestionSelected: (CustomerListModel suggestion) {
-                          //     customerController.text = "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}";
-                          //     setState(() {
-                          //       _selectedCustomer = suggestion.customerSlNo.toString();
-                          //     });
-                          //   },
-                          //   onSaved: (value) {},
-                          // ),
+                          child: CommonTypeAheadField<AreasModel>(
+                            controller: areaController,
+                            suggestionList: areasData,
+                            hintText: 'Select Area',
+                            selectedValueId: areaId,
+                            onValueIdChanged: (id) {
+                              setState(() {
+                                areaId = id;
+                              });
+                            },
+                            displayText: (a) => a.districtName??"",
+                            valueId: (a) => a.districtSlNo.toString(),
+                          )
                         ),
                       )
                     ],
@@ -615,74 +538,20 @@ void _onSelectedRecordType(String selectedValue) {
                             flex: 10,
                             child: Container(
                               height: 25.h,
-                              padding: EdgeInsets.only(left: 5.w),
                               margin: EdgeInsets.only(top: 4.h),
-                              decoration: ContDecoration.contDecoration,
-                              // child: TypeAheadFormField(
-                              //   textFieldConfiguration:
-                              //   TextFieldConfiguration(
-                              //     onChanged: (value){
-                              //       if (value == '') {
-                              //         _selectedEmployee = '';
-                              //       }
-                              //     },
-                              //     style:  AllTextStyle.dropDownlistStyle,
-                              //     controller: employeeController,
-                              //     decoration: InputDecoration(
-                              //       border: InputBorder.none,
-                              //       contentPadding: EdgeInsets.only(bottom: 10.h),
-                              //       hintText: 'Select Employee',
-                              //       hintStyle: AllTextStyle.dropDownlistStyle,
-                              //       suffixIcon: _selectedEmployee == "null"
-                              //           || _selectedEmployee == ""
-                              //           || employeeController.text == ""
-                              //           || _selectedEmployee == null
-                              //           ? null
-                              //           : GestureDetector(
-                              //         onTap: () {
-                              //           setState(() {
-                              //             employeeController.text = '';
-                              //             _selectedEmployee = '';
-                              //           });
-                              //         },
-                              //         child: Padding(
-                              //           padding: EdgeInsets.only(left: 20.w),
-                              //           child: Icon(Icons.close, size: 16.r),
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ),
-                              //   suggestionsCallback: (pattern) {
-                              //     return allEmployeeData
-                              //         .where((element) => element.displayName
-                              //         .toLowerCase()
-                              //         .contains(pattern
-                              //         .toString()
-                              //         .toLowerCase()))
-                              //         .take(allEmployeeData.length)
-                              //         .toList();
-                              //    },
-                              //   itemBuilder: (context, suggestion) {
-                              //     return SizedBox(
-                              //       child: Padding(
-                              //         padding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 10.w),
-                              //         child: Text(suggestion.displayName,
-                              //           style: AllTextStyle.dropDownlistStyle,
-                              //           maxLines: 1,overflow: TextOverflow.ellipsis),
-                              //       ),
-                              //     );
-                              //   },
-                              //   transitionBuilder: (context, suggestionsBox, controller) {
-                              //     return suggestionsBox;
-                              //   },
-                              //   onSuggestionSelected: (EmployeeModel suggestion) {
-                              //     employeeController.text = suggestion.displayName;
-                              //     setState(() {
-                              //       _selectedEmployee = suggestion.employeeSlNo.toString();
-                              //     });
-                              //   },
-                              //   onSaved: (value) {},
-                              // ),
+                              child: CommonTypeAheadField<EmployeesModel>(
+                                controller: employeeController,
+                                suggestionList: employeesData,
+                                hintText: 'Select Employee',
+                                selectedValueId: employeeId,
+                                onValueIdChanged: (id) {
+                                  setState(() {
+                                    employeeId = id;
+                                  });
+                                },
+                                displayText: (e) => e.employeeName??"",
+                                valueId: (e) => e.employeeSlNo.toString(),
+                              )
                             ),
                           )
                         ],
@@ -697,241 +566,52 @@ void _onSelectedRecordType(String selectedValue) {
                           flex: 10,
                           child: Container(
                             height: 25.h,
-                            padding: EdgeInsets.only(left: 5.w),
                             margin: EdgeInsets.only(top: 4.h,bottom: 4.h),
-                            decoration: ContDecoration.contDecoration,
-                            // child: TypeAheadFormField(
-                            //   textFieldConfiguration:
-                            //   TextFieldConfiguration(
-                            //     onChanged: (value){
-                            //       if (value == '') {
-                            //         _selectedCategory = '';
-                            //       }
-                            //     },
-                            //     style: AllTextStyle.dropDownlistStyle,
-                            //     controller: categoryController,
-                            //     decoration: InputDecoration(
-                            //       border: InputBorder.none,
-                            //       contentPadding: EdgeInsets.only(bottom: 10.h),
-                            //       hintText: 'Select Category',
-                            //       hintStyle: AllTextStyle.dropDownlistStyle,
-                            //       suffixIcon: _selectedCategory == "null"
-                            //           || _selectedCategory == ""
-                            //           || categoryController.text == ""
-                            //           || _selectedCategory == null ? null: GestureDetector(
-                            //         onTap: () {
-                            //           setState(() {
-                            //             categoryController.text = '';
-                            //           });
-                            //         },
-                            //         child: Padding(
-                            //           padding: EdgeInsets.only(left: 20.w),
-                            //           child: Icon(Icons.close,size: 16.r),
-                            //         ),
-                            //       ),
-                            //     ),
-                            //   ),
-                            //   suggestionsCallback: (pattern) {
-                            //     return allCategoryData
-                            //       .where((element) => element.productCategoryName
-                            //       .toLowerCase()
-                            //       .contains(pattern
-                            //       .toString()
-                            //       .toLowerCase()))
-                            //       .take(allCategoryData.length)
-                            //       .toList();
-                            //     },
-                            //   itemBuilder: (context, suggestion) {
-                            //     return SizedBox(
-                            //       child: Padding(
-                            //         padding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 10.w),
-                            //         child: Text(suggestion.productCategoryName,
-                            //           style: AllTextStyle.dropDownlistStyle,
-                            //           maxLines: 1,overflow: TextOverflow.ellipsis,),
-                            //       ),
-                            //     );
-                            //   },
-                            //   transitionBuilder: (context, suggestionsBox, controller) {
-                            //     return suggestionsBox;
-                            //   },
-                            //   onSuggestionSelected: (AllCategoriesModel suggestion) {
-                            //     categoryController.text = suggestion.productCategoryName;
-                            //     setState(() {
-                            //       _selectedCategory = suggestion.productCategorySlNo.toString();
-                            //     });
-                            //   },
-                            //   onSaved: (value) {},
-                            // ),
+                            child: CommonTypeAheadField<CategoriesModel>(
+                                controller: categoryController,
+                                suggestionList: categoriesData,
+                                hintText: 'Select Category',
+                                selectedValueId: categoryId,
+                                onValueIdChanged: (id) {
+                                  setState(() {
+                                    categoryId = id;
+                                  });
+                                },
+                                displayText: (cate) => cate.productCategoryName??"",
+                                valueId: (cate) => cate.productCategorySlNo.toString(),
+                              )
                           ),
                         )
                       ],
                     ): Container(),
                   isProductWiseClicked == true
-                      ? Column(
-                        children: [
-                          Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                           children: [
-                          Expanded(flex: 4, child: Text("Product", style: AllTextStyle.searchTypeTxtStyle)),
-                          Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
-                          Expanded(
-                            flex: 10,
-                            child: Container(
-                                height: 25.h,
-                                padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                                margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
-                                decoration: ContDecoration.contDecoration,
-                                // child: TypeAheadFormField(
-                                //   textFieldConfiguration:
-                                //   TextFieldConfiguration(
-                                //       onChanged: (value){
-                                //         if (value == '') {
-                                //           _selectedProduct = '';
-                                //         }
-                                //       },
-                                //       style: AllTextStyle.dropDownlistStyle,
-                                //       controller: productController,
-                                //       decoration: InputDecoration(
-                                //         border: InputBorder.none,
-                                //         contentPadding: EdgeInsets.only(bottom: 3.h,top: 5.h),
-                                //         isDense: true,
-                                //         hintText: 'Select Product',
-                                //         hintStyle: AllTextStyle.dropDownlistStyle,
-                                //         suffixIcon: _selectedProduct == "null"
-                                //             || _selectedProduct == ""
-                                //             || productController.text == ""
-                                //             || _selectedProduct == null ? null: GestureDetector(
-                                //           onTap: () {
-                                //             setState(() {
-                                //               productController.text = '';
-                                //             });
-                                //           },
-                                //           child: Padding(
-                                //             padding: EdgeInsets.only(left: 25.w),
-                                //             child: Icon(Icons.close,size: 16.r),
-                                //           ),
-                                //         ),
-                                //       )
-                                //   ),
-                                //   suggestionsCallback: (pattern) {
-                                //     return allProductData
-                                //         .where((element) => element.displayText
-                                //         .toLowerCase()
-                                //         .contains(pattern
-                                //         .toString()
-                                //         .toLowerCase()))
-                                //         .take(allProductData.length)
-                                //         .toList();
-                                //    },
-                                //   itemBuilder: (context, suggestion) {
-                                //     return SizedBox(
-                                //       width: double.infinity,
-                                //       child: Padding(
-                                //         padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
-                                //         child: Text(suggestion.displayText,
-                                //           style: AllTextStyle.dropDownlistStyle,
-                                //           maxLines: 1, overflow: TextOverflow.ellipsis,
-                                //         ),
-                                //       ),
-                                //     );
-                                //   },
-                                //   transitionBuilder: (context, suggestionsBox, controller) {
-                                //     return suggestionsBox;
-                                //   },
-                                //   onSuggestionSelected: (ProductListModel suggestion) {
-                                //     productController.text = suggestion.displayText;
-                                //     setState(() {
-                                //       _selectedProduct = suggestion.productSlNo;
-                                //     });
-                                //   },
-                                //   onSaved: (value) {},
-                                // )
-                               ),
-                              )
-                             ],
+                      ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                       children: [
+                      Expanded(flex: 4, child: Text("Product", style: AllTextStyle.searchTypeTxtStyle)),
+                      Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
+                      Expanded(
+                        flex: 10,
+                        child: Container(
+                            height: 25.h,
+                            margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
+                            child: CommonTypeAheadField<ProductsModel>(
+                              controller: productController,
+                              suggestionList: productsData,
+                              hintText: 'Select Product',
+                              selectedValueId: productId,
+                              onValueIdChanged: (id) {
+                                setState(() {
+                                  productId = id;
+                                });
+                              },
+                              displayText: (p) => p.productName??"",
+                              valueId: (p) => p.productSlNo.toString(),
+                            )
                            ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(flex: 4, child: Text("Employee", style: AllTextStyle.searchTypeTxtStyle)),
-                              Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
-                              Expanded(
-                                flex: 10,
-                                child: Container(
-                                  height: 25.h,
-                                  width: MediaQuery.of(context).size.width / 2,
-                                  padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                                  margin: EdgeInsets.only(bottom: 5.h),
-                                  decoration: ContDecoration.contDecoration,
-                                  // child: TypeAheadFormField(
-                                  //   textFieldConfiguration:
-                                  //   TextFieldConfiguration(
-                                  //     onChanged: (value){
-                                  //       if (value == '') {
-                                  //         _selectedEmployee = '';
-                                  //       }
-                                  //     },
-                                  //     style: AllTextStyle.dropDownlistStyle,
-                                  //     controller: employeeController,
-                                  //     decoration: InputDecoration(
-                                  //       border: InputBorder.none,
-                                  //       contentPadding: EdgeInsets.only(bottom: 10.h),
-                                  //       hintText: 'Select Employee',
-                                  //       hintStyle: AllTextStyle.dropDownlistStyle,
-                                  //       suffixIcon: _selectedEmployee == "null"
-                                  //           || _selectedEmployee == ""
-                                  //           || employeeController.text == ""
-                                  //           || _selectedEmployee == null ? null: GestureDetector(
-                                  //         onTap: () {
-                                  //           setState(() {
-                                  //             employeeController.text = '';
-                                  //             _selectedEmployee = '';
-                                  //           });
-                                  //         },
-                                  //         child: Padding(
-                                  //           padding: EdgeInsets.only(left: 25.w),
-                                  //           child: Icon(Icons.close,size: 16.r),
-                                  //         ),
-                                  //       ),
-                                  //     ),
-                                  //   ),
-                                  //   suggestionsCallback: (pattern) {
-                                  //     return allEmployeeData
-                                  //       .where((element) => element.displayName
-                                  //       .toLowerCase()
-                                  //       .contains(pattern
-                                  //       .toString()
-                                  //       .toLowerCase()))
-                                  //       .take(allEmployeeData.length)
-                                  //       .toList();
-                                  //    },
-                                  //   itemBuilder: (context, suggestion) {
-                                  //     return SizedBox(
-                                  //       child: Padding(
-                                  //         padding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 10.w),
-                                  //         child: Text(suggestion.displayName,
-                                  //           style: AllTextStyle.dropDownlistStyle,
-                                  //           maxLines: 1,overflow: TextOverflow.ellipsis),
-                                  //       ),
-                                  //     );
-                                  //   },
-                                  //   transitionBuilder: (context, suggestionsBox, controller) {
-                                  //     return suggestionsBox;
-                                  //   },
-                                  //   onSuggestionSelected: (EmployeeModel suggestion) {
-                                  //     employeeController.text = suggestion.displayName;
-                                  //     setState(() {
-                                  //       _selectedEmployee = suggestion.employeeSlNo.toString();
-                                  //     });
-                                  //   },
-                                  //   onSaved: (value) {},
-                                  // ),
-                                ),
-                              )
-                            ],
-                          ),
-                        ],
-                      )
+                          )
+                         ],
+                       )
                       : Container(),
                   isUserWiseClicked == true
                       ? Row(
@@ -939,87 +619,34 @@ void _onSelectedRecordType(String selectedValue) {
                         children: [
                           Expanded(flex: 4, child: Text("User", style: AllTextStyle.searchTypeTxtStyle)),
                           Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
-                          userName=="Admin"?Expanded(
+                          userName=="Admin" ? Expanded(
                             flex: 10,
                             child: Container(
                               height: 25.h,
-                              padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                              margin: EdgeInsets.only(bottom: 5.h),
-                              decoration: ContDecoration.contDecoration,
-                              // child: TypeAheadFormField(
-                              //   textFieldConfiguration:
-                              //   TextFieldConfiguration(
-                              //     onChanged: (value){
-                              //       if (value == '') {
-                              //         _selectedUser = '';
-                              //       }
-                              //     },
-                              //     style: AllTextStyle.dropDownlistStyle,
-                              //     controller: userController,
-                              //     decoration: InputDecoration(
-                              //       border: InputBorder.none,
-                              //       contentPadding: EdgeInsets.only(bottom: 10.h),
-                              //       hintText: 'Select User',
-                              //       hintStyle: AllTextStyle.dropDownlistStyle,
-                              //       suffixIcon: _selectedUser == "null"
-                              //           || _selectedUser == ""
-                              //           || userController.text == ""
-                              //           || _selectedUser == null ? null: GestureDetector(
-                              //         onTap: () {
-                              //           setState(() {
-                              //             userController.text = '';
-                              //           });
-                              //         },
-                              //         child: Padding(
-                              //           padding: EdgeInsets.only(left: 25.w),
-                              //           child: Icon(Icons.close,size: 16.r,),
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ),
-                              //   suggestionsCallback: (pattern) {
-                              //     return allUserData
-                              //         .where((element) => element.fullName
-                              //         .toLowerCase()
-                              //         .contains(pattern
-                              //         .toString()
-                              //         .toLowerCase()))
-                              //         .take(allUserData.length)
-                              //         .toList();
-                              //    },
-                              //   itemBuilder: (context, suggestion) {
-                              //     return SizedBox(
-                              //       child: Padding(
-                              //         padding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 10.w),
-                              //         child: Text(
-                              //           suggestion.fullName,
-                              //           style: AllTextStyle.dropDownlistStyle,
-                              //           maxLines: 1,overflow: TextOverflow.ellipsis,),
-                              //       ),
-                              //     );
-                              //   },
-                              //   transitionBuilder: (context, suggestionsBox, controller) {
-                              //     return suggestionsBox;
-                              //   },
-                              //   onSuggestionSelected: (AllUserModel suggestion) {
-                              //     userController.text = suggestion.fullName;
-                              //     userfullName = suggestion.fullName;
-                              //     setState(() {
-                              //       _selectedUser = suggestion.userSlNo.toString();
-                              //     });
-                              //   },
-                              //   onSaved: (value) {},
-                              // ),
+                              margin: EdgeInsets.only(top: 4.h),
+                              child: CommonTypeAheadField<UsersModel>(
+                              controller: userController,
+                              suggestionList: usersData,
+                              hintText: 'Select User',
+                              selectedValueId: userId,
+                              onValueIdChanged: (id) {
+                                setState(() {
+                                  userId = id;
+                                });
+                              },
+                              displayText: (u) => u.userName??"",
+                              valueId: (u) => u.userSlNo.toString(),
+                            )
                             ),
                           ):Expanded(
-                              flex: 10,
-                              child: Container(
-                                height: 25.h,
-                                padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
-                                margin: EdgeInsets.only(top: 4.h),
-                                decoration: ContDecoration.contDecoration,
-                                child: Text(userName,style: AllTextStyle.searchTypeTxtStyle),
-                              ))
+                            flex: 10,
+                            child: Container(
+                              height: 25.h,
+                              padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
+                              margin: EdgeInsets.only(top: 4.h),
+                              decoration: ContDecoration.contDecoration,
+                              child: Text(userName,style: AllTextStyle.searchTypeTxtStyle),
+                            ))
                         ],
                       ): Container(),
                   isCategoryWiseClicked == true || isProductWiseClicked == true ? Container() : Row(
@@ -1136,111 +763,152 @@ void _onSelectedRecordType(String selectedValue) {
                       padding: EdgeInsets.all(1.h),
                       child: InkWell(
                         onTap: () async {
-                          // GetSalesProvider().on();
-                          // SalesRecordProvider().on();
-                          // SaleDetailsProvider().on();
-                          // setState(() {
-                          //   if (isAllTypeClicked && isWithoutDetailsClicked) {
-                          //     data = 'showAllWithoutDetails';
-                          //     Provider.of<GetSalesProvider>(context, listen: false).getGatSales(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       ""
-                          //     );
-                          //   }
-                          //   else if (isAllTypeClicked && isWithDetailsClicked) {
-                          //     data = 'showAllWithDetails';
-                          //     Provider.of<SalesRecordProvider>(context, listen: false).getSalesRecord(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       ""
-                          //     );
-                          //   }
-                          //   else if (isCustomerWiseClicked && isWithoutDetailsClicked) {
-                          //     data = 'showByCustomerWithoutDetails';
-                          //     Provider.of<GetSalesProvider>(context, listen: false).getGatSales(
-                          //       "$_selectedCustomer",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       ""
-                          //     );
-                          //   }
-                          //   else if (isCustomerWiseClicked && isWithDetailsClicked) {
-                          //     data = 'showByCustomerWithDetails';
-                          //     Provider.of<SalesRecordProvider>(context, listen: false).getSalesRecord(
-                          //       "$_selectedCustomer",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       ""
-                          //     );
-                          //   }
-                          //   else if (isEmployeeWiseClicked && isWithoutDetailsClicked) {
-                          //     data = 'showByEmployeeWithoutDetails';
-                          //     Provider.of<GetSalesProvider>(context, listen: false).getGatSales(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "$_selectedEmployee",
-                          //       "",
-                          //     );
-                          //   }
-                          //   else if (isEmployeeWiseClicked && isWithDetailsClicked) {
-                          //     data = 'showByEmployeeWithDetails';
-                          //     Provider.of<SalesRecordProvider>(context, listen: false).getSalesRecord(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "$_selectedEmployee",
-                          //       "",
-                          //     );
-                          //   }
-                          //   else if (isCategoryWiseClicked) {
-                          //     data = 'showByCategoryDetails';
-                          //     Provider.of<SaleDetailsProvider>(context, listen: false).getSaleDetails(
-                          //       "$_selectedCategory",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       "",
-                          //     );
-                          //   }
-                          //   else if (isProductWiseClicked) {
-                          //     data = 'showByProductDetails';
-                          //     Provider.of<SaleDetailsProvider>(context, listen: false).getSaleDetails(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       _selectedEmployee ??"",
-                          //       "$_selectedProduct",
-                          //     );
-                          //   }
-                          //   else if (isUserWiseClicked && isWithoutDetailsClicked) {
-                          //     data = 'showByUserWithoutDetails';
-                          //     Provider.of<GetSalesProvider>(context, listen: false).getGatSales(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       userName=="Admin"?"$_selectedUser":userID,
-                          //     );
-                          //   }
-                          //   else if (isUserWiseClicked && isWithDetailsClicked) {
-                          //     data = 'showByUserWithDetails';
-                          //     Provider.of<SalesRecordProvider>(context, listen: false).getSalesRecord(
-                          //       "",
-                          //       "$backEndFirstDate",
-                          //       "$backEndSecondtDate",
-                          //       "",
-                          //       userName=="Admin"?"$_selectedUser":userID,
-                          //     );
-                          //   }
-                          //  });
+                          SalesProvider().on();
+                          SaleRecordsProvider().on();
+                          SaleDetailsProvider().on();
+                          setState(() {
+                            if (isAllTypeClicked && isWithoutDetailsClicked) {
+                              data = 'showAllWithoutDetails';
+                              Provider.of<SalesProvider>(context, listen: false).getSales(
+                                "",
+                                "",
+                                "",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isAllTypeClicked && isWithDetailsClicked) {
+                              data = 'showAllWithDetails';
+                              Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
+                                "",
+                                "",
+                                "",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isCustomerWiseClicked && isWithoutDetailsClicked) {
+                              data = 'showByCustomerWithoutDetails';
+                              Provider.of<SalesProvider>(context, listen: false).getSales(
+                                "",
+                                "",
+                                customerId??"",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isCustomerWiseClicked && isWithDetailsClicked) {
+                              data = 'showByCustomerWithDetails';
+                              Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
+                                "",
+                                "",
+                                customerId??"",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isAreaWiseClicked && isWithoutDetailsClicked) {
+                              data = 'showByAreaWithoutDetails';
+                              Provider.of<SalesProvider>(context, listen: false).getSales(
+                                "",
+                                areaId??"",
+                                "",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isAreaWiseClicked && isWithDetailsClicked) {
+                              data = 'showByAreaWithDetails';
+                              Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
+                                "",
+                                areaId??"",
+                                "",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isEmployeeWiseClicked && isWithoutDetailsClicked) {
+                              data = 'showByEmployeeWithoutDetails';
+                              Provider.of<SalesProvider>(context, listen: false).getSales(
+                                "",
+                                "",
+                                "",
+                                employeeId??"",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isEmployeeWiseClicked && isWithDetailsClicked) {
+                              data = 'showByEmployeeWithDetails';
+                              Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
+                                "",
+                                "",
+                                "",
+                                employeeId??"",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isCategoryWiseClicked) {
+                              data = 'showByCategoryDetails';
+                              Provider.of<SaleDetailsProvider>(context, listen: false).getSaleDetails(
+                                categoryId??"",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a"
+                              );
+                            }
+                            else if (isProductWiseClicked) {
+                              data = 'showByProductDetails';
+                              Provider.of<SaleDetailsProvider>(context, listen: false).getSaleDetails(
+                                "",
+                                productId??"",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a"
+                              );
+                            }
+
+                            else if (isUserWiseClicked && isWithoutDetailsClicked) {
+                              data = 'showByUserWithoutDetails';
+                              Provider.of<SalesProvider>(context, listen: false).getSales(
+                                userId??"",
+                                "",
+                                "",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                            else if (isUserWiseClicked && isWithDetailsClicked) {
+                              data = 'showByUserWithDetails';
+                              Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
+                                userId??"",
+                                "",
+                                "",
+                                "",
+                                "$backEndFirstDate",
+                                "$backEndSecondtDate",
+                                "a",
+                              );
+                            }
+                           });
                         },
                         child: Container(
                           height: 25.h,
@@ -1266,331 +934,330 @@ void _onSelectedRecordType(String selectedValue) {
               ),
             ),
             SizedBox(height: 10.h),
-            // data == 'showAllWithoutDetails' || data == 'showByCustomerWithoutDetails' || data == 'showByEmployeeWithoutDetails' || data == 'showByUserWithoutDetails'
-            // ? Expanded(
-            //   child: GetSalesProvider.isSearchTypeChange
-            //       ? const buildBeautifulLoading()
-            //       : allGetSalesData.isNotEmpty?
-            //   SizedBox(
-            //     width: double.infinity,
-            //     height: double.infinity,
-            //     child: SingleChildScrollView(
-            //       scrollDirection: Axis.vertical,
-            //       child: SingleChildScrollView(
-            //         scrollDirection: Axis.horizontal,
-            //         child: Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            //             DataTable(
-            //               columnSpacing: 25.w,
-            //               headingRowHeight: 18.h,
-            //               dataRowHeight: 16.h,
-            //               showCheckboxColumn: true,
-            //               headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
-            //               border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
-            //               columns: [
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Invoice No', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Date', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Customer Name', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Employee Name', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Saved By', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Sub Total', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Vat', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Transport Cost', style: AllTextStyle.tableHeadTextStyle))),),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Paid', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Due', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
-            //               ],
-            //               rows: [
-            //                 ...List.generate(
-            //                   allGetSalesData.length,
-            //                       (int index) => DataRow(
-            //                         color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getBlue) : WidgetStateProperty.resolveWith(getWhite),
-            //                         cells: <DataCell>[
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterInvoiceNo, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterSaleDate, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].customerName== "null" ? '' : allGetSalesData[index].customerName, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].employeeName== "null" ? '' : allGetSalesData[index].employeeName, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].addedBy, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterSubTotalAmount, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterTaxAmount, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterTotalDiscountAmount, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterFreight, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterTotalSaleAmount, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterPaidAmount, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(Center(child: Text(allGetSalesData[index].saleMasterDueAmount, style: AllTextStyle.tableDataTextStyle))),
-            //                          DataCell(
-            //                           Center(
-            //                            child:GestureDetector(
-            //                             child: Icon(Icons.collections_bookmark,size: 16.r),
-            //                              onTap: () {
-            //                               Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
-            //                              salesId: allGetSalesData[index].saleMasterSlNo)));
-            //                           },
-            //                           ),
-            //                          ),
-            //                         ),
-            //                        ],
-            //                       ),
-            //                 ),
-            //                 DataRow(
-            //                   cells: <DataCell>[
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(subTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(vatTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(discountTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(transferCost!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(totalAmount!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(paidTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Align(alignment: Alignment.centerRight,
-            //                       child: Text(dueTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle),
-            //                     )),
-            //                     const DataCell(SizedBox()),
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //            SizedBox(height: 20.h),
-            //           ],
-            //         ),
-            //       ),
-            //     ),
-            //   ) : Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
-            // )
-            //     : data == 'showAllWithDetails' || data == 'showByCustomerWithDetails' || data == 'showByEmployeeWithDetails' || data == 'showByUserWithDetails'
-            //     ? Expanded(
-            //   child: SalesRecordProvider.isSearchTypeChange
-            //       ? const buildBeautifulLoading()
-            //       : allGetSalesRecordData.isNotEmpty?
-            //   SizedBox(
-            //     width: double.infinity,
-            //     height: double.infinity,
-            //     child: SingleChildScrollView(
-            //       scrollDirection: Axis.vertical,
-            //       child: SingleChildScrollView(
-            //         scrollDirection: Axis.horizontal,
-            //         child: DataTable(
-            //           columnSpacing: 10.w,
-            //           headingRowHeight: 18.h,
-            //           dataRowMinHeight: 16.h,
-            //           dataRowMaxHeight: double.infinity,
-            //           showCheckboxColumn: true,
-            //           headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
-            //           border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
-            //           columns: [
-            //             DataColumn(label: Expanded(child: Center(child: Text('Invoice No', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Date', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Customer Name', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Employee Name', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Saved By', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Product Name', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Price', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Quantity', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
-            //             DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
-            //           ],
-            //           rows: List.generate(
-            //             allGetSalesRecordData.length,
-            //                 (int index) => DataRow(
-            //                   color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getPurple) : WidgetStateProperty.resolveWith(getWhite),
-            //                   cells: <DataCell>[
-            //                 DataCell(Center(child: Text(allGetSalesRecordData[index].saleMasterInvoiceNo, style: AllTextStyle.tableDataTextStyle))),
-            //                 DataCell(Center(child: Text(allGetSalesRecordData[index].saleMasterSaleDate, style: AllTextStyle.tableDataTextStyle))),
-            //                 DataCell(Center(child: Text(allGetSalesRecordData[index].customerName=="null"?"":allGetSalesRecordData[index].customerName, style: AllTextStyle.tableDataTextStyle))),
-            //                 DataCell(Center(child: Text(allGetSalesRecordData[index].employeeName=="null"?"":allGetSalesRecordData[index].employeeName, style: AllTextStyle.tableDataTextStyle))),
-            //                 DataCell(Center(child: Text(allGetSalesRecordData[index].addedBy, style: AllTextStyle.tableDataTextStyle))),
-            //                 DataCell(
-            //                   Center(child: Column(
-            //                         children: List.generate( allGetSalesRecordData[index].saleDetails.length, (j) {
-            //                           return Center(child: Text(allGetSalesRecordData[index].saleDetails[j].productName, style: AllTextStyle.tableDataTextStyle)
-            //                           );
-            //                         })
-            //                     ),
-            //                   ),
-            //                 ),
-            //                 DataCell(
-            //                   Center(child: Column(
-            //                         children: List.generate( allGetSalesRecordData[index].saleDetails.length, (j) {
-            //                           return Center(child: Text(double.parse(allGetSalesRecordData[index].saleDetails[j].saleDetailsRate).toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
-            //                           );
-            //                         })
-            //                     ),
-            //                   ),
-            //                 ),
-            //                 DataCell(
-            //                   Center(child: Column(
-            //                         children: List.generate( allGetSalesRecordData[index].saleDetails.length, (j) {
-            //                           return Center(child: Text(double.parse(allGetSalesRecordData[index].saleDetails[j].saleDetailsTotalQuantity).toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
-            //                           );
-            //                         })
-            //                     ),
-            //                   ),
-            //                 ),
-            //                 DataCell(
-            //                   Center(child: Column(
-            //                         children: List.generate( allGetSalesRecordData[index].saleDetails.length, (j) {
-            //                           return Center(child: Text(double.parse(allGetSalesRecordData[index].saleDetails[j].saleDetailsDiscount).toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
-            //                           );
-            //                         })
-            //                     ),
-            //                   ),
-            //                 ),
-            //                 DataCell(
-            //                   Center(child: Column(
-            //                         children: List.generate( allGetSalesRecordData[index].saleDetails.length, (j) {
-            //                           return Center(child: Text(double.parse(allGetSalesRecordData[index].saleDetails[j].saleDetailsTotalAmount).toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
-            //                           );
-            //                         })
-            //                     ),
-            //                   ),
-            //                 ),
-            //                 DataCell(
-            //                   Center(
-            //                     child:GestureDetector(
-            //                       child: Icon(Icons.collections_bookmark,size: 16.r),
-            //                       onTap: () {
-            //                         Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
-            //                           salesId: allGetSalesRecordData[index].saleMasterSlNo)));
-            //                       },
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
-            //     ),
-            //   ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
-            // )
-            //     : data == 'showByCategoryDetails'
-            //     ? Expanded(
-            //   child: SaleDetailsProvider.isSearchTypeChange
-            //       ? const buildBeautifulLoading()
-            //       : allGetSaleDetailsData.isNotEmpty?
-            //   SizedBox(
-            //     width: double.infinity,
-            //     height: double.infinity,
-            //     child: SingleChildScrollView(
-            //       scrollDirection: Axis.vertical,
-            //       child: SingleChildScrollView(
-            //         scrollDirection: Axis.horizontal,
-            //         child: Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            //             DataTable(
-            //               columnSpacing: 25.w,
-            //                 headingRowHeight: 18.h,
-            //                 dataRowHeight: 16.h,
-            //                 showCheckboxColumn: true,
-            //               headingRowColor: WidgetStateColor.resolveWith((states) => Colors.purple.shade900),
-            //               border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
-            //                 columns: [
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Product Id', style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Category', style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Product Name', style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child:  Center(child: Text('Sold Quantity', style: AllTextStyle.tableHeadTextStyle)))),
-            //                 ],
-            //               rows: [
-            //                 ...List.generate(
-            //                   allGetSaleDetailsData.length,
-            //                       (int index) =>DataRow(
-            //                         color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getPurple) : WidgetStateProperty.resolveWith(getWhite),
-            //                             cells: <DataCell>[
-            //                               DataCell(Center(child: Text(allGetSaleDetailsData[index].productCode, style: AllTextStyle.tableDataTextStyle))),
-            //                               DataCell(Center(child: Text(allGetSaleDetailsData[index].productCategoryName, style: AllTextStyle.tableDataTextStyle))),
-            //                               DataCell(Center(child: Text(allGetSaleDetailsData[index].productName.toString().trim(), style: AllTextStyle.tableDataTextStyle))),
-            //                               DataCell(Center(child: Text(allGetSaleDetailsData[index].saleDetailsTotalQuantity, style: AllTextStyle.tableDataTextStyle))),
-            //                             ],
-            //                           ),
-            //                 ),
-            //                 DataRow(
-            //                   cells: <DataCell>[
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(soldQuantity!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //           ],
-            //         ),
-            //       ),
-            //     ),
-            //   ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle),)),
-            // )
-            //     : data == 'showByProductDetails'
-            //     ? Expanded(
-            //   child: SaleDetailsProvider.isSearchTypeChange
-            //       ? const buildBeautifulLoading()
-            //       : allGetSaleDetailsData.isNotEmpty?
-            //   SizedBox(
-            //     width: double.infinity,
-            //     height: double.infinity,
-            //     child: SingleChildScrollView(
-            //       scrollDirection: Axis.vertical,
-            //       child: SingleChildScrollView(
-            //         scrollDirection: Axis.horizontal,
-            //         child: Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            //             DataTable(
-            //               columnSpacing: 25.w,
-            //                 headingRowHeight: 18.h,
-            //                 dataRowHeight: 16.h,
-            //                 showCheckboxColumn: true,
-            //                 border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
-            //                 headingRowColor: WidgetStateColor.resolveWith((states) => Colors.purple.shade900),
-            //                 columns: [
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Invoice No.',style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Date',style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Product Name',style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child:  Center(child: Text('Sales Rate',style: AllTextStyle.tableHeadTextStyle)))),
-            //                   DataColumn(label: Expanded(child: Center(child: Text('Quantity',style: AllTextStyle.tableHeadTextStyle)))),
-            //                 ],
-            //               rows: [
-            //                 ...List.generate(
-            //                   allGetSaleDetailsData.length,
-            //                       (int index) =>DataRow(
-            //                       color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getBlue) : WidgetStateProperty.resolveWith(getWhite),
-            //                       cells: <DataCell>[
-            //                       DataCell(Center(child: Text(allGetSaleDetailsData[index].saleMasterInvoiceNo, style: AllTextStyle.tableDataTextStyle))),
-            //                       DataCell(Center(child: Text(allGetSaleDetailsData[index].saleMasterSaleDate, style: AllTextStyle.tableDataTextStyle))),
-            //                       DataCell(Center(child: Text(allGetSaleDetailsData[index].customerName.toString().trim(), style: AllTextStyle.tableDataTextStyle))),
-            //                       DataCell(Center(child: Text(allGetSaleDetailsData[index].productName.toString().trim(), style: AllTextStyle.tableDataTextStyle))),
-            //                       DataCell(Center(child: Text(allGetSaleDetailsData[index].saleDetailsRate, style: AllTextStyle.tableDataTextStyle))),
-            //                       DataCell(Center(child: Text(allGetSaleDetailsData[index].saleDetailsTotalQuantity, style: AllTextStyle.tableDataTextStyle))),
-            //                      ],
-            //                    ),
-            //                 ),
-            //                 DataRow(
-            //                   cells: <DataCell>[
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     const DataCell(SizedBox()),
-            //                     DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
-            //                     DataCell(Center(child: Text(soldQuantity!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //           ],
-            //         ),
-            //       ),
-            //     ),
-            //   ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
-            // ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
-          
+            data == 'showAllWithoutDetails' || data == 'showByCustomerWithoutDetails' || data == 'showByAreaWithoutDetails' || data == 'showByEmployeeWithoutDetails' || data == 'showByUserWithoutDetails'
+            ? Expanded(
+              child: SalesProvider.isSalesLoading
+                  ? const buildBeautifulLoading()
+                  : salesData.isNotEmpty?
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DataTable(
+                          columnSpacing: 25.w,
+                          headingRowHeight: 18.h,
+                          dataRowHeight: 16.h,
+                          showCheckboxColumn: true,
+                          headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                          border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
+                          columns: [
+                            DataColumn(label: Expanded(child: Center(child: Text('Invoice No', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Date', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Customer Name', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Employee Name', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Saved By', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Sub Total', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Vat', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Transport Cost', style: AllTextStyle.tableHeadTextStyle))),),
+                            DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Paid', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Due', style: AllTextStyle.tableHeadTextStyle)))),
+                            //DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
+                          ],
+                          rows: [
+                            ...List.generate(
+                              salesData.length,
+                                  (int index) => DataRow(
+                                    color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getBlue) : WidgetStateProperty.resolveWith(getWhite),
+                                    cells: <DataCell>[
+                                     DataCell(Center(child: Text(salesData[index].saleMasterInvoiceNo??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterSaleDate??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].customerName??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].employeeName??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].addedBy??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterSubTotalAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterTaxAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterTotalDiscountAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterFreight??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterTotalSaleAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterPaidAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(salesData[index].saleMasterDueAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                    //  DataCell(
+                                    //   Center(
+                                    //    child:GestureDetector(
+                                    //     child: Icon(Icons.collections_bookmark,size: 16.r),
+                                    //      onTap: () {
+                                    //       Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
+                                    //      salesId: salesData[index].saleMasterSlNo)));
+                                    //   },
+                                    //   ),
+                                    //  ),
+                                    // ),
+                                   ],
+                                  ),
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(subTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(vatTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(discountTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(transferCost!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(totalAmount!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(paidTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Align(alignment: Alignment.centerRight,
+                                  child: Text(dueTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle),
+                                )),
+                                //const DataCell(SizedBox()),
+                              ],
+                            ),
+                          ],
+                        ),
+                       SizedBox(height: 20.h),
+                      ],
+                    ),
+                  ),
+                ),
+              ) : Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
+            )
+                : data == 'showAllWithDetails' || data == 'showByCustomerWithDetails'|| data == 'showByAreaWithDetails' || data == 'showByEmployeeWithDetails' || data == 'showByUserWithDetails'
+                ? Expanded(
+              child: SaleRecordsProvider.isSaleRecordsLoading
+                  ? const buildBeautifulLoading()
+                  : saleRecordsData.isNotEmpty?
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columnSpacing: 10.w,
+                      headingRowHeight: 18.h,
+                      dataRowMinHeight: 16.h,
+                      dataRowMaxHeight: double.infinity,
+                      showCheckboxColumn: true,
+                      headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                      border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
+                      columns: [
+                        DataColumn(label: Expanded(child: Center(child: Text('Invoice No', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Date', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Customer Name', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Employee Name', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Saved By', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Product Name', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Price', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Quantity', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
+                        //DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
+                      ],
+                      rows: List.generate(
+                        saleRecordsData.length,
+                            (int index) => DataRow(
+                              color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getPurple) : WidgetStateProperty.resolveWith(getWhite),
+                              cells: <DataCell>[
+                            DataCell(Center(child: Text(saleRecordsData[index].saleMasterInvoiceNo, style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(saleRecordsData[index].saleMasterSaleDate, style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(saleRecordsData[index].customerName??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(saleRecordsData[index].employeeName??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(saleRecordsData[index].addedBy, style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( saleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(saleRecordsData[index].saleDetails![j].productName??"", style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( saleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(saleRecordsData[index].saleDetails![j].saleDetailsRate??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( saleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(saleRecordsData[index].saleDetails![j].saleDetailsTotalQuantity??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( saleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(saleRecordsData[index].saleDetails![j].saleDetailsDiscount??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( saleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(saleRecordsData[index].saleDetails![j].saleDetailsTotalAmount??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            // DataCell(
+                            //   Center(
+                            //     child:GestureDetector(
+                            //       child: Icon(Icons.collections_bookmark,size: 16.r),
+                            //       onTap: () {
+                            //         Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
+                            //           salesId: saleRecordsData[index].saleMasterSlNo)));
+                            //       },
+                            //     ),
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
+            )
+                : data == 'showByCategoryDetails'
+                ? Expanded(
+              child: SaleDetailsProvider.isSaleDetailsLoading
+                  ? const buildBeautifulLoading()
+                  : saleDetailsData.isNotEmpty?
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DataTable(
+                          columnSpacing: 25.w,
+                            headingRowHeight: 18.h,
+                            dataRowHeight: 16.h,
+                            showCheckboxColumn: true,
+                          headingRowColor: WidgetStateColor.resolveWith((states) => Colors.purple.shade900),
+                          border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
+                            columns: [
+                              DataColumn(label: Expanded(child: Center(child: Text('Product Id', style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child: Center(child: Text('Category', style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child: Center(child: Text('Product Name', style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child:  Center(child: Text('Sold Quantity', style: AllTextStyle.tableHeadTextStyle)))),
+                            ],
+                          rows: [
+                            ...List.generate(
+                              saleDetailsData.length,
+                                  (int index) =>DataRow(
+                                    color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getPurple) : WidgetStateProperty.resolveWith(getWhite),
+                                        cells: <DataCell>[
+                                          DataCell(Center(child: Text(saleDetailsData[index].productCode, style: AllTextStyle.tableDataTextStyle))),
+                                          DataCell(Center(child: Text(saleDetailsData[index].productCategoryName, style: AllTextStyle.tableDataTextStyle))),
+                                          DataCell(Center(child: Text(saleDetailsData[index].productName.toString().trim(), style: AllTextStyle.tableDataTextStyle))),
+                                          DataCell(Center(child: Text(saleDetailsData[index].saleDetailsTotalQuantity, style: AllTextStyle.tableDataTextStyle))),
+                                        ],
+                                      ),
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(soldQuantity!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle),)),
+            )
+                : data == 'showByProductDetails'
+                ? Expanded(
+              child: SaleDetailsProvider.isSaleDetailsLoading
+                  ? const buildBeautifulLoading()
+                  : saleDetailsData.isNotEmpty?
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DataTable(
+                          columnSpacing: 25.w,
+                            headingRowHeight: 18.h,
+                            dataRowHeight: 16.h,
+                            showCheckboxColumn: true,
+                            border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
+                            headingRowColor: WidgetStateColor.resolveWith((states) => Colors.purple.shade900),
+                            columns: [
+                              DataColumn(label: Expanded(child: Center(child: Text('Invoice No.',style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child: Center(child: Text('Date',style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child: Center(child: Text('Product Name',style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child:  Center(child: Text('Sales Rate',style: AllTextStyle.tableHeadTextStyle)))),
+                              DataColumn(label: Expanded(child: Center(child: Text('Quantity',style: AllTextStyle.tableHeadTextStyle)))),
+                            ],
+                          rows: [
+                            ...List.generate(
+                              saleDetailsData.length,
+                                  (int index) =>DataRow(
+                                  color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getBlue) : WidgetStateProperty.resolveWith(getWhite),
+                                  cells: <DataCell>[
+                                  DataCell(Center(child: Text(saleDetailsData[index].saleMasterInvoiceNo, style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text(saleDetailsData[index].saleMasterSaleDate, style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text(saleDetailsData[index].customerName.toString().trim(), style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text(saleDetailsData[index].productName.toString().trim(), style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text(saleDetailsData[index].saleDetailsRate, style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text(saleDetailsData[index].saleDetailsTotalQuantity, style: AllTextStyle.tableDataTextStyle))),
+                                 ],
+                               ),
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(soldQuantity!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
+            ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
           ],
         ),
       ),

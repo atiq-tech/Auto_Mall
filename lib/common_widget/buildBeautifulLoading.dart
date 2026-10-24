@@ -14,7 +14,7 @@ class buildBeautifulLoading extends StatelessWidget {
           CircularBouncingDots(size: 65,dotSize: 9),
           SizedBox(height: 15.h),
           Text(
-            "Loading Products...",
+            "Loading Data...",
             style: TextStyle(
               fontSize: 15.sp,
               fontWeight: FontWeight.w600,

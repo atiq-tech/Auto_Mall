@@ -43,7 +43,7 @@ class CommonTypeAheadField<T> extends StatelessWidget {
               contentPadding: EdgeInsets.only(bottom: 10.h, left: 5.0.w),
               isDense: true,
               hintText: hintText,
-              hintStyle: AllTextStyle.textValueStyle,
+              hintStyle: AllTextStyle.dropDownlistStyle,
               suffixIcon: selectedValueId == null || selectedValueId == '' || fieldController.text == ''
                   ? null
                   : GestureDetector(
@@ -84,8 +84,7 @@ class CommonTypeAheadField<T> extends StatelessWidget {
         suggestionsCallback: (pattern) async {
           return Future.delayed(const Duration(milliseconds: 300), () {
             return suggestionList
-                .where((item) =>
-                    displayText(item).toLowerCase().contains(pattern.toLowerCase()))
+                .where((item) => displayText(item).toLowerCase().contains(pattern.toLowerCase()))
                 .toList();
           });
         },

@@ -22,6 +22,7 @@ Future<void> getCustomers(String? customerType) async {
         customerType: "G",
         customerPhone: "",
         customerAddress: "",
+        displayName: "Cash Customer",
       ),
       CustomersModel(
         customerSlNo: "0",
@@ -30,6 +31,7 @@ Future<void> getCustomers(String? customerType) async {
         customerType: "N",
         customerPhone: "",
         customerAddress: "",
+        displayName: "New Customer",
       ),
       ...result,
     ];

@@ -1,6 +1,13 @@
 //import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
+import 'package:auto_mall/providers/pending_order_provider.dart';
+import 'package:auto_mall/providers/pending_order_record_provider.dart';
+import 'package:auto_mall/providers/sale_records_provider.dart';
+import 'package:auto_mall/providers/sales_provider.dart';
+import 'package:auto_mall/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../common_widget/custom_appbar.dart';
 import '../../utils/all_textstyle.dart';
@@ -14,9 +21,8 @@ class PendingOrderRecordScreen extends StatefulWidget {
 }
 
 class _PendingOrderRecordScreenState extends State<PendingOrderRecordScreen> {
-  Color getPurple(Set<WidgetState> states) {return Colors.teal.shade50;}
-  Color getBlue(Set<WidgetState> states) {return Colors.blue.shade50;}
-  Color getOrange(Set<WidgetState> states) {return Colors.orange.shade100;}
+  Color getPurple(Set<WidgetState> states) {return Colors.purple.shade100;}
+  Color getblue(Set<WidgetState> states) {return Colors.blue.shade100;}
   Color getWhite(Set<WidgetState> states) {return Colors.white;}
   final TextEditingController customerController = TextEditingController();
   final TextEditingController employeeController = TextEditingController();
@@ -191,6 +197,16 @@ void _onSelectedRecordType(String selectedValue) {
       }
     });
 }
+  String data = '';
+  ///Sub total
+  double? subTotal;
+  double? vatTotal;
+  double? discountTotal;
+  double? transferCost;
+  double? totalAmount;
+  double? paidTotal;
+  double? dueTotal;
+  double? soldQuantity;
 
   @override
   void initState() {
@@ -201,11 +217,29 @@ void _onSelectedRecordType(String selectedValue) {
     backEndFirstDate = Utils.formatBackEndDate(DateTime.now());
     secondPickedDate = Utils.formatFrontEndDate(DateTime.now());
     backEndSecondtDate = Utils.formatBackEndDate(DateTime.now());
+    Provider.of<PendingOrderProvider>(context,listen: false).getPendingOrder("", "", "", "", "", "", "p", "0");
+    Provider.of<PendingOrderRecordProvider>(context,listen: false).getPendingOrderRecord("", "", "", "", "", "", "p","0");
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    //get Sales
+    final allSalesData = Provider.of<PendingOrderProvider>(context).pendingOrderList;
+    print("Sales length=====> ${allSalesData.length} ");
+    ///Sub total
+    subTotal = allSalesData.map((e) => e.saleMasterSubTotalAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    vatTotal = allSalesData.map((e) => e.saleMasterTaxAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    discountTotal = allSalesData.map((e) => e.saleMasterTotalDiscountAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    transferCost = allSalesData.map((e) => e.saleMasterFreight).fold(0.0, (p, element) => p!+double.parse(element));
+    totalAmount = allSalesData.map((e) => e.saleMasterTotalSaleAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    paidTotal = allSalesData.map((e) => e.saleMasterPaidAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    dueTotal = allSalesData.map((e) => e.saleMasterDueAmount).fold(0.0, (p, element) => p!+double.parse(element));
+    //get Sales Record
+    final allSaleRecordsData = Provider.of<PendingOrderRecordProvider>(context).pendingOrderRecordList;
+    print("Sale records length=====> ${allSaleRecordsData.length} ");
+
     return Scaffold(
       appBar: CustomAppBar(title:"Pending Order Record"),
       body: Container(
@@ -356,13 +390,42 @@ void _onSelectedRecordType(String selectedValue) {
                         padding: EdgeInsets.all(1.r),
                         child: InkWell(
                           onTap: () async {
-                            
+                            PendingOrderProvider().on();
+                            PendingOrderRecordProvider().on();
+                            setState(() {
+                              if (isWithoutDetailsClicked) {
+                                data = 'showAllWithoutDetails';
+                                Provider.of<PendingOrderProvider>(context, listen: false).getPendingOrder(
+                                  "", 
+                                  "", 
+                                  "", 
+                                  "",
+                                  "$backEndFirstDate",
+                                  "$backEndSecondtDate",
+                                  "p",
+                                  "0"
+                                );
+                              }
+                              else if (isWithDetailsClicked) {
+                                data = 'showAllWithDetails';
+                                Provider.of<PendingOrderRecordProvider>(context, listen: false).getPendingOrderRecord(
+                                  "", 
+                                  "", 
+                                  "", 
+                                  "",
+                                  "$backEndFirstDate",
+                                  "$backEndSecondtDate",
+                                  "p",
+                                  "0"
+                                );
+                              }
+                            });
                           },
                           child: Container(
                             height: 28.h,
                             width: 120.w,
                             decoration: BoxDecoration(
-                              color:  Colors.indigo,
+                              color: AppColors.appColor,
                               borderRadius: BorderRadius.circular(5.r),
                               boxShadow: [
                                 BoxShadow(
@@ -382,6 +445,211 @@ void _onSelectedRecordType(String selectedValue) {
                 ),
               ),
             ),
+            SizedBox(height: 10.h),
+            data == 'showAllWithoutDetails'
+            ? Expanded(
+              child: PendingOrderProvider.isPendingOrderLoading
+                  ? const buildBeautifulLoading()
+                  : allSalesData.isNotEmpty?
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DataTable(
+                          columnSpacing: 25.w,
+                          headingRowHeight: 16.h,
+                          dataRowHeight: 16.h,
+                          showCheckboxColumn: true,
+                          headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                          border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
+                          columns: [
+                            DataColumn(label: Expanded(child: Center(child: Text('Invoice No', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Date', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Customer Name', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Employee Name', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Saved By', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Sub Total', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Vat', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Transport Cost', style: AllTextStyle.tableHeadTextStyle))),),
+                            DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Paid', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Due', style: AllTextStyle.tableHeadTextStyle)))),
+                            //DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
+                          ],
+                          rows: [
+                            ...List.generate(
+                              allSalesData.length,
+                                  (int index) => DataRow(
+                                    color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getPurple) : WidgetStateProperty.resolveWith(getWhite),
+                                    cells: <DataCell>[
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterInvoiceNo??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterSaleDate??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].customerName??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].employeeName??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].addedBy??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterSubTotalAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterTaxAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterTotalDiscountAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterFreight??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterTotalSaleAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterPaidAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                     DataCell(Center(child: Text(allSalesData[index].saleMasterDueAmount??"", style: AllTextStyle.tableDataTextStyle))),
+                                    //  DataCell(
+                                    //   Center(
+                                    //    child:GestureDetector(
+                                    //     child: Icon(Icons.collections_bookmark,size: 16.r),
+                                    //      onTap: () {
+                                    //       Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
+                                    //      salesId: allSalesData[index].saleMasterSlNo)));
+                                    //   },
+                                    //   ),
+                                    //  ),
+                                    // ),
+                                   ],
+                                  ),
+                            ),
+                            DataRow(
+                              cells: <DataCell>[
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
+                                DataCell(Align(alignment: Alignment.centerRight,child: Text('Total:', style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(subTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(vatTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(discountTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(transferCost!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(totalAmount!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Center(child: Text(paidTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle))),
+                                DataCell(Align(alignment: Alignment.centerRight,
+                                  child: Text(dueTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle),
+                                )),
+                                //const DataCell(SizedBox()),
+                              ],
+                            ),
+                          ],
+                        ),
+                       SizedBox(height: 20.h),
+                      ],
+                    ),
+                  ),
+                ),
+              ) : Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
+            )
+                : data == 'showAllWithDetails'
+                ? Expanded(
+              child: PendingOrderRecordProvider.isPendingOrderRecordLoading
+                  ? const buildBeautifulLoading()
+                  : allSaleRecordsData.isNotEmpty?
+              SizedBox(
+                width: double.infinity,
+                height: double.infinity,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columnSpacing: 10.w,
+                      headingRowHeight: 16.h,
+                      dataRowMinHeight: 16.h,
+                      dataRowMaxHeight: double.infinity,
+                      showCheckboxColumn: true,
+                      headingRowColor: WidgetStateColor.resolveWith((states) => AppColors.appColor),
+                      border: TableBorder.all(color: Colors.grey.shade400,width: 1.w),
+                      columns: [
+                        DataColumn(label: Expanded(child: Center(child: Text('Invoice No', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Date', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Customer Name', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Employee Name', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Saved By', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Product Name', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Price', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Quantity', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
+                        //DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
+                      ],
+                      rows: List.generate(
+                        allSaleRecordsData.length,
+                            (int index) => DataRow(
+                              color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getblue) : WidgetStateProperty.resolveWith(getWhite),
+                              cells: <DataCell>[
+                            DataCell(Center(child: Text(allSaleRecordsData[index].saleMasterInvoiceNo??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(allSaleRecordsData[index].saleMasterSaleDate??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(allSaleRecordsData[index].customerName??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(allSaleRecordsData[index].employeeName??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(allSaleRecordsData[index].addedBy??"", style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( allSaleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(allSaleRecordsData[index].saleDetails![j].productName??"", style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( allSaleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(allSaleRecordsData[index].saleDetails![j].saleDetailsRate??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( allSaleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(allSaleRecordsData[index].saleDetails![j].saleDetailsTotalQuantity??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( allSaleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(allSaleRecordsData[index].saleDetails![j].saleDetailsDiscount??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            DataCell(
+                              Center(child: Column(
+                                    children: List.generate( allSaleRecordsData[index].saleDetails!.length, (j) {
+                                      return Center(child: Text(double.parse(allSaleRecordsData[index].saleDetails![j].saleDetailsTotalAmount??"").toStringAsFixed(2), style: AllTextStyle.tableDataTextStyle)
+                                      );
+                                    })
+                                ),
+                              ),
+                            ),
+                            // DataCell(
+                            //   Center(
+                            //     child:GestureDetector(
+                            //       child: Icon(Icons.collections_bookmark,size: 16.r),
+                            //       onTap: () {
+                            //         Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
+                            //           salesId: allSaleRecordsData[index].saleMasterSlNo)));
+                            //       },
+                            //     ),
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
+            ): Align(alignment: Alignment.center,child: Center(child: Text("No Data Found",style: AllTextStyle.nofoundTextStyle))),
           ],
         ),
       )

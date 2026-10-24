@@ -2,7 +2,6 @@ import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/common_widget/custom_appbar.dart';
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
 import 'package:auto_mall/models/areas_model.dart';
-import 'package:auto_mall/models/customer_due_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/providers/areas_provider.dart';
 import 'package:auto_mall/providers/customer_due_provider.dart';
