@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
+import 'package:auto_mall/models/bank_accounts_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/models/employees_model.dart';
 import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/models/sales_cart_model.dart';
+import 'package:auto_mall/providers/bank_accounts_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
@@ -48,17 +50,20 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   final mobileNumberController = TextEditingController();
   final addressController = TextEditingController();
   final salesRateController = TextEditingController();
+  final replaceSalesRateController = TextEditingController();
   final discountController = TextEditingController();
   final vatController = TextEditingController();
   final quantityController = TextEditingController();
+  final replaceQtyController = TextEditingController();
   final warrantyController = TextEditingController();
   final transportController = TextEditingController();
   final customerController = TextEditingController();
   final employeeController = TextEditingController();
   final categoryController = TextEditingController();
-  final branchController = TextEditingController();
-  final routeController = TextEditingController();
+  final disPercentController = TextEditingController();
+  final disAmountController = TextEditingController();
   final productController = TextEditingController();
+  final replaceProductController = TextEditingController();
   final invoiceNoController = TextEditingController();
   final vatPercentageController = TextEditingController();
   final accountController = TextEditingController();
@@ -73,7 +78,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   String? customerAddress;
   String? productId;
   String? categoryId;
-  String? branchId;
+  String? bankAccountId;
   String? customerId;
   String? employeeId;
   String level = "retail";
@@ -119,6 +124,46 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   }
   ///
   List<SalesCartModel> salesCartList = [];
+  //replace=====
+  String? exchangeProductId;
+  String? exchangeProductCode;
+  String? exchangeProductName;
+  String? exchangeProductCategory;
+  String? exchangeSalesRate;
+  String? exchangeQty;
+  double? exchangeTotalAmount;
+  List<ExchangeModel> exchangeCart = [];
+  double exchangetotal = 0;
+    void exchnageTotal(){
+    final allReplaceProductData = exchangeCart;
+    double replaceCartTotal = allReplaceProductData.map((e) => e.exchangeTotalAmount).fold(0.0, (p, element) => p+double.parse(element!));
+    exchangetotal = double.parse("$replaceCartTotal");
+  }
+   void removeExchnageCart(index){
+    exchangeCart.removeAt(index);
+    exchnageTotal();
+   }
+
+   // Subtotal বের করার জন্য (Qty × Sales Rate)
+  double _getSubTotal() {
+    double qty = double.tryParse(quantityController.text) ?? 0;
+    double rate = double.tryParse(salesRateController.text) ?? 0;
+    return qty * rate;
+  }
+
+  // Final Amount হিসাব করার জন্য
+  void calculateAmount() {
+    double subTotal = _getSubTotal();
+    double discountTk = double.tryParse(disAmountController.text) ?? 0;
+
+    // Negative discount যাতে না হয়
+    if (discountTk < 0) discountTk = 0;
+    if (discountTk > subTotal) discountTk = subTotal;
+
+    setState(() {
+      Total = subTotal - discountTk;
+    });
+  }
 
   String? previousDue;
   String? cproductId;
@@ -149,6 +194,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     CustomersProvider().on();
     Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
     Provider.of<ProductsProvider>(context,listen: false).getProducts();
+    Provider.of<BankAccountsProvider>(context,listen: false).getBankAccounts();
     quantityController.text = "1";
     discountPercentController.text = "0";
 
@@ -182,6 +228,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     final customersData = Provider.of<CustomersProvider>(context).customersList;
     print("customersData======${customersData.length}");
     final productsData = Provider.of<ProductsProvider>(context).productsList;
+    final bankAccountsData = Provider.of<BankAccountsProvider>(context).bankAccounts;
     return Scaffold(
         appBar: CustomAppBar(title: "Sales Entry"),
         body: ModalProgressHUD(
@@ -662,391 +709,427 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.all(4.r),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(flex: 4,child: Text("Product",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 14,
-                                    child: Container(
-                                      height: 25.h,
-                                      padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                                      margin: EdgeInsets.only(bottom: 4.h),
-                                      decoration: ContDecoration.contDecoration,
-                                      child: TypeAheadField<ProductsModel>(
-                                        controller: productController,
-                                        hideOnEmpty: false,
-                                        hideOnLoading: false,
-                                        debounceDuration: const Duration(milliseconds: 200),
-                                        builder: (context, fieldController, focusNode) {
-                                          return TextField(
-                                            controller: fieldController,
-                                            focusNode: focusNode,
-                                            style: AllTextStyle.dropDownlistStyle,
-                                            decoration: InputDecoration(
-                                              border: InputBorder.none,
-                                              contentPadding: EdgeInsets.symmetric(vertical: 3.h),
-                                              isDense: true,
-                                              hintText: 'Select Product',
-                                              hintStyle: AllTextStyle.dropDownlistStyle,
-                                              suffixIcon: productId == ''
-                                                  ? null
-                                                  : GestureDetector(
-                                                      onTap: () {
-                                                        setState(() {
-                                                          productController.clear();
-                                                          fieldController.clear();
-                                                          productId = '';
-                                                        });
-                                                      },
-                                                      child: Padding(
-                                                        padding: EdgeInsets.only(left: 30.w),
-                                                        child: Icon(Icons.close, size: 16.r),
-                                                      ),
+                        padding: EdgeInsets.all(4.r),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            // ===================== Product =====================
+                            Row(
+                              children: [
+                                Expanded(flex: 4, child: Text("Product", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 14,
+                                  child: Container(
+                                    height: 25.h,
+                                    padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                                    margin: EdgeInsets.only(bottom: 4.h),
+                                    decoration: ContDecoration.contDecoration,
+                                    child: TypeAheadField<ProductsModel>(
+                                      controller: productController,
+                                      hideOnEmpty: false,
+                                      hideOnLoading: false,
+                                      debounceDuration: const Duration(milliseconds: 200),
+                                      builder: (context, fieldController, focusNode) {
+                                        return TextField(
+                                          controller: fieldController,
+                                          focusNode: focusNode,
+                                          style: AllTextStyle.dropDownlistStyle,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.symmetric(vertical: 3.h),
+                                            isDense: true,
+                                            hintText: 'Select Product',
+                                            hintStyle: AllTextStyle.dropDownlistStyle,
+                                            suffixIcon: productId == ''
+                                                ? null
+                                                : GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        productController.clear();
+                                                        fieldController.clear();
+                                                        productId = '';
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding: EdgeInsets.only(left: 30.w),
+                                                      child: Icon(Icons.close, size: 16.r),
                                                     ),
-                                            ),
-                                            onChanged: (value) {
-                                              if (value == '') {
-                                                setState(() {
-                                                  productId = '';
-                                                });
-                                              }
-                                            },
-                                          );
-                                        },
-                                        suggestionsCallback: (pattern) async {
-                                          await Future.delayed(const Duration(milliseconds: 100));
-
-                                          if (productsData.isEmpty) return [];
-
-                                          final query = pattern.toLowerCase().trim();
-
-                                          if (query.isEmpty) {
-                                            return productsData;
-                                          }
-
-                                          return productsData
-                                              .where((element) => element.productName
-                                                  .toString()
-                                                  .toLowerCase()
-                                                  .contains(query))
-                                              .toList();
-                                        },
-                                        itemBuilder: (context, suggestion) {
-                                          return SizedBox(
-                                            width: double.infinity,
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
-                                              child: Text(
-                                                "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}",
-                                                style: AllTextStyle.dropDownlistStyle,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                        onSelected: (ProductsModel suggestion) {
-                                          productController.text =
-                                              "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
-
-                                          setState(() {
-                                            productId = suggestion.productSlNo;
-                                            print("dfhsghdfkhgkh $productId");
-                                            cproductId = suggestion.productCode;
-                                            productId = suggestion.productSlNo;
-                                            isService = suggestion.isService;
-                                            productStockId = suggestion.productSlNo;
-                                            ccategoryName = suggestion.productCategoryName;
-                                            cname = suggestion.productName;
-                                            modelName = suggestion.brandName;
-                                            productUnit = suggestion.unitName;
-                                            cvat = suggestion.vat;
-                                            cpurchaseRate = suggestion.productPurchaseRate;
-                                            vatController.text = suggestion.vat;
-                                            salesRateController.text = suggestion.productSellingPrice;
-
-                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
-
-                                            totalStack(productStockId);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), // product
-                          
-                              Row(
-                                children: [
-                                  Expanded(flex: 4,child: Text("Sales Rate",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 6,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: salesRateController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
-                                          hintText: "0",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = double.parse(salesRateController.text);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(flex: 2,child: Center(child: Text("Qty",style: AllTextStyle.textFieldHeadStyle))),
-                                  Expanded(
-                                    flex: 6,
-                                    child: Container(
-                                      height: 25.h,
-                                      margin: EdgeInsets.only(left: 5.w, right: 0.w),
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: quantityController,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
-                                          });
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                                          hintText: "0",
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), // quantity
-                              SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Expanded(flex: 4,child: Text("Discount%",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 6,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: salesRateController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
-                                          hintText: "0",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = double.parse(salesRateController.text);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(flex: 2,child: Center(child: Text("TK",style: AllTextStyle.textFieldHeadStyle))),
-                                  Expanded(
-                                    flex: 6,
-                                    child: Container(
-                                      height: 25.h,
-                                      margin: EdgeInsets.only(left: 5.w, right: 0.w),
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: quantityController,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
-                                          });
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                                          hintText: "0",
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), // quantity
-                              SizedBox(height: 4.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Expanded(flex: 4,child: Text("Amount",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 7,
-                                    child: Container(
-                                      margin: EdgeInsets.only(bottom: 0.h, right: 5.w),
-                                      height: 25.h,
-                                      padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h, bottom: 0.h),
-                                      decoration: ContDecoration.contDecoration,
-                                      child: Text("$Total",style: AllTextStyle.textValueStyle),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 7,
-                                    child: Container(
-                                      height: 25.h,
-                                      decoration: ContDecoration.contDecoration,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          availableStock != 0 ? Text("Stock,", style: TextStyle(color: Colors.green.shade700,fontSize: 12.sp)): Text("Stock,", style: TextStyle(color: Colors.red,fontSize: 12.sp)),
-                                          Text("$availableStock ${productUnit ?? ""}",
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(fontSize: 12.sp,color:availableStock != 0 ? Colors.green.shade700 : Colors.red),
+                                                  ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), 
-                              SizedBox(height: 4.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Expanded(flex: 4,child: Text("Warranty",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 14,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: warrantyController,
-                                        onChanged: (value) {
-                                          
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                                          hintText: "0",
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),// product
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (productController.text != '' || productController.text.isNotEmpty) {
-                                      if (quantityController.text != '' || quantityController.text.isNotEmpty){
-                                        if (availableStock > 0) {
-                                          setState(() {
-                                            salesCartList.add(SalesCartModel(
-                                              productId: "$productId",
-                                              categoryId: "$categoryId",
-                                              categoryName: "$ccategoryName",
-                                              name: "$cname",
-                                              salesRate: salesRateController.text,
-                                              vat: vatController.text,
-                                              quantity: quantityController.text,
-                                              total: "$Total",
-                                              purchaseRate: "$cpurchaseRate",
-                                              woodName: '$ccategoryName',
-                                              modelName: '',
-                                              productCode: '$cproductId',
-                                              isService: '$isService'
-                                             ));
-                          
-                                            cartTotal += Total;
-                                            calculateTotal();
-                                            categoryController.text = '';
-                                            productController.text = '';
-                                            quantityController.text = '';
-                                            salesRateController.text = '';
-                                            setState(() {
-                                              Total = 0;
-                                              calculateTotal();
-                                              discountAmount=0;
-                                              discountPer=0;
-                                              vatAmount=0;
-                                              vatPer=0;
-                                              discountController.text = "";
-                                              vatController.text = "";
-                                              discountPercentController.text="";
-                                              vatPercentageController.text="";
-                                              transportController.text="";
-                                            });
-                                            availableStock = 0;
-                                          });
-                                        } else {
-                                          Utils.showTopSnackBar(context, "Stock Unavailable");
+                                          onChanged: (value) {
+                                            if (value == '') {
+                                              setState(() {
+                                                productId = '';
+                                              });
+                                            }
+                                          },
+                                        );
+                                      },
+                                      suggestionsCallback: (pattern) async {
+                                        await Future.delayed(const Duration(milliseconds: 100));
+
+                                        if (productsData.isEmpty) return [];
+
+                                        final query = pattern.toLowerCase().trim();
+
+                                        if (query.isEmpty) {
+                                          return productsData;
                                         }
-                                      }
-                                      else{
-                                        Utils.showTopSnackBar(context, "Please Select Quantity");
+
+                                        return productsData
+                                            .where((element) => element.productName
+                                                .toString()
+                                                .toLowerCase()
+                                                .contains(query))
+                                            .toList();
+                                      },
+                                      itemBuilder: (context, suggestion) {
+                                        return SizedBox(
+                                          width: double.infinity,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
+                                            child: Text(
+                                              "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}",
+                                              style: AllTextStyle.dropDownlistStyle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      onSelected: (ProductsModel suggestion) {
+                                        productController.text =
+                                            "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
+
+                                        setState(() {
+                                          productId = suggestion.productSlNo;
+                                          print("dfhsghdfkhgkh $productId");
+                                          cproductId = suggestion.productCode;
+                                          productId = suggestion.productSlNo;
+                                          isService = suggestion.isService;
+                                          productStockId = suggestion.productSlNo;
+                                          ccategoryName = suggestion.productCategoryName;
+                                          cname = suggestion.productName;
+                                          modelName = suggestion.brandName;
+                                          productUnit = suggestion.unitName;
+                                          cvat = suggestion.vat;
+                                          cpurchaseRate = suggestion.productPurchaseRate;
+                                          vatController.text = suggestion.vat;
+                                          salesRateController.text = suggestion.productSellingPrice;
+
+                                          // Clear previous discount when new product selected
+                                          disPercentController.clear();
+                                          disAmountController.clear();
+
+                                          calculateAmount(); // <-- new calculation
+                                          totalStack(productStockId);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // product
+
+                            // ===================== Sales Rate + Qty =====================
+                            Row(
+                              children: [
+                                Expanded(flex: 4, child: Text("Sales Rate", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 6,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: salesRateController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+                                        hintText: "0",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                      onChanged: (value) {
+                                        calculateAmount(); // <-- updated
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Expanded(flex: 2, child: Center(child: Text("Qty", style: AllTextStyle.textFieldHeadStyle))),
+                                Expanded(
+                                  flex: 6,
+                                  child: Container(
+                                    height: 25.h,
+                                    margin: EdgeInsets.only(left: 5.w, right: 0.w),
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: quantityController,
+                                      onChanged: (value) {
+                                        calculateAmount(); // <-- updated
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        hintText: "0",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // quantity
+
+                            SizedBox(height: 4.h),
+
+                            // ===================== Discount % + Discount TK =====================
+                            Row(
+                              children: [
+                                Expanded(flex: 4, child: Text("Discount%", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 6,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: disPercentController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+                                        hintText: "0",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                      onChanged: (value) {
+                                        // When % is changed → calculate Discount Amount
+                                        double subTotal = _getSubTotal();
+                                        double percent = double.tryParse(value) ?? 0;
+
+                                        double discountTk = (subTotal * percent) / 100;
+                                        disAmountController.text = discountTk.toStringAsFixed(2);
+
+                                        calculateAmount();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Expanded(flex: 2, child: Center(child: Text("TK", style: AllTextStyle.textFieldHeadStyle))),
+                                Expanded(
+                                  flex: 6,
+                                  child: Container(
+                                    height: 25.h,
+                                    margin: EdgeInsets.only(left: 5.w, right: 0.w),
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: disAmountController,
+                                      onChanged: (value) {
+                                        // When TK is changed → calculate Discount %
+                                        double subTotal = _getSubTotal();
+                                        double discountTk = double.tryParse(value) ?? 0;
+
+                                        if (subTotal > 0) {
+                                          double percent = (discountTk / subTotal) * 100;
+                                          disPercentController.text = percent.toStringAsFixed(2);
+                                        } else {
+                                          disPercentController.text = "0";
+                                        }
+
+                                        calculateAmount();
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        hintText: "0",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // discount
+
+                            SizedBox(height: 4.h),
+
+                            // ===================== Amount + Stock =====================
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 4, child: Text("Amount", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 7,
+                                  child: Container(
+                                    margin: EdgeInsets.only(bottom: 0.h, right: 5.w),
+                                    height: 25.h,
+                                    padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h, bottom: 0.h),
+                                    decoration: ContDecoration.contDecoration,
+                                    child: Text("$Total", style: AllTextStyle.textValueStyle),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 7,
+                                  child: Container(
+                                    height: 25.h,
+                                    decoration: ContDecoration.contDecoration,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        availableStock != 0
+                                            ? Text("Stock,", style: TextStyle(color: Colors.green.shade700, fontSize: 12.sp))
+                                            : Text("Stock,", style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                                        Text(
+                                          "$availableStock ${productUnit ?? ""}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            color: availableStock != 0 ? Colors.green.shade700 : Colors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 4.h),
+
+                            // ===================== Warranty =====================
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 4, child: Text("Warranty", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 14,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: warrantyController,
+                                      onChanged: (value) {},
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        hintText: "0",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // product
+
+                            // ===================== Add to cart Button =====================
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (productController.text != '' || productController.text.isNotEmpty) {
+                                    if (quantityController.text != '' || quantityController.text.isNotEmpty) {
+                                      if (availableStock > 0) {
+                                        setState(() {
+                                          salesCartList.add(SalesCartModel(
+                                            productId: "$productId",
+                                            categoryId: "$categoryId",
+                                            categoryName: "$ccategoryName",
+                                            name: "$cname",
+                                            salesRate: salesRateController.text,
+                                            vat: vatController.text,
+                                            quantity: quantityController.text,
+                                            total: "$Total",
+                                            purchaseRate: "$cpurchaseRate",
+                                            productCode: '$cproductId',
+                                            isService: '$isService',
+                                            discount: disPercentController.text,
+                                            warranty: warrantyController.text,
+                                          ));
+
+                                          cartTotal += Total;
+                                          calculateTotal();
+                                          categoryController.text = '';
+                                          productController.text = '';
+                                          quantityController.text = '';
+                                          salesRateController.text = '';
+                                          disPercentController.clear();
+                                          disAmountController.clear();
+
+                                          setState(() {
+                                            Total = 0;
+                                            calculateTotal();
+                                            discountAmount = 0;
+                                            discountPer = 0;
+                                            vatAmount = 0;
+                                            vatPer = 0;
+                                            discountController.text = "";
+                                            vatController.text = "";
+                                            discountPercentController.text = "";
+                                            vatPercentageController.text = "";
+                                            transportController.text = "";
+                                          });
+                                          availableStock = 0;
+                                        });
+                                      } else {
+                                        Utils.showTopSnackBar(context, "Stock Unavailable");
                                       }
                                     } else {
-                                       Utils.showTopSnackBar(context, "Please Select Product");
+                                      Utils.showTopSnackBar(context, "Please Select Quantity");
                                     }
-                                  },
-                                  child: Card(
-                                    elevation: 5.0,
-                                    child: Container(
+                                  } else {
+                                    Utils.showTopSnackBar(context, "Please Select Product");
+                                  }
+                                },
+                                child: Card(
+                                  elevation: 5.0,
+                                  child: Container(
                                     height: 25.h,
                                     width: 100.w,
                                     decoration: BoxDecoration(
                                       color: AppColors.appColor,
                                       borderRadius: BorderRadius.circular(5.r),
                                     ),
-                                    child: const Center(child: Text("Add to cart",style: AllTextStyle.saveButtonTextStyle)))),
+                                    child: const Center(
+                                      child: Text("Add to cart", style: AllTextStyle.saveButtonTextStyle),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
                       ],
                     ),
                   ),
                   Container(
-                    height: salesCartList.isEmpty ? 60.h:
-                    salesCartList.length==1 ? 70.h :
-                    salesCartList.length==2 ? 90.h :
-                    salesCartList.length==3 ? 110.h :
-                    salesCartList.length==4 ? 130.h :
+                    height: salesCartList.isEmpty ? 45.h:
+                    salesCartList.length == 1 ? 70.h :
+                    salesCartList.length == 2 ? 90.h :
+                    salesCartList.length == 3 ? 110.h :
+                    salesCartList.length == 4 ? 130.h :
                     MediaQuery.of(context).size.height /6,
                     width: double.infinity,
                     padding: EdgeInsets.only(top: 15.h,bottom: 10.h),
@@ -1157,86 +1240,81 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       padding: EdgeInsets.only(left: 5.w, right: 5.w),
                                       margin: EdgeInsets.only(bottom: 4.h),
                                       decoration: ContDecoration.contDecoration,
-                                      // child: TypeAheadFormField(
-                                      //   textFieldConfiguration: TextFieldConfiguration(
-                                      //       onChanged: (value){
-                                      //         if (value == '') {
-                                      //           _selectedProduct = '';
-                                      //         }
-                                      //       },
-                                      //       style: AllTextStyle.dropDownlistStyle,
-                                      //       controller: productController,
-                                      //       decoration: InputDecoration(
-                                      //         border: InputBorder.none,
-                                      //         contentPadding: EdgeInsets.symmetric(vertical: 3.h),
-                                      //         isDense: true,
-                                      //         hintText: 'Select Product',
-                                      //         hintStyle: AllTextStyle.dropDownlistStyle,
-                                      //         suffixIcon: _selectedProduct == '' ? null : GestureDetector(
-                                      //           onTap: () {
-                                      //             setState(() {
-                                      //               productController.text = '';
-                                      //             });
-                                      //           },
-                                      //           child: Padding(
-                                      //             padding: EdgeInsets.only(left: 30.w),
-                                      //             child: Icon(Icons.close,size: 16.r),
-                                      //           ),
-                                      //         ),
-                                      //       )
-                                      //   ),
-                                      //   suggestionsCallback: (pattern) {
-                                      //     return productList
-                                      //         .where((element) => element.displayText
-                                      //         .toString()
-                                      //         .toLowerCase()
-                                      //         .contains(pattern
-                                      //         .toString()
-                                      //         .toLowerCase()))
-                                      //         .take(productList.length)
-                                      //         .toList();
-                                      //   },
-                                      //   itemBuilder: (context, suggestion) {
-                                      //     return SizedBox(
-                                      //       width: double.infinity,
-                                      //       child: Padding(
-                                      //         padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
-                                      //         child: Text("${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}",
-                                      //           style:  AllTextStyle.dropDownlistStyle,
-                                      //           maxLines: 1,
-                                      //           overflow: TextOverflow.ellipsis,
-                                      //         ),
-                                      //       ),
-                                      //     );
-                                      //   },
-                                      //   transitionBuilder: (context, suggestionsBox, controller) {
-                                      //     return suggestionsBox;
-                                      //   },
-                                      //   onSuggestionSelected: (ProductListModel suggestion) {
-                                      //     productController.text = "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
-                                      //     setState(() {
-                                      //       _selectedProduct = suggestion.productSlNo;
-                                      //       print("dfhsghdfkhgkh $_selectedProduct");
-                                      //       cproductId = suggestion.productCode;
-                                      //       productId = suggestion.productSlNo;
-                                      //       isService = suggestion.isService;
-                                      //       productStockId = suggestion.productSlNo;
-                                      //       ccategoryName = suggestion.productCategoryName;
-                                      //       cname = suggestion.productName;
-                                      //       modelName = suggestion.brandName;
-                                      //       productUnit = suggestion.unitName;
-                                      //       cvat = suggestion.vat;
-                                      //       cpurchaseRate = suggestion.productPurchaseRate;
-                                      //       _vatController.text = suggestion.vat;
-                                      //       _salesRateController.text = suggestion.productSellingPrice;
-                                      //       setState(() {
-                                      //         Total = (double.parse(_quantityController.text) * double.parse(_salesRateController.text));
-                                      //       });
-                                      //       totalStack(productStockId);
-                                      //     });
-                                      //   },
-                                      //   onSaved: (value) {},
-                                      // )
+                                      child: TypeAheadField<ProductsModel>(
+                                        controller: replaceProductController,
+                                        hideOnEmpty: false,
+                                        hideOnLoading: false,
+                                        debounceDuration: const Duration(milliseconds: 200),
+                                        builder: (context, fieldController, focusNode) {
+                                          return TextField(
+                                            controller: fieldController,
+                                            focusNode: focusNode,
+                                            style: AllTextStyle.dropDownlistStyle,
+                                            decoration: InputDecoration(
+                                              border: InputBorder.none,
+                                              contentPadding: EdgeInsets.symmetric(vertical: 3.h),
+                                              isDense: true,
+                                              hintText: 'Select Product',
+                                              hintStyle: AllTextStyle.dropDownlistStyle,
+                                              suffixIcon: productId == ''
+                                                  ? null
+                                                  : GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          replaceProductController.clear();
+                                                          fieldController.clear();
+                                                          exchangeProductId = '';
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding: EdgeInsets.only(left: 30.w),
+                                                        child: Icon(Icons.close, size: 16.r),
+                                                      ),
+                                                    ),
+                                            ),
+                                            onChanged: (value) {
+                                              if (value == '') {
+                                                setState(() {
+                                                  exchangeProductId = '';
+                                                });
+                                              }
+                                            },
+                                          );
+                                        },
+                                        suggestionsCallback: (pattern) async {
+                                          await Future.delayed(const Duration(milliseconds: 100));
+                                          if (productsData.isEmpty) return [];
+                                          final query = pattern.toLowerCase().trim();
+
+                                          if (query.isEmpty) {return productsData;}
+                                          return productsData.where((element) => element.productName.toString().toLowerCase().contains(query)).toList();
+                                        },
+                                        itemBuilder: (context, suggestion) {
+                                          return SizedBox(
+                                            width: double.infinity,
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
+                                              child: Text(
+                                                "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}",
+                                                style: AllTextStyle.dropDownlistStyle,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        onSelected: (ProductsModel suggestion) {
+                                          replaceProductController.text = "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
+                                          setState(() {
+                                            exchangeProductId = suggestion.productSlNo;
+                                            exchangeProductCode = suggestion.productCode;
+                                            exchangeProductCategory = suggestion.productCategoryName;
+                                            exchangeProductName = suggestion.productName;
+                                            replaceSalesRateController.text = suggestion.productSellingPrice;
+                                            exchangeTotalAmount = (double.parse(replaceQtyController.text) * double.parse(replaceSalesRateController.text));
+                                          });
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1252,7 +1330,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: salesRateController,
+                                        controller: replaceSalesRateController,
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
                                           contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -1266,7 +1344,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                         ),
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = double.parse(salesRateController.text);
+                                            Total = double.parse(replaceSalesRateController.text);
                                           });
                                         },
                                       ),
@@ -1280,10 +1358,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       margin: EdgeInsets.only(left: 5.w, right: 0.w),
                                       child: TextField(
                                         style: AllTextStyle.textValueStyle,
-                                        controller: quantityController,
+                                        controller: replaceQtyController,
                                         onChanged: (value) {
                                           setState(() {
-                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
+                                            exchangeTotalAmount = (double.parse(replaceQtyController.text) * double.parse(replaceSalesRateController.text));
                                           });
                                         },
                                         keyboardType: TextInputType.number,
@@ -1312,57 +1390,35 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h),
                                       decoration: ContDecoration.contDecoration,
-                                      child: Text("$Total",style: AllTextStyle.textValueStyle),
+                                      child: Text("${exchangeTotalAmount??""}",style: AllTextStyle.textValueStyle),
                                     ),
                                   ),
                                   Expanded(
                                     flex: 7,
                                     child: GestureDetector(
                                     onTap: () {
-                                      if (productController.text != '' || productController.text.isNotEmpty) {
-                                        if (quantityController.text != '' || quantityController.text.isNotEmpty){
-                                          if (availableStock > 0) {
+                                      if (replaceProductController.text != '' || replaceProductController.text.isNotEmpty) {
+                                        if (replaceQtyController.text != '' || replaceQtyController.text.isNotEmpty){
                                             setState(() {
-                                              salesCartList.add(SalesCartModel(
-                                                productId: "$productId",
-                                                categoryId: "$categoryId",
-                                                categoryName: "$ccategoryName",
-                                                name: "$cname",
-                                                salesRate: salesRateController.text,
-                                                vat: vatController.text,
-                                                quantity: quantityController.text,
-                                                total: "$Total",
-                                                purchaseRate: "$cpurchaseRate",
-                                                woodName: '$ccategoryName',
-                                                modelName: '',
-                                                productCode: '$cproductId',
-                                                isService: '$isService'
+                                              exchangeCart.add(ExchangeModel(
+                                                exchangeProductId: "$exchangeProductId",
+                                                exchangeProductCode: "$exchangeProductCode",
+                                                exchangeProductName: "$exchangeProductName",
+                                                exchangeProductCategory: "$exchangeProductCategory",
+                                                exchangeSalesRate: replaceSalesRateController.text,
+                                                exchangeQty: replaceQtyController.text,
+                                                exchangeTotalAmount: "$exchangeTotalAmount",
                                               ));
                                                             
-                                              cartTotal += Total;
-                                              calculateTotal();
-                                              categoryController.text = '';
-                                              productController.text = '';
-                                              quantityController.text = '';
-                                              salesRateController.text = '';
+                                              exchnageTotal();
+                                              replaceQtyController.text = '';
+                                              replaceProductController.text = '';
+                                              replaceSalesRateController.text = '';
                                               setState(() {
-                                                Total = 0;
-                                                calculateTotal();
-                                                discountAmount=0;
-                                                discountPer=0;
-                                                vatAmount=0;
-                                                vatPer=0;
-                                                discountController.text = "";
-                                                vatController.text = "";
-                                                discountPercentController.text="";
-                                                vatPercentageController.text="";
-                                                transportController.text="";
+                                                exchangeTotalAmount = 0;
+                                                exchnageTotal();
                                               });
-                                              availableStock = 0;
                                             });
-                                          } else {
-                                            Utils.showTopSnackBar(context, "Stock Unavailable");
-                                          }
                                         }
                                         else{
                                           Utils.showTopSnackBar(context, "Please Select Quantity");
@@ -1389,12 +1445,14 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                           ),
                         ),
                         Container(
-                          height: salesCartList.isEmpty ? 40.h:
-                          salesCartList.length == 1 ? 70.h :
-                          salesCartList.length == 2 ? 90.h :
-                          salesCartList.length == 3 ? 110.h :
-                          salesCartList.length == 4 ? 130.h :
-                          MediaQuery.of(context).size.height /6,
+                          height: exchangeCart.isEmpty ? 20.h:
+                          exchangeCart.length == 1 ? 35.h :
+                          exchangeCart.length == 2 ? 55.h :
+                          exchangeCart.length == 3 ? 75.h :
+                          exchangeCart.length == 4 ? 90.h :
+                          exchangeCart.length == 5 ? 105.h :
+                          exchangeCart.length == 6 ? 125.h :
+                          MediaQuery.of(context).size.height /4,
                           width: double.infinity,
                           padding: EdgeInsets.only(top: 1.h,bottom: 2.h,left: 3.w,right: 3.w),
                           child: SizedBox(
@@ -1421,33 +1479,25 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                     DataColumn(label: Expanded(child: Center(child: Text('Action',style: AllTextStyle.tableHeadTextStyle)))),
                                   ],
                                   rows: List.generate(
-                                    1,
-                                    //salesCartList.length,
+                                    exchangeCart.length,
                                         (int index) => DataRow(
                                       color:index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor):WidgetStateProperty.resolveWith(getColors),
                                       cells: <DataCell>[
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        DataCell(Center(child: Text("${index+1}"))),
-                                        // DataCell(Center(child: Text('${salesCartList[index].productCode}'))),
-                                        // DataCell(Center(child: Text('${salesCartList[index].name}'))),
-                                        // DataCell(Center(child: Text('${salesCartList[index].categoryName}'))),
-                                        // DataCell(Center(child: Text('${salesCartList[index].quantity}'))),
-                                        // DataCell(Center(child: Text('${salesCartList[index].salesRate}'))),
-                                        // DataCell(Center(child: Text('${salesCartList[index].total}'))),
-                                        // DataCell(Center(child: GestureDetector(
-                                        //   onTap: () {
-                                        //     removeFromCart(index);
-                                        //     setState(() {
-                                        //     });
-                                        //   },
-                                        //   child: Icon(Icons.delete,size: 16.r,color: Colors.red)
-                                        // ))),
+                                        DataCell(Center(child: Text("${index+1}",style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: Text('${exchangeCart[index].exchangeProductCode}',style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: Text('${exchangeCart[index].exchangeProductName}',style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: Text('${exchangeCart[index].exchangeProductCategory}',style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: Text('${exchangeCart[index].exchangeProductName}',style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: Text('${exchangeCart[index].exchangeSalesRate}',style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: Text('${exchangeCart[index].exchangeTotalAmount}',style: AllTextStyle.tableDataTextStyle))),
+                                        DataCell(Center(child: GestureDetector(
+                                          onTap: () {
+                                            removeExchnageCart(index);
+                                            setState(() {
+                                            });
+                                          },
+                                          child: Icon(Icons.delete,size: 16.r,color: Colors.red)
+                                        ))),
                                       ],
                                     ),
                                   ),
@@ -1529,7 +1579,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                     height: 25.h,
                                     padding: EdgeInsets.all(5.r),
                                     decoration:ContDecoration.contDecoration,
-                                    child: Text(double.parse("$subtotal").toStringAsFixed(2), style:AllTextStyle.textValueStyle),
+                                    child: Text(double.parse("$exchangetotal").toStringAsFixed(2), style:AllTextStyle.textValueStyle),
                                   )),
                                 ],
                               ),
@@ -1589,13 +1639,13 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           });
                                         },
                                         decoration: InputDecoration(contentPadding: EdgeInsets.only(left: 6.w),
-                                            hintText: "0",
-                                            hintStyle: AllTextStyle.textValueStyle,
-                                            filled: true,
-                                            fillColor: Colors.white,
-                                            border: InputBorder.none,
-                                            focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                            enabledBorder:TextFieldInputBorder.focusEnabledBorder
+                                          hintText: "0",
+                                          hintStyle: AllTextStyle.textValueStyle,
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
+                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
                                         ),
                                       ),
                                     ),
@@ -1663,13 +1713,13 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           });
                                         },
                                         decoration: InputDecoration(contentPadding: EdgeInsets.only(left: 6.w),
-                                            hintText: "0",
-                                            filled: true,
-                                            hintStyle: AllTextStyle.textValueStyle,
-                                            fillColor: Colors.white,
-                                            border: InputBorder.none,
-                                            focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                            enabledBorder:TextFieldInputBorder.focusEnabledBorder
+                                          hintText: "0",
+                                          filled: true,
+                                          hintStyle: AllTextStyle.textValueStyle,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
+                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
                                         ),
                                       ),
                                     ),
@@ -1814,62 +1864,21 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                   flex: 14,
                                   child: Container(
                                   height: 25.h,
-                                  width: MediaQuery.of(context).size.width / 2,
-                                  margin: const EdgeInsets.only(bottom: 4.0),
-                                  decoration:ContDecoration.contDecoration,
-                                //   child: TypeAheadField<BankAccountModel>(
-                                //   controller: accountController,
-                                //   builder: (context, controller, focusNode) {
-                                //   return TextField(
-                                //     controller: controller,
-                                //     focusNode: focusNode,
-                                //     style: TextStyle(fontSize: 13, color: Colors.grey.shade800, overflow: TextOverflow.ellipsis),
-                                //     decoration: InputDecoration(contentPadding: EdgeInsets.only(left: 5.0, top: 4.0),
-                                //       isDense: true,
-                                //       hintText: 'Select Bank',
-                                //       hintStyle: TextStyle(fontSize: 13),
-                                //       suffixIcon: _selectedAccount == '' || _selectedAccount == 'null' || _selectedAccount == null || controller.text == '' ? null
-                                //           : GestureDetector(
-                                //         onTap: () {
-                                //           setState(() {
-                                //             accountController.clear();
-                                //             controller.clear();
-                                //             _selectedAccount = null;
-                                //           });
-                                //         },
-                                //         child: Padding(padding: EdgeInsets.all(5), child: Icon(Icons.close, size: 16)),
-                                //       ),
-                                //       suffixIconConstraints: BoxConstraints(maxHeight: 30),
-                                //       filled: false,
-                                //       fillColor: Colors.white,
-                                //       border: InputBorder.none,
-                                //     ),
-                                //   );
-                                // },
-                                // suggestionsCallback: (pattern) async {
-                                //   return Future.delayed(const Duration(seconds: 1), () {
-                                // return allBankAccountList
-                                //   .where((element) => element.name.toLowerCase().contains(pattern.toLowerCase()))
-                                // .toList().cast<BankAccountModel>(); 
-                                //   });
-                                //   },
-                              
-                                // itemBuilder: (context, BankAccountModel suggestion) {
-                                //   return Padding(
-                                //     padding: EdgeInsets.symmetric(horizontal: 6,vertical: 4),
-                                //     child: Text("${suggestion.name}-${suggestion.number} (${suggestion.bankName})",
-                                //       style: TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis,
-                                //     ),
-                                //   );
-                                // },
-                                // onSelected: (BankAccountModel suggestion) {
-                                //       setState(() {
-                                //             accountController.text = "${suggestion.name}-${suggestion.number} (${suggestion.bankName})";
-                                //             _selectedAccount = suggestion.id.toString();
-                                //       });
-                                //     },
-                                //   ),
-                                      ),
+                                  margin: EdgeInsets.only(bottom: 3.5.h),
+                                   child: CommonTypeAheadField<BankAccountsModel>(
+                                      controller: accountController,
+                                      suggestionList: bankAccountsData,
+                                      hintText: 'Select Bank',
+                                      selectedValueId: bankAccountId,
+                                      onValueIdChanged: (id) {
+                                        setState(() {
+                                          bankAccountId = id;
+                                        });
+                                      },
+                                      displayText: (a) => "${a.accountName} - ${a.accountNumber} - (${a.bankName})",
+                                      valueId: (a) => a.accountId.toString(),
+                                     )
+                                    ),
                                     ),
                                   ],
                                 ),
@@ -2038,7 +2047,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     customerId='';
     invoiceNoController.text="";
     employeeController.text="";
-    routeController.text="";
     customerController.text="";
     nameController.text = "";
     paidController.text = "";

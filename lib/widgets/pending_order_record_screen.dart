@@ -2,8 +2,6 @@
 import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/providers/pending_order_provider.dart';
 import 'package:auto_mall/providers/pending_order_record_provider.dart';
-import 'package:auto_mall/providers/sale_records_provider.dart';
-import 'package:auto_mall/providers/sales_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:auto_mall/models/areas_model.dart';
+import 'package:auto_mall/models/bank_accounts_model.dart';
 import 'package:auto_mall/models/categories_model.dart';
 import 'package:auto_mall/models/customer_due_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
@@ -302,6 +303,25 @@ class ApiService{
         }));
       var item = response.data;
       return List.from(item).map((e) => SaleRecordsModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+  
+  //==================bank-accounts List =======================
+  static fetchBankAccountsApi() async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(bankAccounts,
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }));
+      var item = response.data;
+      return List.from(item).map((e) => BankAccountsModel.fromMap(e)).toList();
     } catch (e) {
       print(e);
     }

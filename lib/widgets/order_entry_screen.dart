@@ -1032,10 +1032,10 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                               quantity: quantityController.text,
                                               total: "$Total",
                                               purchaseRate: "$cpurchaseRate",
-                                              woodName: '$ccategoryName',
-                                              modelName: '',
                                               productCode: '$cproductId',
-                                              isService: '$isService'
+                                              isService: '$isService',
+                                              discount: "",
+                                              warranty: ""
                                              ));
                           
                                             cartTotal += Total;

@@ -5,6 +5,7 @@ String baseUrl = "https://demo.automallerp.com/";///main
 
 String login = "${baseUrl}signin";
 String logout = "${baseUrl}signout";
+String addCustomer = "${baseUrl}add-customer";
 String customers = "${baseUrl}get-customers";
 String customerDue = "${baseUrl}get-customer-due";
 String products = "${baseUrl}get-products";
@@ -16,6 +17,8 @@ String sales = "${baseUrl}get-sales";
 String saleRecords = "${baseUrl}get-sale-records";
 String saleDetails = "${baseUrl}get-sale-details";
 String ordersRecords = "${baseUrl}orders/records";
+String bankAccounts = "${baseUrl}get-bank-accounts";
+
 
 List screenItems = [
   {"name": "Order Entry", "image": "images/order.png"},

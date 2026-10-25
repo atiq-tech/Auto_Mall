@@ -907,6 +907,9 @@ void _onSelectedRecordType(String selectedValue) {
                                 "$backEndSecondtDate",
                                 "a",
                               );
+                              print("UserId=====$userId");
+                              print("backEndFirstDate=====$backEndFirstDate");
+                              print("backEndSecondtDate=====$backEndSecondtDate");
                             }
                            });
                         },
