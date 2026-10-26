@@ -11,6 +11,7 @@ import 'package:auto_mall/widgets/customer_entry_screen.dart';
 import 'package:auto_mall/widgets/order_entry_screen.dart';
 import 'package:auto_mall/widgets/product_list_screen.dart';
 import 'package:auto_mall/widgets/sales_entry_screen.dart';
+import 'package:auto_mall/widgets/sales_invoice_list_screen.dart';
 import 'package:auto_mall/widgets/sales_record_screen.dart';
 import 'package:auto_mall/widgets/visit_entry_screen.dart';
 import 'package:flutter/material.dart';
@@ -332,15 +333,15 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 2) {
+                        //else if (index == 2) {
                         //Navigator.push(context,MaterialPageRoute(builder: (context) => const PendingOrderRecordScreen()));
                         // if (salesInvoice == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CODRecordScreen()));
                         // } else {
                         //   showCustomDialog(context);
                         // }
-                      } 
-                      else if (index == 3) {
+                        //} 
+                      else if (index == 2) {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryScreen()));
                         // if (salesEntry == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryScreen()));
@@ -348,7 +349,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 4) {
+                      else if (index == 3) {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordScreen()));
                         // if (salesRecord == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordPage()));
@@ -356,14 +357,15 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 5) {
+                      else if (index == 4) {
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => const SalesInvoiceListScreen()));
                         // if (salesInvoice == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const AllSalesInvoicePage()));
+                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const SalesInvoiceListScreen()));
                         // } else {
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 6) {
+                      else if (index == 5) {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => ProductListScreen()));
                         // if (productList == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductListScreen()));
@@ -371,7 +373,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 7) {
+                      else if (index == 6) {
                          Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
                         // if (categoryList == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CategoryListScreen()));
@@ -379,7 +381,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 8) {
+                      else if (index == 7) {
                         Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerListScreen()));
                         // if (customerEntry == "true" || userType == "m" || userType == "a") {
                         //    Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
@@ -387,7 +389,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 9) {
+                      else if (index == 8) {
                         Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerDueListScreen()));
                         // if (customerList == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListScreen()));
@@ -395,7 +397,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                         //   showCustomDialog(context);
                         // }
                       } 
-                      else if (index == 10) {
+                      else if (index == 9) {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryScreen()));
                         // if (visitEntry == "true" || userType == "m" || userType == "a") {
                         //   Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryScreen()));

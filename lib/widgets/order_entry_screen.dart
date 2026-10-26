@@ -1,10 +1,21 @@
 import 'dart:convert';
+import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
+import 'package:auto_mall/models/bank_accounts_model.dart';
+import 'package:auto_mall/models/customers_model.dart';
+import 'package:auto_mall/models/employees_model.dart';
+import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/models/sales_cart_model.dart';
+import 'package:auto_mall/providers/bank_accounts_provider.dart';
+import 'package:auto_mall/providers/customers_provider.dart';
+import 'package:auto_mall/providers/employees_provider.dart';
+import 'package:auto_mall/providers/products_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../common_widget/custom_appbar.dart';
 import '../../utils/all_textstyle.dart';
@@ -45,7 +56,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   final warrantyController = TextEditingController();
   final transportController = TextEditingController();
   final customerController = TextEditingController();
-  final empluyeeNameController = TextEditingController();
+  final employeeController = TextEditingController();
   final categoryController = TextEditingController();
   final branchController = TextEditingController();
   final routeController = TextEditingController();
@@ -57,6 +68,8 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   final creditController = TextEditingController();
   bool isCourier = false;
   final courierController = TextEditingController();
+  final disPercentController = TextEditingController();
+  final disAmountController = TextEditingController();
 
   var customerSlNo;
   String? customerType = '';
@@ -64,10 +77,9 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   String? customerAddress;
   String? productId;
   String? categoryId;
-  String? branchId;
-  String? _selectedCustomer;
-  String? _selectedRoute;
-  String? employeeSlNo;
+  String? customerId;
+  String? employeeId;
+  String? bankAccountId;
   String level = "retail";
   var availableStock = 0;
   String? productUnit;
@@ -112,6 +124,28 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   ///
   List<SalesCartModel> salesCartList = [];
 
+  
+   // Subtotal বের করার জন্য (Qty × Sales Rate)
+  double _getSubTotal() {
+    double qty = double.tryParse(quantityController.text) ?? 0;
+    double rate = double.tryParse(salesRateController.text) ?? 0;
+    return qty * rate;
+  }
+
+  // Final Amount হিসাব করার জন্য
+  void calculateAmount() {
+    double subTotal = _getSubTotal();
+    double discountTk = double.tryParse(disAmountController.text) ?? 0;
+
+    // Negative discount যাতে না হয়
+    if (discountTk < 0) discountTk = 0;
+    if (discountTk > subTotal) discountTk = subTotal;
+
+    setState(() {
+      Total = subTotal - discountTk;
+    });
+  }
+
   String? previousDue;
   String? cproductId;
   String? productCode;
@@ -137,12 +171,12 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   void initState() {
     super.initState();
     _initializeData();
-    // Provider.of<EmployeeProvider>(context,listen: false).getEmployee();
-    // Provider.of<ProductListProvider>(context,listen: false).getProduct("","");
-    // Provider.of<RouteProvider>(context, listen: false).getRoute();
-    // CustomerListProvider.isCustomerTypeChange = true;
-    // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList(level, "","");
-     quantityController.text = "1";
+    Provider.of<EmployeesProvider>(context,listen: false).getEmployees();
+    CustomersProvider().on();
+    Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
+    Provider.of<ProductsProvider>(context,listen: false).getProducts();
+    Provider.of<BankAccountsProvider>(context,listen: false).getBankAccounts();
+    quantityController.text = "1";
     discountPercentController.text = "0";
     getOrderInvoice();
 
@@ -196,11 +230,11 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-    // final allEmployee = Provider.of<EmployeeProvider>(context).allEmployeeList;
-    // final allRouteData = Provider.of<RouteProvider>(context).allRouteList;
-    // final allCustomer = Provider.of<CustomerListProvider>(context).customerList;
-    // final productList = Provider.of<ProductListProvider>(context).allProductList;
+    final employeesData = Provider.of<EmployeesProvider>(context).employeesList;
+    final customersData = Provider.of<CustomersProvider>(context).customersList;
+    print("customersData======${customersData.length}");
+    final productsData = Provider.of<ProductsProvider>(context).productsList;
+    final bankAccountsData = Provider.of<BankAccountsProvider>(context).bankAccounts;
     return Scaffold(
         appBar: CustomAppBar(title: "Order Entry"),
         body: ModalProgressHUD(
@@ -218,7 +252,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.only(bottom: 10.h),
-                    padding: EdgeInsets.only(left: 4.r, right: 4.r, top: 4.r),
+                    padding: EdgeInsets.only(left: 4.r, right: 4.r),
                     decoration: BoxDecoration(
                       color: const Color.fromARGB(255, 206, 232, 184),
                       borderRadius: BorderRadius.circular(10.r),
@@ -234,26 +268,6 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                     ),
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(child: Text("Invoice no :",style: AllTextStyle.textFieldHeadStyle)),
-                            Expanded(
-                              flex:3,
-                              child: Container(
-                                height: 25.h,
-                                decoration: ContDecoration.contDecoration,
-                                child: TextField(
-                                  style: AllTextStyle.dateFormatStyle,
-                                  controller: invoiceNoController,
-                                  decoration: InputDecoration(
-                                      contentPadding: EdgeInsets.only(bottom: 14.h,left: 5.w),
-                                      border: InputBorder.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -307,71 +321,21 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                             Expanded(
                               flex:3,
                               child: Container(
-                                margin: EdgeInsets.only(top: 5.h, bottom: 5.h),
+                                margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
                                 height: 25.h,
-                                padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                                decoration: ContDecoration.contDecoration,
-                                // child: TypeAheadFormField(
-                                //   textFieldConfiguration:
-                                //   TextFieldConfiguration(
-                                //     onChanged: (value){
-                                //       if (value == '') {
-                                //         employeeSlNo = '';
-                                //       }
-                                //     },
-                                //     style: AllTextStyle.dropDownlistStyle,
-                                //     controller: empluyeeNameController,
-                                //     decoration: InputDecoration(
-                                //       border: InputBorder.none,
-                                //       contentPadding: EdgeInsets.symmetric(vertical: 3.h),
-                                //       isDense: true,
-                                //       hintText: 'Select Employee',
-                                //       hintStyle: AllTextStyle.dropDownlistStyle,
-                                //       suffixIcon: employeeSlNo == '' ? null : GestureDetector(
-                                //         onTap: () {
-                                //           setState(() {
-                                //             empluyeeNameController.text = '';
-                                //           });
-                                //         },
-                                //         child: Padding(
-                                //         padding: EdgeInsets.only(left: 25.w),
-                                //         child: Icon(Icons.close,size: 16.r,),
-                                //       ),
-                                //       ),
-                                //     ),
-                                //   ),
-                                //   suggestionsCallback: (pattern) {
-                                //     return allEmployee
-                                //         .where((element) => element.employeeName
-                                //         .toString()
-                                //         .toLowerCase()
-                                //         .contains(pattern
-                                //         .toString()
-                                //         .toLowerCase()))
-                                //         .take(allEmployee.length)
-                                //         .toList();
-                                //   },
-                                //   itemBuilder: (context, suggestion) {
-                                //     return SizedBox(
-                                //       child: Padding(
-                                //         padding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 10.w),
-                                //         child: Text(suggestion.employeeName,
-                                //           style: AllTextStyle.dropDownlistStyle,
-                                //           maxLines: 1,overflow: TextOverflow.ellipsis),
-                                //       ),
-                                //     );
-                                //   },
-                                //   transitionBuilder:(context, suggestionsBox, controller) {
-                                //     return suggestionsBox;
-                                //   },
-                                //   onSuggestionSelected:(EmployeeModel suggestion) {
-                                //     empluyeeNameController.text = suggestion.employeeName;
-                                //     setState(() {
-                                //       employeeSlNo = suggestion.employeeSlNo.toString();
-                                //     });
-                                //   },
-                                //   onSaved: (value) {},
-                                // ),
+                                child: CommonTypeAheadField<EmployeesModel>(
+                                controller: employeeController,
+                                suggestionList: employeesData,
+                                hintText: 'Select Employee',
+                                selectedValueId: employeeId,
+                                onValueIdChanged: (id) {
+                                  setState(() {
+                                    employeeId = id;
+                                  });
+                                },
+                                displayText: (e) => e.employeeName??"",
+                                valueId: (e) => e.employeeSlNo.toString(),
+                              )
                               ),
                             ),
                           ],
@@ -439,13 +403,13 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                               setState(() {
                                                 level = value.toString();
                                                 print(level);
-                                                // CustomerListProvider().on();
-                                                // customerController.text = '';
-                                                // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList(level,"","");
+                                                CustomersProvider().on();
+                                                customerController.text = '';
+                                                Provider.of<CustomersProvider>(context, listen: false).getCustomers(level);
                                               });
                                             }),
                                       ),
-                                      const Text("Retail"),
+                                     Text("Retail",style: AllTextStyle.textFieldHeadStyle),
                                     ],
                                   ),
                                   Row(
@@ -463,20 +427,20 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                               setState(() {
                                                 level = value.toString();
                                                 print(level);
-                                              //   CustomerListProvider().on();
-                                              //   customerController.text = '';
-                                              //  Provider.of<CustomerListProvider>(context, listen: false).getCustomerList(level,"","");
+                                                CustomersProvider().on();
+                                                customerController.text = '';
+                                                Provider.of<CustomersProvider>(context, listen: false).getCustomers(level);
                                               });
                                             }),
                                       ),
-                                      const Text("Wholesale"),
+                                      Text("Wholesale",style: AllTextStyle.textFieldHeadStyle),
                                     ],
                                   ),
                                 ],
                               ), // radio button
                               Row(
                                 children: [
-                                  SizedBox(width: 5.w),
+                                  SizedBox(width: 9.w),
                                   Text("Customer :",style: AllTextStyle.textFieldHeadStyle),
                                   SizedBox(width: 16.w),
                                   Expanded(
@@ -486,91 +450,115 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                       height: 25.h,
                                       padding: EdgeInsets.only(left: 5.w, right: 3.w),
                                       decoration: ContDecoration.contDecoration,
-                                      // child: TypeAheadFormField(
-                                      //   textFieldConfiguration:
-                                      //   TextFieldConfiguration(
-                                      //       onChanged: (value){
-                                      //         if (value == '') {
-                                      //           _selectedCustomer = '';
-                                      //         }
-                                      //       },
-                                      //       style: AllTextStyle.dropDownlistStyle,
-                                      //       controller: customerController,
-                                      //       decoration: InputDecoration(
-                                      //         border: InputBorder.none,
-                                      //         contentPadding: EdgeInsets.symmetric(vertical: 3.h),
-                                      //         hintText: 'Select Customer',
-                                      //         isDense: true,
-                                      //         hintStyle: AllTextStyle.dropDownlistStyle,
-                                      //         suffixIcon: _selectedCustomer == '' ? null : GestureDetector(
-                                      //           onTap: () {
-                                      //             setState(() {
-                                      //               customerController.text = '';
-                                      //               _mobileNumberController.text = '';
-                                      //               _addressController.text = '';
-                                      //             });
-                                      //           },
-                                      //           child: Padding(
-                                      //             padding: EdgeInsets.only(left: 25.w),
-                                      //             child: Icon(Icons.close,size: 16.r),
-                                      //           ),
-                                      //         ),
-                                      //       )
-                                      //   ),
-                                      //   suggestionsCallback: (pattern) {
-                                      //     return allCustomer.where((element) => element.displayName!
-                                      //         .toLowerCase().contains(pattern
-                                      //         .toString().toLowerCase())).take(allCustomer.length).toList();
-                                      //   },
-                                      //   itemBuilder: (context, suggestion) {
-                                      //     return SizedBox(
-                                      //       width: double.infinity,
-                                      //       child: Padding(
-                                      //         padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
-                                      //         child: Text(
-                                      //           allCustomer[0].displayName=="Cash Customer" ?
-                                      //           "${suggestion.displayName}":
-                                      //           "${suggestion.customerCode ?? ''} - ${suggestion.customerName?? ''} - ${suggestion.customerAddress?? ''}",
-                                      //           style: AllTextStyle.dropDownlistStyle,
-                                      //           maxLines: 1,
-                                      //           overflow: TextOverflow.ellipsis,
-                                      //         ),
-                                      //       ),
-                                      //     );
-                                      //   },
-                                      //   transitionBuilder:(context, suggestionsBox, controller) {
-                                      //     return suggestionsBox;
-                                      //   },
-                                      //   onSuggestionSelected: (CustomerListModel suggestion) {
-                                      //     customerController.text = suggestion.customerName!;
-                                      //     setState(() {
-                                      //       _selectedCustomer = suggestion.customerSlNo.toString();
-                                      //       customerSlNo = suggestion.customerSlNo.toString();
-                                      //       customerType = suggestion.customerType.toString();
-                                      //       previousDue = suggestion.previousDue.toString();
-                                      //       print("customer selected ======> $_selectedCustomer");
-                                      //       if (_selectedCustomer == 'null'|| _selectedCustomer =="") {
-                                      //         isVisible = true;
-                                      //         isEnabled = true;
-                                      //         _nameController.text = '';
-                                      //         _mobileNumberController.text = '';
-                                      //         _addressController.text = '';
-                                      //       } else {
-                                      //         print("Yes has $_selectedCustomer");
-                                      //         isEnabled = false;
-                                      //         isVisible = false;
-                                      //         customerMobile = suggestion.customerMobile;
-                                      //         _mobileNumberController.text = suggestion.customerMobile.toString();
-                                      //         customerAddress = suggestion.customerAddress;
-                                      //         _addressController.text = suggestion.customerAddress.toString();  
-                                      //       }
-                                      //       print('isVisible $isVisible');
-                                      //     });
-                                      //   },
-                                      //   onSaved: (value) {},
-                                      // ),
+                                      child: TypeAheadField<CustomersModel>(
+                                        controller: customerController,
+                                        hideOnEmpty: false,          
+                                        hideOnLoading: false,
+                                        debounceDuration: const Duration(milliseconds: 200),
+                                        builder: (context, fieldController, focusNode) {
+                                          return TextField(
+                                            controller: fieldController,
+                                            focusNode: focusNode,
+                                            style: AllTextStyle.dropDownlistStyle,
+                                            decoration: InputDecoration(
+                                              border: InputBorder.none,
+                                              contentPadding: EdgeInsets.symmetric(vertical: 3.h),
+                                              hintText: 'Select Customer',
+                                              isDense: true,
+                                              hintStyle: AllTextStyle.dropDownlistStyle,
+                                              suffixIcon: customerId == ''
+                                                  ? null
+                                                  : GestureDetector(
+                                                      onTap: () {
+                                                        setState(() {
+                                                          customerController.clear();
+                                                          fieldController.clear();
+                                                          customerId = '';
+                                                          mobileNumberController.clear();
+                                                          addressController.clear();
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding: EdgeInsets.only(left: 25.w),
+                                                        child: Icon(Icons.close, size: 16.r),
+                                                      ),
+                                                    ),
+                                            ),
+                                            onChanged: (value) {
+                                              if (value.isEmpty) {
+                                                setState(() {
+                                                  customerId = '';
+                                                });
+                                              }
+                                            },
+                                          );
+                                        },
+                                        suggestionsCallback: (pattern) async {
+                                          // ছোট delay দিলে suggestions ভালো কাজ করে
+                                          await Future.delayed(const Duration(milliseconds: 100));
+
+                                          if (customersData.isEmpty) return [];
+
+                                          final query = pattern.toLowerCase().trim();
+
+                                          if (query.isEmpty) {
+                                            // কিছু না লিখলে পুরো লিস্ট দেখাবে
+                                            return customersData;
+                                          }
+
+                                          return customersData
+                                              .where((element) {
+                                                final name = (element.displayName ?? '').toLowerCase();
+                                                final code = (element.customerCode ?? '').toLowerCase();
+                                                final customerName = (element.customerName ?? '').toLowerCase();
+                                                return name.contains(query) ||
+                                                    code.contains(query) ||
+                                                    customerName.contains(query);
+                                              })
+                                              .toList();
+                                        },
+                                        itemBuilder: (context, suggestion) {
+                                          return Padding(
+                                            padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 8.w),
+                                            child: Text(
+                                              suggestion.displayName ?? suggestion.customerName ?? '',
+                                              style: AllTextStyle.dropDownlistStyle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          );
+                                        },
+                                        onSelected: (CustomersModel suggestion) {
+                                          customerController.text = suggestion.customerName ?? suggestion.displayName ?? '';
+                                          setState(() {
+                                            customerId = suggestion.customerSlNo?.toString() ?? '';
+                                            customerSlNo = suggestion.customerSlNo?.toString() ?? '';
+                                            customerType = suggestion.customerType?.toString() ?? '';
+                                            previousDue = suggestion.previousDue?.toString() ?? '';
+
+                                            print("customer selected ======> $customerId");
+
+                                            if (customerId == "0" || customerId == 'null') {
+                                              isVisible = true;
+                                              isEnabled = true;
+                                              nameController.clear();
+                                              mobileNumberController.clear();
+                                              addressController.clear();
+                                            } else {
+                                              print("Yes has $customerId");
+                                              isEnabled = false;
+                                              isVisible = false;
+                                              customerMobile = suggestion.customerMobile;
+                                              mobileNumberController.text = suggestion.customerMobile?.toString() ?? '';
+                                              customerAddress = suggestion.customerAddress;
+                                              addressController.text = suggestion.customerAddress?.toString() ?? '';
+                                            }
+                                            print('isVisible $isVisible');
+                                          });
+                                        },
+                                      ),
                                     ),
-                                  ),
+                                                                      ),
                                 ],
                               ), // drop down
                               Visibility(
@@ -635,7 +623,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           return null;
                                         },
                                         decoration: InputDecoration(
-                                          contentPadding: _selectedCustomer==""? EdgeInsets.symmetric(vertical: 5.h,horizontal: 5.w): EdgeInsets.symmetric(vertical: 11.5.h,horizontal: 5.w),
+                                          contentPadding: customerId==""? EdgeInsets.symmetric(vertical: 5.h,horizontal: 5.w): EdgeInsets.symmetric(vertical: 11.5.h,horizontal: 5.w),
                                           border: InputBorder.none,
                                           focusedBorder:TextFieldInputBorder.focusEnabledBorder,
                                           enabledBorder:TextFieldInputBorder.focusEnabledBorder,
@@ -670,7 +658,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                         },
                                         enabled: isEnabled,
                                         decoration: InputDecoration(
-                                          contentPadding: _selectedCustomer==""? EdgeInsets.only(bottom: 5.h,left: 5.w): EdgeInsets.symmetric(vertical: 12.h,horizontal: 5.w),
+                                          contentPadding: customerId==""? EdgeInsets.only(bottom: 5.h,left: 5.w): EdgeInsets.symmetric(vertical: 12.h,horizontal: 5.w),
                                           border: InputBorder.none,
                                           focusedBorder:TextFieldInputBorder.focusEnabledBorder,
                                           enabledBorder:TextFieldInputBorder.focusEnabledBorder
@@ -688,7 +676,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                       ],
                     ),
                   ),
-                  Container(
+                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.only(top: 10.h),
                     decoration: BoxDecoration(
@@ -728,363 +716,418 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                           ),
                         ),
                         Container(
-                          padding: EdgeInsets.all(4.r),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(flex: 4,child: Text("Product",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 14,
-                                    child: Container(
-                                      height: 25.h,
-                                      padding: EdgeInsets.only(left: 5.w, right: 5.w),
-                                      margin: EdgeInsets.only(bottom: 4.h),
-                                      decoration: ContDecoration.contDecoration,
-                                      // child: TypeAheadFormField(
-                                      //   textFieldConfiguration: TextFieldConfiguration(
-                                      //       onChanged: (value){
-                                      //         if (value == '') {
-                                      //           _selectedProduct = '';
-                                      //         }
-                                      //       },
-                                      //       style: AllTextStyle.dropDownlistStyle,
-                                      //       controller: productController,
-                                      //       decoration: InputDecoration(
-                                      //         border: InputBorder.none,
-                                      //         contentPadding: EdgeInsets.symmetric(vertical: 3.h),
-                                      //         isDense: true,
-                                      //         hintText: 'Select Product',
-                                      //         hintStyle: AllTextStyle.dropDownlistStyle,
-                                      //         suffixIcon: _selectedProduct == '' ? null : GestureDetector(
-                                      //           onTap: () {
-                                      //             setState(() {
-                                      //               productController.text = '';
-                                      //             });
-                                      //           },
-                                      //           child: Padding(
-                                      //             padding: EdgeInsets.only(left: 30.w),
-                                      //             child: Icon(Icons.close,size: 16.r),
-                                      //           ),
-                                      //         ),
-                                      //       )
-                                      //   ),
-                                      //   suggestionsCallback: (pattern) {
-                                      //     return productList
-                                      //         .where((element) => element.displayText
-                                      //         .toString()
-                                      //         .toLowerCase()
-                                      //         .contains(pattern
-                                      //         .toString()
-                                      //         .toLowerCase()))
-                                      //         .take(productList.length)
-                                      //         .toList();
-                                      //   },
-                                      //   itemBuilder: (context, suggestion) {
-                                      //     return SizedBox(
-                                      //       width: double.infinity,
-                                      //       child: Padding(
-                                      //         padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
-                                      //         child: Text("${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}",
-                                      //           style:  AllTextStyle.dropDownlistStyle,
-                                      //           maxLines: 1,
-                                      //           overflow: TextOverflow.ellipsis,
-                                      //         ),
-                                      //       ),
-                                      //     );
-                                      //   },
-                                      //   transitionBuilder: (context, suggestionsBox, controller) {
-                                      //     return suggestionsBox;
-                                      //   },
-                                      //   onSuggestionSelected: (ProductListModel suggestion) {
-                                      //     productController.text = "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
-                                      //     setState(() {
-                                      //       _selectedProduct = suggestion.productSlNo;
-                                      //       print("dfhsghdfkhgkh $_selectedProduct");
-                                      //       cproductId = suggestion.productCode;
-                                      //       productId = suggestion.productSlNo;
-                                      //       isService = suggestion.isService;
-                                      //       productStockId = suggestion.productSlNo;
-                                      //       ccategoryName = suggestion.productCategoryName;
-                                      //       cname = suggestion.productName;
-                                      //       modelName = suggestion.brandName;
-                                      //       productUnit = suggestion.unitName;
-                                      //       cvat = suggestion.vat;
-                                      //       cpurchaseRate = suggestion.productPurchaseRate;
-                                      //       _vatController.text = suggestion.vat;
-                                      //       _salesRateController.text = suggestion.productSellingPrice;
-                                      //       setState(() {
-                                      //         Total = (double.parse(_quantityController.text) * double.parse(_salesRateController.text));
-                                      //       });
-                                      //       totalStack(productStockId);
-                                      //     });
-                                      //   },
-                                      //   onSaved: (value) {},
-                                      // )
-                                    ),
-                                  ),
-                                ],
-                              ), // product
-                          
-                              Row(
-                                children: [
-                                  Expanded(flex: 4,child: Text("Sales Rate",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 6,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: salesRateController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
-                                          hintText: "0",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = double.parse(salesRateController.text);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(flex: 2,child: Center(child: Text("Qty",style: AllTextStyle.textFieldHeadStyle))),
-                                  Expanded(
-                                    flex: 6,
-                                    child: Container(
-                                      height: 25.h,
-                                      margin: EdgeInsets.only(left: 5.w, right: 0.w),
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: quantityController,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
-                                          });
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                                          hintText: "0",
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), // quantity
-                              SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Expanded(flex: 4,child: Text("Discount%",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 6,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: salesRateController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
-                                          hintText: "0",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = double.parse(salesRateController.text);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(flex: 2,child: Center(child: Text("TK",style: AllTextStyle.textFieldHeadStyle))),
-                                  Expanded(
-                                    flex: 6,
-                                    child: Container(
-                                      height: 25.h,
-                                      margin: EdgeInsets.only(left: 5.w, right: 0.w),
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: quantityController,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            Total = (double.parse(quantityController.text) * double.parse(salesRateController.text));
-                                          });
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                                          hintText: "0",
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), // quantity
-                              SizedBox(height: 4.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Expanded(flex: 4,child: Text("Amount",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 7,
-                                    child: Container(
-                                      margin: EdgeInsets.only(bottom: 0.h, right: 5.w),
-                                      height: 25.h,
-                                      padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h, bottom: 0.h),
-                                      decoration: ContDecoration.contDecoration,
-                                      child: Text("$Total",style: AllTextStyle.textValueStyle),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 7,
-                                    child: Container(
-                                      height: 25.h,
-                                      decoration: ContDecoration.contDecoration,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          availableStock != 0 ? Text("Stock,", style: TextStyle(color: Colors.green.shade700,fontSize: 12.sp)): Text("Stock,", style: TextStyle(color: Colors.red,fontSize: 12.sp)),
-                                          Text("$availableStock ${productUnit ?? ""}",
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(fontSize: 12.sp,color:availableStock != 0 ? Colors.green.shade700 : Colors.red),
+                        padding: EdgeInsets.all(4.r),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            // ===================== Product =====================
+                            Row(
+                              children: [
+                                Expanded(flex: 4, child: Text("Product", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 14,
+                                  child: Container(
+                                    height: 25.h,
+                                    padding: EdgeInsets.only(left: 5.w, right: 5.w),
+                                    margin: EdgeInsets.only(bottom: 4.h),
+                                    decoration: ContDecoration.contDecoration,
+                                    child: TypeAheadField<ProductsModel>(
+                                      controller: productController,
+                                      hideOnEmpty: false,
+                                      hideOnLoading: false,
+                                      debounceDuration: const Duration(milliseconds: 200),
+                                      builder: (context, fieldController, focusNode) {
+                                        return TextField(
+                                          controller: fieldController,
+                                          focusNode: focusNode,
+                                          style: AllTextStyle.dropDownlistStyle,
+                                          decoration: InputDecoration(
+                                            border: InputBorder.none,
+                                            contentPadding: EdgeInsets.symmetric(vertical: 3.h),
+                                            isDense: true,
+                                            hintText: 'Select Product',
+                                            hintStyle: AllTextStyle.dropDownlistStyle,
+                                            suffixIcon: productId == ''
+                                                ? null
+                                                : GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        productController.clear();
+                                                        fieldController.clear();
+                                                        productId = '';
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding: EdgeInsets.only(left: 30.w),
+                                                      child: Icon(Icons.close, size: 16.r),
+                                                    ),
+                                                  ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ), 
-                              SizedBox(height: 4.h),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Expanded(flex: 4,child: Text("Warranty",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(flex: 1,child: Text(":",style: AllTextStyle.textFieldHeadStyle)),
-                                  Expanded(
-                                    flex: 14,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.textValueStyle,
-                                        controller: warrantyController,
-                                        onChanged: (value) {
-                                          
-                                        },
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
-                                          hintText: "0",
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),// product
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (productController.text != '' || productController.text.isNotEmpty) {
-                                      if (quantityController.text != '' || quantityController.text.isNotEmpty){
-                                        if (availableStock > 0) {
-                                          setState(() {
-                                            salesCartList.add(SalesCartModel(
-                                              productId: "$productId",
-                                              categoryId: "$categoryId",
-                                              categoryName: "$ccategoryName",
-                                              name: "$cname",
-                                              salesRate: salesRateController.text,
-                                              vat: vatController.text,
-                                              quantity: quantityController.text,
-                                              total: "$Total",
-                                              purchaseRate: "$cpurchaseRate",
-                                              productCode: '$cproductId',
-                                              isService: '$isService',
-                                              discount: "",
-                                              warranty: ""
-                                             ));
-                          
-                                            cartTotal += Total;
-                                            calculateTotal();
-                                            categoryController.text = '';
-                                            productController.text = '';
-                                            quantityController.text = '';
-                                            salesRateController.text = '';
-                                            setState(() {
-                                              Total = 0;
-                                              calculateTotal();
-                                              discountAmount=0;
-                                              discountPer=0;
-                                              vatAmount=0;
-                                              vatPer=0;
-                                              discountController.text = "";
-                                              vatController.text = "";
-                                              discountPercentController.text="";
-                                              vatPercentageController.text="";
-                                              transportController.text="";
-                                            });
-                                            availableStock = 0;
-                                          });
-                                        } else {
-                                          Utils.showTopSnackBar(context, "Stock Unavailable");
+                                          onChanged: (value) {
+                                            if (value == '') {
+                                              setState(() {
+                                                productId = '';
+                                              });
+                                            }
+                                          },
+                                        );
+                                      },
+                                      suggestionsCallback: (pattern) async {
+                                        await Future.delayed(const Duration(milliseconds: 100));
+
+                                        if (productsData.isEmpty) return [];
+
+                                        final query = pattern.toLowerCase().trim();
+
+                                        if (query.isEmpty) {
+                                          return productsData;
                                         }
-                                      }
-                                      else{
-                                        Utils.showTopSnackBar(context, "Please Select Quantity");
+
+                                        return productsData
+                                            .where((element) => element.productName
+                                                .toString()
+                                                .toLowerCase()
+                                                .contains(query))
+                                            .toList();
+                                      },
+                                      itemBuilder: (context, suggestion) {
+                                        return SizedBox(
+                                          width: double.infinity,
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 10.w),
+                                            child: Text(
+                                              "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}",
+                                              style: AllTextStyle.dropDownlistStyle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      onSelected: (ProductsModel suggestion) {
+                                        productController.text =
+                                            "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
+
+                                        setState(() {
+                                          productId = suggestion.productSlNo;
+                                          print("dfhsghdfkhgkh $productId");
+                                          cproductId = suggestion.productCode;
+                                          productId = suggestion.productSlNo;
+                                          isService = suggestion.isService;
+                                          productStockId = suggestion.productSlNo;
+                                          ccategoryName = suggestion.productCategoryName;
+                                          cname = suggestion.productName;
+                                          modelName = suggestion.brandName;
+                                          productUnit = suggestion.unitName;
+                                          cvat = suggestion.vat;
+                                          cpurchaseRate = suggestion.productPurchaseRate;
+                                          vatController.text = suggestion.vat;
+                                          salesRateController.text = suggestion.productSellingPrice;
+
+                                          // Clear previous discount when new product selected
+                                          disPercentController.clear();
+                                          disAmountController.clear();
+
+                                          calculateAmount(); // <-- new calculation
+                                          totalStack(productStockId);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // product
+
+                            // ===================== Sales Rate + Qty =====================
+                            Row(
+                              children: [
+                                Expanded(flex: 4, child: Text("Sales Rate", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 6,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: salesRateController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+                                        hintText: "0",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                      onChanged: (value) {
+                                        calculateAmount(); // <-- updated
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Expanded(flex: 2, child: Center(child: Text("Qty", style: AllTextStyle.textFieldHeadStyle))),
+                                Expanded(
+                                  flex: 6,
+                                  child: Container(
+                                    height: 25.h,
+                                    margin: EdgeInsets.only(left: 5.w, right: 0.w),
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: quantityController,
+                                      onChanged: (value) {
+                                        calculateAmount(); // <-- updated
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        hintText: "0",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // quantity
+
+                            SizedBox(height: 4.h),
+
+                            // ===================== Discount % + Discount TK =====================
+                            Row(
+                              children: [
+                                Expanded(flex: 4, child: Text("Discount%", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 6,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: disPercentController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+                                        hintText: "0",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                      onChanged: (value) {
+                                        // When % is changed → calculate Discount Amount
+                                        double subTotal = _getSubTotal();
+                                        double percent = double.tryParse(value) ?? 0;
+
+                                        double discountTk = (subTotal * percent) / 100;
+                                        disAmountController.text = discountTk.toStringAsFixed(2);
+
+                                        calculateAmount();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Expanded(flex: 2, child: Center(child: Text("TK", style: AllTextStyle.textFieldHeadStyle))),
+                                Expanded(
+                                  flex: 6,
+                                  child: Container(
+                                    height: 25.h,
+                                    margin: EdgeInsets.only(left: 5.w, right: 0.w),
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: disAmountController,
+                                      onChanged: (value) {
+                                        // When TK is changed → calculate Discount %
+                                        double subTotal = _getSubTotal();
+                                        double discountTk = double.tryParse(value) ?? 0;
+
+                                        if (subTotal > 0) {
+                                          double percent = (discountTk / subTotal) * 100;
+                                          disPercentController.text = percent.toStringAsFixed(2);
+                                        } else {
+                                          disPercentController.text = "0";
+                                        }
+
+                                        calculateAmount();
+                                      },
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        hintText: "0",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // discount
+
+                            SizedBox(height: 4.h),
+
+                            // ===================== Amount + Stock =====================
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 4, child: Text("Amount", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 7,
+                                  child: Container(
+                                    margin: EdgeInsets.only(bottom: 0.h, right: 5.w),
+                                    height: 25.h,
+                                    padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h, bottom: 0.h),
+                                    decoration: ContDecoration.contDecoration,
+                                    child: Text("$Total", style: AllTextStyle.textValueStyle),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 7,
+                                  child: Container(
+                                    height: 25.h,
+                                    decoration: ContDecoration.contDecoration,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        availableStock != 0
+                                            ? Text("Stock,", style: TextStyle(color: Colors.green.shade700, fontSize: 12.sp))
+                                            : Text("Stock,", style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                                        Text(
+                                          "$availableStock ${productUnit ?? ""}",
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            color: availableStock != 0 ? Colors.green.shade700 : Colors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            SizedBox(height: 4.h),
+
+                            // ===================== Warranty =====================
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 4, child: Text("Warranty", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(flex: 1, child: Text(":", style: AllTextStyle.textFieldHeadStyle)),
+                                Expanded(
+                                  flex: 14,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.textValueStyle,
+                                      controller: warrantyController,
+                                      onChanged: (value) {},
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 6.w),
+                                        hintText: "0",
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ), // product
+
+                            // ===================== Add to cart Button =====================
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: GestureDetector(
+                                onTap: () {
+                                  if (productController.text != '' || productController.text.isNotEmpty) {
+                                    if (quantityController.text != '' || quantityController.text.isNotEmpty) {
+                                      if (availableStock > 0) {
+                                        setState(() {
+                                          salesCartList.add(SalesCartModel(
+                                            productId: "$productId",
+                                            categoryId: "$categoryId",
+                                            categoryName: "$ccategoryName",
+                                            name: "$cname",
+                                            salesRate: salesRateController.text,
+                                            vat: vatController.text,
+                                            quantity: quantityController.text,
+                                            total: "$Total",
+                                            purchaseRate: "$cpurchaseRate",
+                                            productCode: '$cproductId',
+                                            isService: '$isService',
+                                            discount: disPercentController.text,
+                                            warranty: warrantyController.text,
+                                          ));
+
+                                          cartTotal += Total;
+                                          calculateTotal();
+                                          categoryController.text = '';
+                                          productController.text = '';
+                                          quantityController.text = '';
+                                          salesRateController.text = '';
+                                          disPercentController.clear();
+                                          disAmountController.clear();
+
+                                          setState(() {
+                                            Total = 0;
+                                            calculateTotal();
+                                            discountAmount = 0;
+                                            discountPer = 0;
+                                            vatAmount = 0;
+                                            vatPer = 0;
+                                            discountController.text = "";
+                                            vatController.text = "";
+                                            discountPercentController.text = "";
+                                            vatPercentageController.text = "";
+                                            transportController.text = "";
+                                          });
+                                          availableStock = 0;
+                                        });
+                                      } else {
+                                        Utils.showTopSnackBar(context, "Stock Unavailable");
                                       }
                                     } else {
-                                       Utils.showTopSnackBar(context, "Please Select Product");
+                                      Utils.showTopSnackBar(context, "Please Select Quantity");
                                     }
-                                  },
-                                  child: Card(
-                                    elevation: 5.0,
-                                    child: Container(
+                                  } else {
+                                    Utils.showTopSnackBar(context, "Please Select Product");
+                                  }
+                                },
+                                child: Card(
+                                  elevation: 5.0,
+                                  child: Container(
                                     height: 25.h,
                                     width: 100.w,
                                     decoration: BoxDecoration(
                                       color: AppColors.appColor,
                                       borderRadius: BorderRadius.circular(5.r),
                                     ),
-                                    child: const Center(child: Text("Add to cart",style: AllTextStyle.saveButtonTextStyle)))),
+                                    child: const Center(
+                                      child: Text("Add to cart", style: AllTextStyle.saveButtonTextStyle),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
                       ],
                     ),
                   ),
@@ -1504,60 +1547,20 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                   height: 25.h,
                                   width: MediaQuery.of(context).size.width / 2,
                                   margin: const EdgeInsets.only(bottom: 4.0),
-                                  decoration:ContDecoration.contDecoration,
-                                //   child: TypeAheadField<BankAccountModel>(
-                                //   controller: accountController,
-                                //   builder: (context, controller, focusNode) {
-                                //   return TextField(
-                                //     controller: controller,
-                                //     focusNode: focusNode,
-                                //     style: TextStyle(fontSize: 13, color: Colors.grey.shade800, overflow: TextOverflow.ellipsis),
-                                //     decoration: InputDecoration(contentPadding: EdgeInsets.only(left: 5.0, top: 4.0),
-                                //       isDense: true,
-                                //       hintText: 'Select Bank',
-                                //       hintStyle: TextStyle(fontSize: 13),
-                                //       suffixIcon: _selectedAccount == '' || _selectedAccount == 'null' || _selectedAccount == null || controller.text == '' ? null
-                                //           : GestureDetector(
-                                //         onTap: () {
-                                //           setState(() {
-                                //             accountController.clear();
-                                //             controller.clear();
-                                //             _selectedAccount = null;
-                                //           });
-                                //         },
-                                //         child: Padding(padding: EdgeInsets.all(5), child: Icon(Icons.close, size: 16)),
-                                //       ),
-                                //       suffixIconConstraints: BoxConstraints(maxHeight: 30),
-                                //       filled: false,
-                                //       fillColor: Colors.white,
-                                //       border: InputBorder.none,
-                                //     ),
-                                //   );
-                                // },
-                                // suggestionsCallback: (pattern) async {
-                                //   return Future.delayed(const Duration(seconds: 1), () {
-                                // return allBankAccountList
-                                //   .where((element) => element.name.toLowerCase().contains(pattern.toLowerCase()))
-                                // .toList().cast<BankAccountModel>(); 
-                                //   });
-                                //   },
-                              
-                                // itemBuilder: (context, BankAccountModel suggestion) {
-                                //   return Padding(
-                                //     padding: EdgeInsets.symmetric(horizontal: 6,vertical: 4),
-                                //     child: Text("${suggestion.name}-${suggestion.number} (${suggestion.bankName})",
-                                //       style: TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis,
-                                //     ),
-                                //   );
-                                // },
-                                // onSelected: (BankAccountModel suggestion) {
-                                //       setState(() {
-                                //             accountController.text = "${suggestion.name}-${suggestion.number} (${suggestion.bankName})";
-                                //             _selectedAccount = suggestion.id.toString();
-                                //       });
-                                //     },
-                                //   ),
-                                      ),
+                                  child: CommonTypeAheadField<BankAccountsModel>(
+                                    controller: accountController,
+                                    suggestionList: bankAccountsData,
+                                    hintText: 'Select Bank',
+                                    selectedValueId: bankAccountId,
+                                    onValueIdChanged: (id) {
+                                        setState(() {
+                                          bankAccountId = id;
+                                        });
+                                      },
+                                      displayText: (a) => "${a.accountName} - ${a.accountNumber} - (${a.bankName})",
+                                      valueId: (a) => a.accountId.toString(),
+                                     )
+                                     ),
                                     ),
                                   ],
                                 ),
@@ -1765,11 +1768,10 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
    void emptyData() {
     subtotal=0;
     due=0;
-    employeeSlNo="";
-    _selectedRoute = '';
-    _selectedCustomer='';
+    employeeId="";
+    customerId='';
     invoiceNoController.text="";
-    empluyeeNameController.text="";
+    employeeController.text="";
     routeController.text="";
     customerController.text="";
     nameController.text = "";
@@ -1817,9 +1819,8 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
         data: {
         "sales": {
         "invoiceNo": invoiceNoController.text,
-        "employeeId": "$employeeSlNo",
-        "customerId": "$_selectedCustomer",
-        "route_id": "$_selectedRoute",
+        "employeeId": "$employeeId",
+        "customerId": "$customerId",
         "salesDate": "$backEndFirstDate",
         "salesType": level,
         "total": total,
@@ -1833,7 +1834,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
         "note": ""
        },
           "customer": {
-            "Customer_SlNo": _selectedCustomer,
+            "Customer_SlNo": customerId,
             "Customer_Name": customerType == "N" || customerType == 'G' ? nameController.text.trim() : customerController.text.trim(),
             "Customer_Mobile": mobileNumberController.text.trim(),
             "Customer_Address": addressController.text.trim(),

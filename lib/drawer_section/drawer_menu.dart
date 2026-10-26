@@ -169,17 +169,17 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
                 }
               },
               child: Custom_List_Tile(icon: Icons.pending, icon_name: "Pending Order")),
-          Divider(height: 1.h,thickness: 1.0),
-          InkWell(
-              onTap: (){
-                if(salesInvoice == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const AllOrderInvoicePage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
-                },
-              child: Custom_List_Tile(icon: Icons.inbox_rounded, icon_name: "Order Invoice")),
+          // Divider(height: 1.h,thickness: 1.0),
+          // InkWell(
+          //     onTap: (){
+          //       if(salesInvoice == "true"|| userType=="m"|| userType== "a"){
+          //         //Navigator.push(context, MaterialPageRoute(builder: (context) => const AllOrderInvoicePage()));
+          //       }
+          //       else{
+          //         showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
+          //       }
+          //       },
+          //     child: Custom_List_Tile(icon: Icons.inbox_rounded, icon_name: "Order Invoice")),
           Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){

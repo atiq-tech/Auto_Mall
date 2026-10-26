@@ -5,6 +5,7 @@ import 'package:auto_mall/models/categories_model.dart';
 import 'package:auto_mall/models/customer_due_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/models/employees_model.dart';
+import 'package:auto_mall/models/invoice_model.dart';
 import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/models/sale_details_model.dart';
 import 'package:auto_mall/models/sale_records_model.dart';
@@ -326,5 +327,29 @@ class ApiService{
       print(e);
     }
     return null;
+  }
+
+  ///==================Invoice=======================
+  static fetchInvoice(String? salesId) async {
+    InvoiceModel? invoiceModel;
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      var body = {
+        "salesId": "$salesId",
+      };
+      Response response = await Dio().post(sales,
+          data: body,
+          options: Options(headers: {
+            "Content-Type": "application/json",
+            'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+            "Authorization": "${sharedPreferences.getString("token")}",
+          }));
+      return InvoiceModel.fromMap(response.data);
+      //return SalesInvoiceModel.fromMap(jsonDecode(response.data));
+    } catch (e) {
+      print("Something is wrong getSaleslist=======:$e");
+    }
+    return invoiceModel;
   }
 }

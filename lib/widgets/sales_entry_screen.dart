@@ -1124,6 +1124,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                       ],
                     ),
                   ),
+                  
                   Container(
                     height: salesCartList.isEmpty ? 45.h:
                     salesCartList.length == 1 ? 70.h :

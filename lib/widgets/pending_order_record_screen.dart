@@ -3,6 +3,7 @@ import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/providers/pending_order_provider.dart';
 import 'package:auto_mall/providers/pending_order_record_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
+import 'package:auto_mall/widgets/order_invoice_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -479,7 +480,7 @@ void _onSelectedRecordType(String selectedValue) {
                             DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
                             DataColumn(label: Expanded(child: Center(child: Text('Paid', style: AllTextStyle.tableHeadTextStyle)))),
                             DataColumn(label: Expanded(child: Center(child: Text('Due', style: AllTextStyle.tableHeadTextStyle)))),
-                            //DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
+                            DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
                           ],
                           rows: [
                             ...List.generate(
@@ -499,17 +500,17 @@ void _onSelectedRecordType(String selectedValue) {
                                      DataCell(Center(child: Text(allSalesData[index].saleMasterTotalSaleAmount??"", style: AllTextStyle.tableDataTextStyle))),
                                      DataCell(Center(child: Text(allSalesData[index].saleMasterPaidAmount??"", style: AllTextStyle.tableDataTextStyle))),
                                      DataCell(Center(child: Text(allSalesData[index].saleMasterDueAmount??"", style: AllTextStyle.tableDataTextStyle))),
-                                    //  DataCell(
-                                    //   Center(
-                                    //    child:GestureDetector(
-                                    //     child: Icon(Icons.collections_bookmark,size: 16.r),
-                                    //      onTap: () {
-                                    //       Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
-                                    //      salesId: allSalesData[index].saleMasterSlNo)));
-                                    //   },
-                                    //   ),
-                                    //  ),
-                                    // ),
+                                     DataCell(
+                                      Center(
+                                       child:GestureDetector(
+                                        child: Icon(Icons.collections_bookmark,size: 16.r),
+                                         onTap: () {
+                                          Navigator.push(context, MaterialPageRoute(builder: (context) => OrderInvoiceScreen(
+                                         salesId: allSalesData[index].saleMasterSlNo)));
+                                      },
+                                      ),
+                                     ),
+                                    ),
                                    ],
                                   ),
                             ),
@@ -529,7 +530,7 @@ void _onSelectedRecordType(String selectedValue) {
                                 DataCell(Align(alignment: Alignment.centerRight,
                                   child: Text(dueTotal!.toStringAsFixed(2),style: AllTextStyle.subTotalTextStyle),
                                 )),
-                                //const DataCell(SizedBox()),
+                                const DataCell(SizedBox()),
                               ],
                             ),
                           ],
@@ -572,7 +573,7 @@ void _onSelectedRecordType(String selectedValue) {
                         DataColumn(label: Expanded(child: Center(child: Text('Quantity', style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Discount', style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Total', style: AllTextStyle.tableHeadTextStyle)))),
-                        //DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Invoice', style: AllTextStyle.tableHeadTextStyle)))),
                       ],
                       rows: List.generate(
                         allSaleRecordsData.length,
@@ -629,17 +630,17 @@ void _onSelectedRecordType(String selectedValue) {
                                 ),
                               ),
                             ),
-                            // DataCell(
-                            //   Center(
-                            //     child:GestureDetector(
-                            //       child: Icon(Icons.collections_bookmark,size: 16.r),
-                            //       onTap: () {
-                            //         Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(
-                            //           salesId: allSaleRecordsData[index].saleMasterSlNo)));
-                            //       },
-                            //     ),
-                            //   ),
-                            // ),
+                            DataCell(
+                              Center(
+                                child:GestureDetector(
+                                  child: Icon(Icons.collections_bookmark,size: 16.r),
+                                  onTap: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => OrderInvoiceScreen(
+                                      salesId: allSaleRecordsData[index].saleMasterSlNo)));
+                                  },
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),

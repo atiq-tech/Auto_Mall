@@ -5,6 +5,7 @@ import 'package:auto_mall/providers/categories_provider.dart';
 import 'package:auto_mall/providers/customer_due_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
+import 'package:auto_mall/providers/invoice_provider.dart';
 import 'package:auto_mall/providers/pending_order_provider.dart';
 import 'package:auto_mall/providers/pending_order_record_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
@@ -48,6 +49,7 @@ class AutoMallApp extends StatelessWidget {
           ChangeNotifierProvider<SaleDetailsProvider>(create: (_) => SaleDetailsProvider()),
           ChangeNotifierProvider<SaleRecordsProvider>(create: (_) => SaleRecordsProvider()),
           ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
+          ChangeNotifierProvider<InvoiceProvider>(create: (_) => InvoiceProvider()),
           ChangeNotifierProvider<SalesProvider>(create: (_) => SalesProvider()),
         ],
         child: MaterialApp(
