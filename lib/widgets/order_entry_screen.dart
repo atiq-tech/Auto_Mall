@@ -1,15 +1,18 @@
-import 'dart:convert';
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
 import 'package:auto_mall/models/bank_accounts_model.dart';
+import 'package:auto_mall/models/couriers_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/models/employees_model.dart';
 import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/models/sales_cart_model.dart';
 import 'package:auto_mall/providers/bank_accounts_provider.dart';
+import 'package:auto_mall/providers/couriers_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
+import 'package:auto_mall/utils/animation_snackbar.dart';
 import 'package:auto_mall/utils/app_colors.dart';
+import 'package:auto_mall/widgets/order_invoice_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -80,8 +83,8 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   String? customerId;
   String? employeeId;
   String? bankAccountId;
+  String? courierId;
   String level = "retail";
-  var availableStock = 0;
   String? productUnit;
   double subtotal = 0;
   double cartTotal = 0;
@@ -120,6 +123,8 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     double afterDisTotal = subtotal - discountAmount;
     total = afterDisTotal + vatAmount + transportCost;
     paidtotal = total;
+    paid = (cashPaid + bankPaid);
+    due = total - paid;
   }
   ///
   List<SalesCartModel> salesCartList = [];
@@ -176,56 +181,31 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
     Provider.of<ProductsProvider>(context,listen: false).getProducts();
     Provider.of<BankAccountsProvider>(context,listen: false).getBankAccounts();
+    Provider.of<CouriersProvider>(context,listen: false).getCouriers();
     quantityController.text = "1";
     discountPercentController.text = "0";
-    getOrderInvoice();
-
     firstPickedDate = Utils.formatFrontEndDate(DateTime.now());
     backEndFirstDate = Utils.formatBackEndDate(DateTime.now());
   }
 
-  //invoiceNo
-  String? invoiceNo;
-  getOrderInvoice() async {
-    String link = "${baseUrl}api/v1/getSaleInvoice";
-    SharedPreferences? sharedPreferences;
-    sharedPreferences = await SharedPreferences.getInstance();
-    try {
-      var response = await Dio().post(link,
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-        }),
-      );
-      print(response.data);
-      setState(() {
-        invoiceNoController.text = jsonDecode(response.data);
-      });
-      print("invoiceNo Code===========> ${invoiceNoController.text}");
-    } catch (e) {
-      print(e);
-    }
-  }
-
+  var availableStock = 0;
   Response? response;
-  void totalStack(
-      String? productId) async {
-    SharedPreferences? sharedPreferences;
-    sharedPreferences = await SharedPreferences.getInstance();
-    response = await Dio().post("${baseUrl}api/v1/getProductStock",
-        data: {
-          "productId": "$productId",
-        },
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-        }));
+  void totalStack(String? productId) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    response = await Dio().post(productStock,
+      data: {
+        "productId": "$productId",
+      },
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }),
+    );
     setState(() {
-      availableStock = jsonDecode(response!.data);
-
+      availableStock = int.tryParse(response!.data.toString()) ?? 0;
     });
+    print("availableStock=========$availableStock");
   }
 
   @override
@@ -235,6 +215,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     print("customersData======${customersData.length}");
     final productsData = Provider.of<ProductsProvider>(context).productsList;
     final bankAccountsData = Provider.of<BankAccountsProvider>(context).bankAccounts;
+    final couriersData = Provider.of<CouriersProvider>(context).couriersList;
     return Scaffold(
         appBar: CustomAppBar(title: "Order Entry"),
         body: ModalProgressHUD(
@@ -1000,14 +981,14 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         availableStock != 0
-                                            ? Text("Stock,", style: TextStyle(color: Colors.green.shade700, fontSize: 12.sp))
-                                            : Text("Stock,", style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                                            ? Text("Stock,", style: TextStyle(color: Colors.green.shade700, fontSize: 11.sp))
+                                            : Text("Stock,", style: TextStyle(color: Colors.red, fontSize: 11.sp)),
                                         Text(
                                           "$availableStock ${productUnit ?? ""}",
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                            fontSize: 12.sp,
+                                            fontSize: 11.sp,
                                             color: availableStock != 0 ? Colors.green.shade700 : Colors.red,
                                           ),
                                         ),
@@ -1168,13 +1149,13 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                   (int index) => DataRow(
                                 color:index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor):WidgetStateProperty.resolveWith(getColors),
                                 cells: <DataCell>[
-                                  DataCell(Center(child: Text("${index+1}"))),
-                                  DataCell(Center(child: Text('${salesCartList[index].productCode}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].name}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].categoryName}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].quantity}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].salesRate}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].total}'))),
+                                  DataCell(Center(child: Text("${index+1}",style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].productCode}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].name}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].categoryName}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].quantity}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].salesRate}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].total}',style: AllTextStyle.tableDataTextStyle))),
                                   DataCell(Center(child: GestureDetector(
                                     onTap: () {
                                       removeFromCart(index);
@@ -1260,7 +1241,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                     height: 25.h,
                                     padding: EdgeInsets.all(5.r),
                                     decoration:ContDecoration.contDecoration,
-                                    child: Text(double.parse("$subtotal").toStringAsFixed(2), style:AllTextStyle.textValueStyle),
+                                    child: Text("0", style:AllTextStyle.textValueStyle),
                                   )),
                                 ],
                               ),
@@ -1664,19 +1645,19 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                     flex: 15,
                                     child: SizedBox(
                                       height: 25.h,
-                                      child: TextField(
-                                      controller: courierController,
-                                      keyboardType: TextInputType.number,
-                                      decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
-                                        hintText: "0",
-                                        hintStyle: AllTextStyle.textValueStyle,
-                                        filled: true,
-                                        fillColor: Colors.white,
-                                        border: InputBorder.none,
-                                        focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                                        enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                                      ),
-                                     ),
+                                      child: CommonTypeAheadField<CouriersModel>(
+                                        controller: courierController,
+                                        suggestionList: couriersData,
+                                        hintText: 'Select Courier',
+                                        selectedValueId: courierId,
+                                        onValueIdChanged: (id) {
+                                          setState(() {
+                                            courierId = id;
+                                          });
+                                        },
+                                        displayText: (c) => c.name??"",
+                                        valueId: (c) => c.id.toString(),
+                                      )
                                     ),
                                   ):Expanded(flex: 15, child: SizedBox()),
                                 ],
@@ -1693,10 +1674,10 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                         height: 25.h,
                                         width: 100.w,
                                         decoration: BoxDecoration(
-                                          color: Colors.cyan.shade700,
+                                          color: const Color.fromARGB(255, 94, 136, 57),
                                           borderRadius: BorderRadius.circular(5.r),
                                         ),
-                                        child: const Center(child: Text("New Sale",style:AllTextStyle.saveButtonTextStyle))
+                                        child: const Center(child: Text("New Order",style:AllTextStyle.saveButtonTextStyle))
                                     )),
                                   ),
                                   SizedBox(width: 10.w),
@@ -1728,7 +1709,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           borderRadius: BorderRadius.circular(5.r),
                                         ),
                                         child: Center(child: isSellBtnClk ? SizedBox(height: 20.h, width: 20.w, child: CircularProgressIndicator(color: Colors.white))
-                                            : const Text("Sale", style:AllTextStyle.saveButtonTextStyle)),
+                                            : const Text("Order", style:AllTextStyle.saveButtonTextStyle)),
                                       ),
                                     ),
                                   ),
@@ -1799,79 +1780,102 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   }
 
   addSales() async {
-    String link = "${baseUrl}api/v1/addSales";
-    SharedPreferences? sharedPreferences;
-    sharedPreferences = await SharedPreferences.getInstance();
-    try {
-      var studentsmap = salesCartList.map((e) {
-        return {
+  SharedPreferences? sharedPreferences;
+  sharedPreferences = await SharedPreferences.getInstance();
+  try {
+    var cartItems = salesCartList.map((e) {
+      return {
         "productId": e.productId,
-        "quantity":  e.quantity,
+        "productCode": e.productCode ?? "",
+        "name": e.name ?? "",
+        "quantity": e.quantity,
         "purchaseRate": e.purchaseRate,
         "salesRate": e.salesRate,
-        "vat": "0",
-        "total":  e.total,
-        "is_service": e.isService
-        };
-      }).toList();
-      print(studentsmap);
-      Response response = await Dio().post(link,
-        data: {
-        "sales": {
-        "invoiceNo": invoiceNoController.text,
-        "employeeId": "$employeeId",
-        "customerId": "$customerId",
-        "salesDate": "$backEndFirstDate",
-        "salesType": level,
-        "total": total,
-        "discount": "$discountAmount",
-        "vat": "$vatAmount",
-        "transportCost": "$transportCost",
-        "subTotal": "$subtotal",
-        "paid":  paidController.text.toString().isNotEmpty ? paidController.text : paidtotal,
-        "due": "$due",
-        "prevDue": "$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue",
-        "note": ""
-       },
-          "customer": {
-            "Customer_SlNo": customerId,
-            "Customer_Name": customerType == "N" || customerType == 'G' ? nameController.text.trim() : customerController.text.trim(),
-            "Customer_Mobile": mobileNumberController.text.trim(),
-            "Customer_Address": addressController.text.trim(),
-            "Customer_Type": "$customerType"
-          },
-          "cart": studentsmap
-        },
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-        }),
-      );
+        "vat": e.vat ?? "0",
+        "total": e.total,
+        "discount": e.discount ?? "0",
+        "is_service": e.isService ?? "false",
+        "warranty": e.warranty ?? "0",
+      };
+    }).toList();
 
-      var item = jsonDecode(response.data);
-      print("Product Cart============$studentsmap");
-      print("Sales Entry Data============$item");
-      if(item["success"] == true){
-        setState(() {
-          isSellBtnClk = false;
-        });
-        emptyData();
-        // CustomSnackBar.showTopSnackBar(context, "${item["message"]}");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(salesId: "${item["salesId"]}")));
-      }
-      else{
-        setState(() {
-          isSellBtnClk = false;
-        });
-        Utils.showTopSnackBar(context, "${item["message"] ?? "Failed"}");
-      }
-    } catch (e) {
-      print(e);
+    Response response = await Dio().post(
+      addSale,
+      data: {
+        "sales": {
+          "isOrder": "1",
+          "isCourier": isCourier ? "1" : "0",
+          "employeeId": employeeId ?? "0",
+          "courierId": isCourier ? (courierId ?? "0") : "0",
+          "customerId": customerId ?? "0",
+          "salesDate": "$backEndFirstDate",
+          "salesType": level,
+          "total": total.toStringAsFixed(2),
+          "discount": discountAmount.toStringAsFixed(2),
+          "vat": vatAmount.toStringAsFixed(2),
+          "transportCost": transportCost.toStringAsFixed(2),
+          "subTotal": subtotal.toStringAsFixed(2),
+          "accountId": bankAccountId ?? "",
+          "cashPaid": cashPaid.toStringAsFixed(2),
+          "bankPaid": bankPaid.toStringAsFixed(2),
+          "paid": paid.toStringAsFixed(2),
+          "due": due.toStringAsFixed(2),
+          "previousDue": (previousDue == null || previousDue == 'null' || previousDue == "" || previousDue == "0")
+              ? "0"
+              : previousDue,
+          "note": "",
+          "exchangeTotal": "0", // change this if you have exchange logic
+        },
+        "customer": {
+          "Customer_SlNo": customerId ?? "0",
+          "Customer_Code": "",
+          "Customer_Name": (customerType == "N" || customerType == "G")
+              ? nameController.text.trim()
+              : customerController.text.trim(),
+          "display_name": (customerType == "N" || customerType == "G")
+              ? nameController.text.trim()
+              : customerController.text.trim(),
+          "Customer_Mobile": mobileNumberController.text.trim(),
+          "Customer_Address": addressController.text.trim(),
+          "Customer_Type": customerType ?? level,
+        },
+        "cart": cartItems,
+      },
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }),
+    );
+
+    var item = response.data;
+    print("Product Cart============$cartItems");
+    print("Sales Entry Data============$item");
+
+    if (item["success"] == true) {
       setState(() {
         isSellBtnClk = false;
       });
-      Utils.showTopSnackBar(context, "An error occurred: ${e.toString()}");
+      emptyData();
+      CustomSnackBar.showTopSnackBar(context, "${item["message"]}");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OrderInvoiceScreen(salesId: "${item["salesId"]}"),
+        ),
+      );
+    } else {
+      setState(() {
+        isSellBtnClk = false;
+      });
+      Utils.showTopSnackBar(context, "${item["message"] ?? "Failed"}");
     }
+  } catch (e) {
+    print(e);
+    setState(() {
+      isSellBtnClk = false;
+    });
+    Utils.showTopSnackBar(context, "An error occurred: ${e.toString()}");
   }
+}
 }

@@ -598,14 +598,9 @@ pw.TableRow _summaryTableRow(String label, String value, {bool isBold = false}) 
                       SizedBox(height: 5.0.h),
                       GestureDetector(
                         onTap: () async {
-                          // প্রথমে "Please wait" দেখাও
                           CustomSnackBar.showTopSnackBar(context, "Please wait printing");
-
                           try {
                             await printInvoice(snapshot.data);
-
-                            // প্রিন্ট সফল হলে চাইলে success মেসেজ দিতে পারো
-                            // CustomSnackBar.showTopSnackBar(context, "Print completed");
                           } catch (e) {
                             CustomSnackBar.showTopSnackBar(context, "Printing failed");
                           }

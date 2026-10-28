@@ -2,6 +2,7 @@
 import 'package:auto_mall/providers/areas_provider.dart';
 import 'package:auto_mall/providers/bank_accounts_provider.dart';
 import 'package:auto_mall/providers/categories_provider.dart';
+import 'package:auto_mall/providers/couriers_provider.dart';
 import 'package:auto_mall/providers/customer_due_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
@@ -49,6 +50,7 @@ class AutoMallApp extends StatelessWidget {
           ChangeNotifierProvider<SaleDetailsProvider>(create: (_) => SaleDetailsProvider()),
           ChangeNotifierProvider<SaleRecordsProvider>(create: (_) => SaleRecordsProvider()),
           ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
+          ChangeNotifierProvider<CouriersProvider>(create: (_) => CouriersProvider()),
           ChangeNotifierProvider<InvoiceProvider>(create: (_) => InvoiceProvider()),
           ChangeNotifierProvider<SalesProvider>(create: (_) => SalesProvider()),
         ],

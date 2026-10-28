@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
 import 'package:auto_mall/models/bank_accounts_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
@@ -9,7 +8,9 @@ import 'package:auto_mall/providers/bank_accounts_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
+import 'package:auto_mall/utils/animation_snackbar.dart';
 import 'package:auto_mall/utils/app_colors.dart';
+import 'package:auto_mall/widgets/sales_invoice_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -82,10 +83,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   String? customerId;
   String? employeeId;
   String level = "retail";
-  var availableStock = 0;
   String? productUnit;
   double subtotal = 0;
   double cartTotal = 0;
+  int quantity = 0;
 
 ///===new====
   double discountPer = 0;
@@ -121,6 +122,9 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     double afterDisTotal = subtotal - discountAmount;
     total = afterDisTotal + vatAmount + transportCost;
     paidtotal = total;
+    paid = (cashPaid + bankPaid);
+    due = total - paid;
+
   }
   ///
   List<SalesCartModel> salesCartList = [];
@@ -197,29 +201,28 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     Provider.of<BankAccountsProvider>(context,listen: false).getBankAccounts();
     quantityController.text = "1";
     discountPercentController.text = "0";
-
     firstPickedDate = Utils.formatFrontEndDate(DateTime.now());
     backEndFirstDate = Utils.formatBackEndDate(DateTime.now());
   }
-
+  var availableStock = 0;
   Response? response;
-  void totalStack(
-      String? productId) async {
-    SharedPreferences? sharedPreferences;
-    sharedPreferences = await SharedPreferences.getInstance();
-    response = await Dio().post("${baseUrl}api/v1/getProductStock",
-        data: {
-          "productId": "$productId",
-        },
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-        }));
-    setState(() {
-      availableStock = jsonDecode(response!.data);
+  void totalStack(String? productId) async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    response = await Dio().post(productStock,
+      data: {
+        "productId": "$productId",
+      },
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }),
+    );
 
+    setState(() {
+      availableStock = int.tryParse(response!.data.toString()) ?? 0;
     });
+    print("availableStock=========$availableStock");
   }
 
   @override
@@ -808,7 +811,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           cproductId = suggestion.productCode;
                                           productId = suggestion.productSlNo;
                                           isService = suggestion.isService;
-                                          productStockId = suggestion.productSlNo;
                                           ccategoryName = suggestion.productCategoryName;
                                           cname = suggestion.productName;
                                           modelName = suggestion.brandName;
@@ -823,7 +825,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           disAmountController.clear();
 
                                           calculateAmount(); // <-- new calculation
-                                          totalStack(productStockId);
+                                          totalStack(productId??"");
                                         });
                                       },
                                     ),
@@ -1050,7 +1052,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                 onTap: () {
                                   if (productController.text != '' || productController.text.isNotEmpty) {
                                     if (quantityController.text != '' || quantityController.text.isNotEmpty) {
-                                      if (availableStock > 0) {
+                                      quantity = int.parse(quantityController.text);
+                                      if (availableStock >= quantity) {
                                         setState(() {
                                           salesCartList.add(SalesCartModel(
                                             productId: "$productId",
@@ -1084,6 +1087,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                             discountPer = 0;
                                             vatAmount = 0;
                                             vatPer = 0;
+                                            warrantyController.text = "";
                                             discountController.text = "";
                                             vatController.text = "";
                                             discountPercentController.text = "";
@@ -1162,13 +1166,13 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                   (int index) => DataRow(
                                 color:index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor):WidgetStateProperty.resolveWith(getColors),
                                 cells: <DataCell>[
-                                  DataCell(Center(child: Text("${index+1}"))),
-                                  DataCell(Center(child: Text('${salesCartList[index].productCode}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].name}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].categoryName}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].quantity}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].salesRate}'))),
-                                  DataCell(Center(child: Text('${salesCartList[index].total}'))),
+                                  DataCell(Center(child: Text("${index+1}",style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].productCode}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].name}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].categoryName}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].quantity}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].salesRate}',style: AllTextStyle.tableDataTextStyle))),
+                                  DataCell(Center(child: Text('${salesCartList[index].total}',style: AllTextStyle.tableDataTextStyle))),
                                   DataCell(Center(child: GestureDetector(
                                     onTap: () {
                                       removeFromCart(index);
@@ -1419,6 +1423,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                                 exchangeTotalAmount = 0;
                                                 exchnageTotal();
                                               });
+                                              exchangeCart.clear();
                                             });
                                         }
                                         else{
@@ -2075,82 +2080,117 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   }
 
   addSales() async {
-    String link = "${baseUrl}api/v1/addSales";
-    SharedPreferences? sharedPreferences;
-    sharedPreferences = await SharedPreferences.getInstance();
-    try {
-      var studentsmap = salesCartList.map((e) {
-        return {
+  SharedPreferences? sharedPreferences;
+  sharedPreferences = await SharedPreferences.getInstance();
+  try {
+    // ===== Cart Mapping =====
+    var cartMap = salesCartList.map((e) {
+      return {
         "productId": e.productId,
-        "quantity":  e.quantity,
+        "productCode": e.productCode,
+        "name": e.name,
+        "quantity": e.quantity,
         "purchaseRate": e.purchaseRate,
         "salesRate": e.salesRate,
-        "vat": "0",
-        "total":  e.total,
-        "is_service": e.isService
-        };
-      }).toList();
-      print(studentsmap);
-      Response response = await Dio().post(link,
-        data: {
-        "sales": {
-        "invoiceNo": invoiceNoController.text,
-        "employeeId": "$employeeId",
-        "customerId": "$customerId",
-        "route_id": "",
-        "salesDate": "$backEndFirstDate",
-        "salesType": level,
-        "total": total,
-        "discount": "$discountAmount",
-        "vat": "$vatAmount",
-        "transportCost": "$transportCost",
-        "subTotal": "$subtotal",
-        "paid":  paidController.text.toString().isNotEmpty ? paidController.text : paidtotal,
-        "due": "$due",
-        "prevDue": "$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue",
-        "note": ""
-       },
-          "customer": {
-            "Customer_SlNo": customerId,
-            "Customer_Name": customerType == "N" || customerType == 'G' ? nameController.text.trim() : customerController.text.trim(),
-            "Customer_Mobile": mobileNumberController.text.trim(),
-            "Customer_Address": addressController.text.trim(),
-            "Customer_Type": "$customerType"
-          },
-          "cart": studentsmap
-        },
-        options: Options(headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-        }),
-      );
+        "vat": e.vat ?? "0",
+        "total": e.total,
+        "discount": e.discount ?? "0",
+        "is_service": e.isService ?? "false",
+        "warranty": e.warranty ?? "0",
+      };
+    }).toList();
 
-      var item = jsonDecode(response.data);
-      print("Product Cart============$studentsmap");
-      print("Sales Entry Data============$item");
-      if(item["success"] == true){
-        setState(() {
-          isSellBtnClk = false;
-        });
-        emptyData();
-        // CustomSnackBar.showTopSnackBar(context, "${item["message"]}");
-        // Navigator.push(context, MaterialPageRoute(builder: (context) => SalesInvoicePage(salesId: "${item["salesId"]}")));
-      }
-      else{
-        setState(() {
-          isSellBtnClk = false;
-        });
-        Utils.showTopSnackBar(context, "${item["message"] ?? "Failed"}");
-      }
-    } catch (e) {
-      print(e);
+    // ===== Exchange Cart Mapping =====
+    var exchangeCartMap = exchangeCart.map((e) {
+      return {
+        "productId": e.exchangeProductId,
+        "quantity": e.exchangeQty,
+        "salesRate": e.exchangeSalesRate,
+        "total": e.exchangeTotalAmount,
+      };
+    }).toList();
+
+    Response response = await Dio().post(
+      addSale,
+      data: {
+        "sales": {
+          "isOrder": "0",
+          "isCourier": "0",
+          "employeeId": employeeId ?? "0",
+          "courierId": "",
+          "customerId": customerId ?? "0",
+          "salesDate": "$backEndFirstDate",
+          "salesType": level,
+          "total": total.toStringAsFixed(2),
+          "discount": discountAmount.toStringAsFixed(2),
+          "vat": vatAmount.toStringAsFixed(2),
+          "transportCost": transportCost.toStringAsFixed(2),
+          "subTotal": subtotal.toStringAsFixed(2),
+          "accountId": bankAccountId ?? "",
+          "cashPaid": cashPaid.toStringAsFixed(2),
+          "bankPaid": bankPaid.toStringAsFixed(2),
+          "paid": paid.toStringAsFixed(2),
+          "due": due.toStringAsFixed(2),
+          "previousDue": (previousDue == null || previousDue == 'null' || previousDue == "" || previousDue == "0")
+              ? "0"
+              : previousDue,
+          "note": "",
+          "exchangeTotal": exchangetotal.toStringAsFixed(2),
+        },
+        "customer": {
+          "Customer_SlNo": customerId ?? "",
+          "Customer_Code": "",
+          "Customer_Name": (customerType == "N" || customerType == "G")
+              ? nameController.text.trim()
+              : customerController.text.trim(),
+          "display_name": (customerType == "N" || customerType == "G")
+              ? nameController.text.trim()
+              : customerController.text.trim(),
+          "Customer_Mobile": mobileNumberController.text.trim(),
+          "Customer_Address": addressController.text.trim(),
+          "Customer_Type": customerType ?? level,
+        },
+        "cart": cartMap,
+        "exchangeCart": exchangeCartMap,
+      },
+      options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }),
+    );
+
+    var item = response.data;
+    print("Product Cart============$cartMap");
+    print("Exchange Cart============$exchangeCartMap");
+    print("Sales Entry Data============$item");
+
+    if (item["success"] == true) {
       setState(() {
         isSellBtnClk = false;
       });
-      Utils.showTopSnackBar(context, "An error occurred: ${e.toString()}");
+      emptyData();
+      CustomSnackBar.showTopSnackBar(context, "${item["message"]}");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SalesInvoiceScreen(salesId: "${item["salesId"]}"),
+        ),
+      );
+    } else {
+      setState(() {
+        isSellBtnClk = false;
+      });
+      Utils.showTopSnackBar(context, "${item["message"] ?? "Failed"}");
     }
+  } catch (e) {
+    print(e);
+    setState(() {
+      isSellBtnClk = false;
+    });
+    Utils.showTopSnackBar(context, "An error occurred: ${e.toString()}");
   }
+ }
 }
 
 
