@@ -31,12 +31,19 @@ class SalesEntryScreen extends StatefulWidget {
 
 class _SalesEntryScreenState extends State<SalesEntryScreen> {
   SharedPreferences? sharedPreferences;
+  String? userName = "";
+  String? userID = "";
+  String? userEmployeeId = "";
+  String? userType = "";
+  String? employeeName = "";
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
-    userType = "${sharedPreferences?.getString('usertype')}";
-    print("userType======= $userType");
+    userName = sharedPreferences!.getString('userName') ?? ''; 
+    userType = "${sharedPreferences!.getString('userType')}";
+    userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
+    employeeName = "${sharedPreferences!.getString('employeeName')}";
+    userID = "${sharedPreferences!.getString('userId')}";
   }
-  String? userType = '';
 
   Color getColor(Set<WidgetState> states) {
     return Colors.white;
@@ -120,7 +127,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     double cartTotall = allSalesCartData.map((e) => e.total).fold(0.0, (p, element) => p+double.parse(element!));
     subtotal = double.parse("$cartTotall");
     double afterDisTotal = subtotal - discountAmount;
-    total = afterDisTotal + vatAmount + transportCost;
+    total = afterDisTotal + vatAmount + transportCost - exchangetotal;
     paidtotal = total;
     paid = (cashPaid + bankPaid);
     due = total - paid;
@@ -138,14 +145,15 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   double? exchangeTotalAmount;
   List<ExchangeModel> exchangeCart = [];
   double exchangetotal = 0;
-    void exchnageTotal(){
+    void exchangeTotal(){
     final allReplaceProductData = exchangeCart;
     double replaceCartTotal = allReplaceProductData.map((e) => e.exchangeTotalAmount).fold(0.0, (p, element) => p+double.parse(element!));
     exchangetotal = double.parse("$replaceCartTotal");
   }
    void removeExchnageCart(index){
     exchangeCart.removeAt(index);
-    exchnageTotal();
+    exchangeTotal();
+    calculateTotal();
    }
 
    // Subtotal বের করার জন্য (Qty × Sales Rate)
@@ -169,7 +177,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     });
   }
 
-  String? previousDue;
   String? cproductId;
   String? productCode;
   String? productStockId;
@@ -224,6 +231,29 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
     });
     print("availableStock=========$availableStock");
   }
+
+    String? previousDue;
+  void previousDueAmount(String? customerId) async {
+  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+  try {
+    final response = await Dio().post(customerDue,
+      data: {
+        "customerId": customerId
+        },
+       options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }),
+    );
+    final data = response.data;
+    setState(() {
+      previousDue = "${data[0]['dueAmount'] ?? '0'}";
+    });
+  } catch (e) {
+    print("Error: $e");
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -314,7 +344,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                         Row(
                           children: [
                             Expanded(flex:1, child:Text("Sales By    :",style: AllTextStyle.textFieldHeadStyle)),
-                            Expanded(
+                            userType == "a" || userType == "m" ? Expanded(
                               flex:3,
                               child: Container(
                                 margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
@@ -333,7 +363,15 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                 valueId: (e) => e.employeeSlNo.toString(),
                               )
                               ),
-                            ),
+                            ):Expanded(
+                            flex: 3,
+                            child: Container(
+                              height: 25.h,
+                              padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
+                              margin: EdgeInsets.only(top: 4.h),
+                              decoration: ContDecoration.contDecoration,
+                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                            ))
                           ],
                         ), 
                       ],
@@ -550,6 +588,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               addressController.text = suggestion.customerAddress?.toString() ?? '';
                                             }
                                             print('isVisible $isVisible');
+                                            previousDueAmount(customerId??"");
                                           });
                                         },
                                       ),
@@ -1316,7 +1355,8 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                             exchangeProductCategory = suggestion.productCategoryName;
                                             exchangeProductName = suggestion.productName;
                                             replaceSalesRateController.text = suggestion.productSellingPrice;
-                                            exchangeTotalAmount = (double.parse(replaceQtyController.text) * double.parse(replaceSalesRateController.text));
+                                            exchangeTotalAmount = (double.tryParse(replaceQtyController.text) ?? 0) * 
+                                             (double.tryParse(replaceSalesRateController.text) ?? 0);
                                           });
                                         },
                                       ),
@@ -1415,15 +1455,15 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                                 exchangeTotalAmount: "$exchangeTotalAmount",
                                               ));
                                                             
-                                              exchnageTotal();
+                                              exchangeTotal();
                                               replaceQtyController.text = '';
                                               replaceProductController.text = '';
                                               replaceSalesRateController.text = '';
                                               setState(() {
                                                 exchangeTotalAmount = 0;
-                                                exchnageTotal();
+                                                exchangeTotal();
+                                                calculateTotal();
                                               });
-                                              exchangeCart.clear();
                                             });
                                         }
                                         else{
@@ -1907,10 +1947,10 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                     flex: 6,
                                     child: Container(
                                       height: 25.h,
-                                      padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h),
+                                      padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 5.h),
                                       decoration:ContDecoration.contDecoration,
                                       child: SizedBox(
-                                        child: Text("$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue", style:const TextStyle(color: Colors.red),
+                                        child: Text("$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue", style: TextStyle(color: Colors.red,fontSize: 11.sp),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -1947,6 +1987,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                       controller: creditController,
+                                      style: AllTextStyle.textValueStyle,
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 2.w),
                                         hintText: "0",

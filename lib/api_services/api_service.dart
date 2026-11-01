@@ -12,6 +12,7 @@ import 'package:auto_mall/models/sale_details_model.dart';
 import 'package:auto_mall/models/sale_records_model.dart';
 import 'package:auto_mall/models/sales_model.dart';
 import 'package:auto_mall/models/users_model.dart';
+import 'package:auto_mall/models/visites_model.dart';
 import 'package:auto_mall/utils/base_url.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -107,6 +108,31 @@ class ApiService{
         }));
       var item = response.data;
       return List.from(item).map((e) => AreasModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+  
+  //==================Visites List =======================
+  static fetchVisitesApi(String? customerId,employeeId,dateFrom,dateTo) async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(visites,
+        data: {
+          "customerId": customerId,
+          "employeeId": employeeId,
+          "dateFrom": dateFrom,
+          "dateTo": dateTo,
+        },
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => VisitesModel.fromMap(e)).toList();
     } catch (e) {
       print(e);
     }

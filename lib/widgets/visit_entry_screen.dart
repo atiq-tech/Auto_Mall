@@ -1,11 +1,19 @@
 import 'dart:convert';
 //import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
-import 'package:auto_mall/providers/products_provider.dart';
+import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
+import 'package:auto_mall/models/customers_model.dart';
+import 'package:auto_mall/models/employees_model.dart';
+import 'package:auto_mall/providers/customers_provider.dart';
+import 'package:auto_mall/providers/employees_provider.dart';
+import 'package:auto_mall/providers/visites_provider.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../common_widget/custom_appbar.dart';
 import '../../utils/all_textstyle.dart';
@@ -58,20 +66,22 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
   }
 
   SharedPreferences? sharedPreferences;
-  Future<void> _initializeData() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    userEmployeeId = "${sharedPreferences?.getString('employeeId')}";
-    userName = "${sharedPreferences?.getString('userName')}";
-    userType = "${sharedPreferences?.getString('userType')}";
-    print("userEmployeeId==== $userEmployeeId");
-  }
-
+  String? userName = "";
+  String? userID = "";
+  String? userEmployeeId = "";
+  String? userType = "";
+  String? employeeName = "";
   String? employeeSlNo;
   String? employeeId = "";
-  String? userEmployeeId = "";
-  String? _selectedCustomerId;
-  String userName = "";
-  String userType = "";
+  String? customerId;
+  Future<void> _initializeData() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    userName = sharedPreferences!.getString('userName') ?? ''; 
+    userType = "${sharedPreferences!.getString('userType')}";
+    userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
+    employeeName = "${sharedPreferences!.getString('employeeName')}";
+    userID = "${sharedPreferences!.getString('userId')}";
+  }
 
   @override
   void initState() {
@@ -80,11 +90,9 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     backEndFirstDate = Utils.formatBackEndDate(DateTime.now());
     super.initState();
     _initializeData();
-    // Provider.of<EmployeeProvider>(context,listen: false).getEmployee();
-    // Provider.of<VisitsProvider>(context, listen: false).visitslist=[];
-    // Provider.of<CustomerListProvider>(context, listen: false).customerList = [];
-    // CustomerListProvider.isCustomerTypeChange = true;
-    // Provider.of<CustomerListProvider>(context, listen: false).getCustomerList("","","");
+    Provider.of<EmployeesProvider>(context,listen: false).getEmployees();
+    Provider.of<VisitesProvider>(context, listen: false).getVisites("","","","");
+    Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
     userName = _employeeCustomerController.text;
     print("eeeeeeeeee======  ${_employeeCustomerController.text}");
   }
@@ -127,13 +135,12 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
   @override
   Widget build(BuildContext context) {
     mainScrollController.addListener(mainScrollListener);
-    // ignore: unused_local_variable
-    // final allEmployeeData = Provider.of<EmployeeProvider>(context).allEmployeeList;
-    // ///get Customer
-    // final allCustomerList = Provider.of<CustomerListProvider>(context).customerList.where((element) => element.customerSlNo!="").toList();
-    // ///get Visits
-    // final allGetVisitsData = Provider.of<VisitsProvider>(context).visitslist;
-    //print("Get allGetVisitsData length=====> ${allGetVisitsData.length} ");
+    final employeesData = Provider.of<EmployeesProvider>(context).employeesList;
+    ///get Customer
+    final customersData = Provider.of<CustomersProvider>(context).customersList.where((element) => element.customerSlNo!="").toList();
+    ///get Visits
+    final visitesData = Provider.of<VisitesProvider>(context).visitesList;
+    print("visitsData length=====> ${visitesData.length} ");
     return Scaffold(
       appBar: CustomAppBar(title: "Visit Entry"),
       body: SingleChildScrollView(
@@ -162,73 +169,90 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                             child: Container(
                               height: 25.h,
                               decoration: ContDecoration.contDecoration,
-                              // child: TypeAheadFormField(
-                              //   textFieldConfiguration: TextFieldConfiguration(
-                              //     onChanged: (value){
-                              //       if (value == '') {
-                              //         _selectedCustomerId = '';
-                              //       }
-                              //     },
-                              //     style: TextStyle(fontSize: 11.sp),
-                              //     controller: _customerNameController,
-                              //     decoration: InputDecoration(contentPadding: EdgeInsets.only(left: 5.w,bottom: 12.h),
-                              //       hintText: 'Select Customer',
-                              //       hintStyle:  TextStyle(fontSize: 11.sp,color: Colors.grey.shade700,fontWeight: FontWeight.w400),
-                              //       filled: true,
-                              //       fillColor: Colors.white,
-                              //       border: InputBorder.none,
-                              //       focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                              //       enabledBorder:TextFieldInputBorder.focusEnabledBorder,
-                              //       suffixIcon:  _selectedCustomerId == "null"
-                              //           || _selectedCustomerId == ""
-                              //           || _customerNameController.text == ""
-                              //           || _selectedCustomerId == null ? null: GestureDetector(
-                              //         onTap: () {
-                              //           setState(() {
-                              //             _customerNameController.text = '';
-                              //           });
-                              //         },
-                              //         child: Padding(
-                              //           padding: EdgeInsets.only(left: 20.w),
-                              //           child: Icon(Icons.close,size: 16.r),
-                              //         ),
-                              //       ),
-                              //     ),
-                              //   ),
-                              //   suggestionsCallback: (pattern) {
-                              //     return allCustomerList.where((element) {
-                              //       String? nameToCheck = (element.displayName == "null" || element.displayName == null || element.displayName!.isEmpty)
-                              //           ? element.customerName : element.displayName;
-                              //       return nameToCheck!.toLowerCase().contains(pattern.toString().toLowerCase());
-                              //     }).toList();
-                                
-                              //   },
-                              //   itemBuilder: (context, suggestion) {
-                              //     return SizedBox(
-                              //       child: Padding(
-                              //         padding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 5.w),
-                              //         child: Text(
-                              //           "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}",
-                              //           style: TextStyle(fontSize: 11.sp),
-                              //           maxLines: 1,overflow: TextOverflow.ellipsis,),
-                              //       ),
-                              //     );
-                              //   },
-                              //   transitionBuilder: (context, suggestionsBox, controller) {
-                              //     return suggestionsBox;
-                              //   },
-                              //   onSuggestionSelected: (CustomerListModel suggestion) {
-                              //         _customerNameController.text = "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}";
-                              //     setState(() {
-                              //       _selectedCustomerId = suggestion.customerSlNo.toString();
-                              //       _nameController.text = suggestion.customerName.toString();
-                              //       _phoneController.text = suggestion.customerMobile.toString();
-                              //       _addressController.text = suggestion.customerAddress.toString();
-                              //       _employeeController.text = suggestion.employeeName.toString();
-                              //     });
-                              //   },
-                              //   onSaved: (value) {},
-                              // ),
+                              child: TypeAheadField<CustomersModel>(
+                                controller: _customerNameController,
+                                hideOnEmpty: false,          
+                                hideOnLoading: false,
+                                debounceDuration: const Duration(milliseconds: 200),
+                                builder: (context, fieldController, focusNode) {
+                                  return TextField(
+                                    controller: fieldController,
+                                    focusNode: focusNode,
+                                    style: AllTextStyle.dropDownlistStyle,
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.symmetric(vertical: 5.h,horizontal: 5.w),
+                                      hintText: 'Select Customer',
+                                      isDense: true,
+                                      hintStyle: AllTextStyle.dropDownlistStyle,
+                                      suffixIcon: customerId == ''
+                                          ? null
+                                          : GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  _customerNameController.clear();
+                                                  fieldController.clear();
+                                                  customerId = '';
+                                                });
+                                              },
+                                              child: Padding(
+                                                padding: EdgeInsets.only(left: 25.w),
+                                                child: Icon(Icons.close, size: 16.r),
+                                              ),
+                                            ),
+                                    ),
+                                    onChanged: (value) {
+                                      if (value.isEmpty) {
+                                        setState(() {
+                                          customerId = '';
+                                        });
+                                      }
+                                    },
+                                  );
+                                },
+                                suggestionsCallback: (pattern) async {
+                                  // ছোট delay দিলে suggestions ভালো কাজ করে
+                                  await Future.delayed(const Duration(milliseconds: 100));
+                                  if (customersData.isEmpty) return [];
+                                  final query = pattern.toLowerCase().trim();
+                                  if (query.isEmpty) {
+                                    // কিছু না লিখলে পুরো লিস্ট দেখাবে
+                                    return customersData;
+                                  }
+
+                                  return customersData
+                                      .where((element) {
+                                        final name = (element.displayName ?? '').toLowerCase();
+                                        final code = (element.customerCode ?? '').toLowerCase();
+                                        final customerName = (element.customerName ?? '').toLowerCase();
+                                        return name.contains(query) ||
+                                            code.contains(query) ||
+                                            customerName.contains(query);
+                                      })
+                                      .toList();
+                                },
+                                itemBuilder: (context, suggestion) {
+                                  return Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 8.w),
+                                    child: Text(
+                                      suggestion.displayName ?? suggestion.customerName ?? '',
+                                      style: AllTextStyle.dropDownlistStyle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                },
+                                onSelected: (CustomersModel suggestion) {
+                                  _customerNameController.text = "${suggestion.displayName=="null" || suggestion.displayName == null || suggestion.displayName!.isEmpty ? suggestion.customerName : suggestion.displayName}";
+                                  setState(() {
+                                    customerId = suggestion.customerSlNo.toString();
+                                    _nameController.text = suggestion.customerName.toString();
+                                    _phoneController.text = suggestion.customerMobile.toString();
+                                    _addressController.text = suggestion.customerAddress.toString();
+                                    //_employeeController.text = suggestion.employeeName.toString();
+                                  });
+                                },
+                              ),
                             ),
                           )
                         ],
@@ -353,101 +377,39 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 4.h),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(flex: 6,child: Text("Employee Name",style: AllTextStyle.textFieldHeadStyle)),
-                          const Expanded(flex: 1, child: Text(":")),
-                          Expanded(
+                          Expanded(flex: 6, child: Text("Employee", style: AllTextStyle.searchTypeTxtStyle)),
+                          Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
+                          userType == "a" || userType == "m" ? Expanded(
                             flex: 11,
-                            child: SizedBox(
+                            child: Container(
                               height: 25.h,
-                              child: TextField(
-                                style: AllTextStyle.dropDownlistStyle,
+                              margin: EdgeInsets.only(top: 4.h),
+                              child: CommonTypeAheadField<EmployeesModel>(
                                 controller: _employeeController,
-                                decoration: InputDecoration(
-                                  hintText: "Enter employee",
-                                  hintStyle: AllTextStyle.textValueStyle,
-                                  contentPadding: EdgeInsets.only(left: 5.w),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: InputBorder.none,
-                                  focusedBorder: TextFieldInputBorder.focusEnabledBorder,
-                                  enabledBorder: TextFieldInputBorder.focusEnabledBorder
-                                ),
-                                keyboardType: TextInputType.text,
-                              ),
+                                suggestionList: employeesData,
+                                hintText: 'Select Employee',
+                                selectedValueId: employeeId,
+                                onValueIdChanged: (id) {
+                                  setState(() {
+                                    employeeId = id;
+                                  });
+                                },
+                                displayText: (e) => e.employeeName??"",
+                                valueId: (e) => e.employeeSlNo.toString(),
+                              )
                             ),
-                          ),
-                          // userName == "Admin"? Expanded(
-                          //   flex: 11,
-                          //   child: Container(
-                          //     height: 30.0,
-                          //     width: MediaQuery.of(context).size.width / 2,
-                          //     decoration: ContDecoration.contDecoration,
-                          //     child: TypeAheadFormField(
-                          //       textFieldConfiguration: TextFieldConfiguration(
-                          //           onChanged: (value) {
-                          //             if (value == '') {
-                          //               employeeSlNo = '';
-                          //             }
-                          //           },
-                          //           style: AllTextStyle.dropDownlistStyle,
-                          //           controller: _employeeController,
-                          //           decoration: InputDecoration(contentPadding: const EdgeInsets.only(bottom: 10,left: 5.0),
-                          //               hintText: 'Select Employee',
-                          //               hintStyle: AllTextStyle.textValueStyle,
-                          //               suffixIcon: employeeSlNo == "null" || employeeSlNo == "" || _employeeController.text == "" || employeeSlNo == null ? null
-                          //                   : GestureDetector(
-                          //                 onTap: () {
-                          //                   setState(() {
-                          //                     _employeeController.text = '';
-                          //                   });
-                          //                 },
-                          //                 child: const Padding(padding: EdgeInsets.only(left: 6, right: 6), child: Icon(Icons.close, size: 16)),
-                          //               ),
-                          //               suffixIconConstraints: const BoxConstraints(maxHeight: 30),
-                          //               filled: true,
-                          //               fillColor: Colors.white,
-                          //               border: InputBorder.none,
-                          //               focusedBorder:TextFieldInputBorder.focusEnabledBorder,
-                          //               enabledBorder:TextFieldInputBorder.focusEnabledBorder
-                          //           )),
-                          //       suggestionsCallback: (pattern) {
-                          //         return allEmployeeData.where((element) => element.employeeName.toString().toLowerCase().contains(pattern.toString().toLowerCase())).take(allEmployeeData.length).toList();
-                          //       },
-                          //       itemBuilder: (context, suggestion) {
-                          //         return SizedBox(
-                          //           child: Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                          //             child: Text("${suggestion.employeeName} - ${suggestion.employeeSlNo}",
-                          //                 style: const TextStyle(fontSize: 12),
-                          //                 maxLines: 1, overflow: TextOverflow.ellipsis),
-                          //           ),
-                          //         );
-                          //       },
-                          //       transitionBuilder: (context, suggestionsBox, controller) {
-                          //         return suggestionsBox;
-                          //       },
-                          //       onSuggestionSelected: (EmployeeModel suggestion) {
-                          //         _employeeController.text = suggestion.employeeName!;
-                          //         setState(() {
-                          //           employeeSlNo = suggestion.employeeSlNo.toString();
-                          //         });
-                          //         print("Employeee====  $employeeSlNo");
-                          //       },
-                          //       onSaved: (value) {},
-                          //     ),
-                          //   ),
-                          // ):Expanded(
-                          //   flex: 11,
-                          //   child: Container(
-                          //       height: 30.0,
-                          //       width: MediaQuery.of(context).size.width / 2,
-                          //       padding: const EdgeInsets.only(top: 5.0,left: 4.0),
-                          //       decoration: ContDecoration.contDecoration,
-                          //       child: Text(userName,style: AllTextStyle.textValueStyle,)
-                          //   ),
-                          // ),
+                          ):Expanded(
+                            flex: 11,
+                            child: Container(
+                              height: 25.h,
+                              padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
+                              margin: EdgeInsets.only(top: 4.h),
+                              decoration: ContDecoration.contDecoration,
+                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                            ))
                         ],
                       ),
                       SizedBox(height: 4.h),
@@ -502,7 +464,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                                 visitEntryBtnClk = true;
                               });
                               addVisit(context).then((value){
-                                //Provider.of<VisitsProvider>(context, listen: false).getVisits("",userType == "m"||userType == "a" ? "$employeeSlNo" : userEmployeeId, "", "");
+                               // Provider.of<VisitesProvider>(context, listen: false).getVisites("",userType == "m"||userType == "a" ? "$employeeSlNo" : userEmployeeId, "", "");
                                 setState(() {
                                 });
                               });
@@ -530,7 +492,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
             ),
             ///
             SizedBox(height: 4.h),
-            ProductsProvider.isProductsLoading == true
+            VisitesProvider.isVisitesLoading == true
               ? buildBeautifulLoading()
               : Container(
               height: MediaQuery.of(context).size.height / 1.43,
@@ -561,23 +523,25 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                         DataColumn(label: Expanded(child: Center(child: Text('Note',style: AllTextStyle.tableHeadTextStyle)))),
                       ],
                       rows: List.generate(
-                        15,
-                        //allGetVisitsData.length > 100 ? 100 : allGetVisitsData.length,
+                       visitesData.length > 100 ? 100 : visitesData.length,
                             (int index) => DataRow(
                           color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor) : WidgetStateProperty.resolveWith(getColors),
                           cells: <DataCell>[
-                            DataCell(Center(child: Text('Atiq-1001',style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text('Atiq Rahman',style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text('Dhaka',style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text('01725589585',style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text(''))),
-                            DataCell(Center(child: Text(''))),
-                            // DataCell(Center(child: Text(allGetVisitsData[index].customerCode))),
-                            // DataCell(Center(child: Text(allGetVisitsData[index].customerName))),
-                            // DataCell(Center(child: Text(allGetVisitsData[index].customerAddress))),
-                            // DataCell(Center(child: Text(allGetVisitsData[index].phone))),
-                            // DataCell(Center(child: Text(allGetVisitsData[index].visitDate))),
-                            // DataCell(Center(child: Text(allGetVisitsData[index].note))),
+                            DataCell(Center(child: Text(visitesData[index].customerCode??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].customerName??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].customerAddress??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].customerMobile??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(
+                              Center(
+                                child: Text(
+                                  visitesData[index].date != null
+                                      ? DateFormat('yyyy-MM-dd').format(visitesData[index].date!)
+                                      : "",
+                                  style: AllTextStyle.tableDataTextStyle,
+                                ),
+                              ),
+                            ),
+                            DataCell(Center(child: Text(visitesData[index].note??"",style: AllTextStyle.tableDataTextStyle))),
                           ],
                         ),
                       ),
@@ -604,7 +568,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
   }
   Future<String> addVisit(BuildContext context) async {
     print("name=====${_nameController.text.trim()}");
-    print("customer_id=====$_selectedCustomerId");
+    print("customer_id=====$customerId");
     print("Customer_Address=====${_addressController.text.trim()}");
     print("phone=====${_phoneController.text.trim()}");
     print("Employee_Name=====${_employeeController.text.trim()}");
@@ -613,7 +577,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     String link = "${baseUrl}api/v1/addVisit";
     var data = {
       "name":_nameController.text.trim(),
-      "customer_id":_selectedCustomerId,
+      "customer_id":customerId,
       "Customer_Address":_addressController.text.trim(),
       "phone":_phoneController.text.trim(),
       "Employee_Name":_employeeController.text.trim(),
@@ -631,11 +595,11 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
         options: Options(headers: {
           "Content-Type": "application/json",
           'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-          "Authorization": "Bearer ${sharedPreferences.getString("token")}",
+          "Authorization": "${sharedPreferences.getString("token")}",
         }),
       );
 
-      var item = jsonDecode(response.data);
+      var item = response.data;
       print("Visit Data: $item");
       if (item["success"] == true) {
         setState(() {

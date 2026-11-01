@@ -14,6 +14,7 @@ import 'package:auto_mall/providers/sale_details_provider.dart';
 import 'package:auto_mall/providers/sale_records_provider.dart';
 import 'package:auto_mall/providers/sales_provider.dart';
 import 'package:auto_mall/providers/users_provider.dart';
+import 'package:auto_mall/providers/visites_provider.dart';
 import 'package:auto_mall/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -39,13 +40,14 @@ class AutoMallApp extends StatelessWidget {
        providers: [
           ChangeNotifierProvider<UsersProvider>(create: (_) => UsersProvider()),
           ChangeNotifierProvider<AreasProvider>(create: (_) => AreasProvider()),
+          ChangeNotifierProvider<VisitesProvider>(create: (_) => VisitesProvider()),
           ChangeNotifierProvider<ProductsProvider>(create: (_) => ProductsProvider()),
           ChangeNotifierProvider<EmployeesProvider>(create: (_) => EmployeesProvider()),
           ChangeNotifierProvider<CategoriesProvider>(create: (_) => CategoriesProvider()),
           ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
           ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
-          ChangeNotifierProvider<PendingOrderRecordProvider>(create: (_) => PendingOrderRecordProvider()),
           ChangeNotifierProvider<PendingOrderProvider>(create: (_) => PendingOrderProvider()),
+          ChangeNotifierProvider<PendingOrderRecordProvider>(create: (_) => PendingOrderRecordProvider()),
           ChangeNotifierProvider<BankAccountsProvider>(create: (_) => BankAccountsProvider()),
           ChangeNotifierProvider<SaleDetailsProvider>(create: (_) => SaleDetailsProvider()),
           ChangeNotifierProvider<SaleRecordsProvider>(create: (_) => SaleRecordsProvider()),

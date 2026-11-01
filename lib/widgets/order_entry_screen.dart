@@ -33,12 +33,19 @@ class OrderEntryScreen extends StatefulWidget {
 
 class _OrderEntryScreenState extends State<OrderEntryScreen> {
   SharedPreferences? sharedPreferences;
+  String? userName = "";
+  String? userID = "";
+  String? userEmployeeId = "";
+  String? userType = "";
+  String? employeeName = "";
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
-    userType = "${sharedPreferences?.getString('usertype')}";
-    print("userType======= $userType");
+    userName = sharedPreferences!.getString('userName') ?? ''; 
+    userType = "${sharedPreferences!.getString('userType')}";
+    userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
+    employeeName = "${sharedPreferences!.getString('employeeName')}";
+    userID = "${sharedPreferences!.getString('userId')}";
   }
-  String? userType = '';
 
   Color getColor(Set<WidgetState> states) {
     return Colors.white;
@@ -151,7 +158,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     });
   }
 
-  String? previousDue;
+  
   String? cproductId;
   String? productCode;
   String? productStockId;
@@ -207,6 +214,29 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     });
     print("availableStock=========$availableStock");
   }
+
+  String? previousDue;
+  void previousDueAmount(String? customerId) async {
+  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+  try {
+    final response = await Dio().post(customerDue,
+      data: {
+        "customerId": customerId
+        },
+       options: Options(headers: {
+        "Content-Type": "application/json",
+        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+        "Authorization": "${sharedPreferences.getString("token")}",
+      }),
+    );
+    final data = response.data;
+    setState(() {
+      previousDue = "${data[0]['dueAmount'] ?? '0'}";
+    });
+  } catch (e) {
+    print("Error: $e");
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +329,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                         Row(
                           children: [
                             Expanded(flex:1, child:Text("Sales By    :",style: AllTextStyle.textFieldHeadStyle)),
-                            Expanded(
+                            userType == "a" || userType == "m" ? Expanded(
                               flex:3,
                               child: Container(
                                 margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
@@ -318,7 +348,15 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                 valueId: (e) => e.employeeSlNo.toString(),
                               )
                               ),
-                            ),
+                            ):Expanded(
+                            flex: 3,
+                            child: Container(
+                              height: 25.h,
+                              padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
+                              margin: EdgeInsets.only(top: 4.h),
+                              decoration: ContDecoration.contDecoration,
+                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                            ))
                           ],
                         ), 
                       ],
@@ -515,10 +553,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                             customerId = suggestion.customerSlNo?.toString() ?? '';
                                             customerSlNo = suggestion.customerSlNo?.toString() ?? '';
                                             customerType = suggestion.customerType?.toString() ?? '';
-                                            previousDue = suggestion.previousDue?.toString() ?? '';
-
                                             print("customer selected ======> $customerId");
-
                                             if (customerId == "0" || customerId == 'null') {
                                               isVisible = true;
                                               isEnabled = true;
@@ -535,11 +570,12 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                               addressController.text = suggestion.customerAddress?.toString() ?? '';
                                             }
                                             print('isVisible $isVisible');
+                                            previousDueAmount(customerId??"");
                                           });
                                         },
                                       ),
                                     ),
-                                                                      ),
+                                  ),
                                 ],
                               ), // drop down
                               Visibility(
@@ -787,8 +823,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                         );
                                       },
                                       onSelected: (ProductsModel suggestion) {
-                                        productController.text =
-                                            "${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
+                                        productController.text ="${suggestion.productName} - ${suggestion.productCategoryName} - ${suggestion.productCode}";
 
                                         setState(() {
                                           productId = suggestion.productSlNo;
@@ -1038,7 +1073,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                 onTap: () {
                                   if (productController.text != '' || productController.text.isNotEmpty) {
                                     if (quantityController.text != '' || quantityController.text.isNotEmpty) {
-                                      if (availableStock > 0) {
+                                      // if (availableStock > 0) {
                                         setState(() {
                                           salesCartList.add(SalesCartModel(
                                             productId: "$productId",
@@ -1073,6 +1108,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                             vatAmount = 0;
                                             vatPer = 0;
                                             discountController.text = "";
+                                            warrantyController.text = "";
                                             vatController.text = "";
                                             discountPercentController.text = "";
                                             vatPercentageController.text = "";
@@ -1080,9 +1116,9 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           });
                                           availableStock = 0;
                                         });
-                                      } else {
-                                        Utils.showTopSnackBar(context, "Stock Unavailable");
-                                      }
+                                      // } else {
+                                      //   Utils.showTopSnackBar(context, "Stock Unavailable");
+                                      // }
                                     } else {
                                       Utils.showTopSnackBar(context, "Please Select Quantity");
                                     }
@@ -1564,10 +1600,10 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                     flex: 6,
                                     child: Container(
                                       height: 25.h,
-                                      padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 4.h),
+                                      padding: EdgeInsets.only(left: 5.w, right: 5.w, top: 5.h),
                                       decoration:ContDecoration.contDecoration,
                                       child: SizedBox(
-                                        child: Text("$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue", style:const TextStyle(color: Colors.red),
+                                        child: Text("$previousDue" == 'null' || "$previousDue"=="" || "$previousDue"==0 ? '0' : "$previousDue", style: TextStyle(color: Colors.red,fontSize: 11.sp),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),

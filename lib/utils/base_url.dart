@@ -17,7 +17,7 @@ String employees = "${baseUrl}get-employees";
 String users = "${baseUrl}get-users";
 String addSale = "${baseUrl}add-sale";
 String sales = "${baseUrl}get-sales";
-
+String visites = "${baseUrl}get-visites";
 String couriers = "${baseUrl}get-couriers";
 String saleRecords = "${baseUrl}get-sale-records";
 String saleDetails = "${baseUrl}get-sale-details";

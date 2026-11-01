@@ -26,9 +26,33 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String? userName = "";
+  String? userImage;
+  String? userType = "";
+  String? userID = "";
+  String? userEmployeeId = "";
+  String? employeeName = "";
+  String? salesEntry;
+  String? salesRecord;
+  String? salesInvoice;
+  String? orderEntry;
+  String? orderRecord;
+  String? customerList;
+  String? customerEntry;
+  String? productList;
+  String? categoryList;
+  String? currentStock;
+  String? attendanceEntry;
+  String? attendanceRecord;
+  String? visitEntry;
+  String? visitRecord;
+
   Future<void> _initializeData() async {
     userName = sharedPreferences.getString('userName') ?? ''; 
     userType = "${sharedPreferences.getString('userType')}";
+    userEmployeeId = "${sharedPreferences.getString('employeeId')}";
+    employeeName = "${sharedPreferences.getString('employeeName')}";
+    userID = "${sharedPreferences.getString('userId')}";
     salesEntry = '${sharedPreferences.getString("sales")}';
     salesInvoice = '${sharedPreferences.getString("salesinvoice")}';
     salesRecord = '${sharedPreferences.getString("salesrecord")}';
@@ -48,24 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     print("userName===========$userName");
   }
-
-  String? userName = "";
-  String? userImage;
-  String? userType = "";
-  String? salesEntry;
-  String? salesRecord;
-  String? salesInvoice;
-  String? orderEntry;
-  String? orderRecord;
-  String? customerList;
-  String? customerEntry;
-  String? productList;
-  String? categoryList;
-  String? currentStock;
-  String? attendanceEntry;
-  String? attendanceRecord;
-  String? visitEntry;
-  String? visitRecord;
 
   String getGreeting() {
   final hour = DateTime.now().hour;

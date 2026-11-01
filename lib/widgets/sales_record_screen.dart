@@ -46,16 +46,18 @@ class _SalesRecordScreenState extends State<SalesRecordScreen> {
   final productController = TextEditingController();
   final userController = TextEditingController();
   SharedPreferences? sharedPreferences;
-  String userName = "";
-  String userID = "";
-  String userEmployeeId = "";
-  String userType = "";
+  String? userName = "";
+  String? userID = "";
+  String? userEmployeeId = "";
+  String? userType = "";
+  String? employeeName = "";
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
-    userEmployeeId = "${sharedPreferences?.getString('employeeId')}";
-    userName = "${sharedPreferences?.getString('userName')}";
-    userID = "${sharedPreferences?.getString('userId')}";
-    userType = "${sharedPreferences?.getString('userType')}";
+    userName = sharedPreferences!.getString('userName') ?? ''; 
+    userType = "${sharedPreferences!.getString('userType')}";
+    userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
+    employeeName = "${sharedPreferences!.getString('employeeName')}";
+    userID = "${sharedPreferences!.getString('userId')}";
   }
 
   String? firstPickedDate;
@@ -535,7 +537,7 @@ void _onSelectedRecordType(String selectedValue) {
                         children: [
                           Expanded(flex: 4, child: Text("Employee", style: AllTextStyle.searchTypeTxtStyle)),
                           Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
-                          Expanded(
+                          userType == "a" || userType == "m" ? Expanded(
                             flex: 10,
                             child: Container(
                               height: 25.h,
@@ -554,7 +556,15 @@ void _onSelectedRecordType(String selectedValue) {
                                 valueId: (e) => e.employeeSlNo.toString(),
                               )
                             ),
-                          )
+                          ):Expanded(
+                            flex: 10,
+                            child: Container(
+                              height: 25.h,
+                              padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
+                              margin: EdgeInsets.only(top: 4.h),
+                              decoration: ContDecoration.contDecoration,
+                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                            ))
                         ],
                       ): Container(),
                   isCategoryWiseClicked == true
@@ -620,7 +630,7 @@ void _onSelectedRecordType(String selectedValue) {
                         children: [
                           Expanded(flex: 4, child: Text("User", style: AllTextStyle.searchTypeTxtStyle)),
                           Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
-                          userName=="Admin" ? Expanded(
+                          userType == "a" || userType == "m" ? Expanded(
                             flex: 10,
                             child: Container(
                               height: 25.h,
@@ -646,7 +656,7 @@ void _onSelectedRecordType(String selectedValue) {
                               padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
                               margin: EdgeInsets.only(top: 4.h),
                               decoration: ContDecoration.contDecoration,
-                              child: Text(userName,style: AllTextStyle.searchTypeTxtStyle),
+                              child: Text("$userName",style: AllTextStyle.searchTypeTxtStyle),
                             ))
                         ],
                       ): Container(),
