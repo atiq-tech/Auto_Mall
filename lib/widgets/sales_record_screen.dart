@@ -51,12 +51,14 @@ class _SalesRecordScreenState extends State<SalesRecordScreen> {
   String? userEmployeeId = "";
   String? userType = "";
   String? employeeName = "";
+  String? employeeCode = "";
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
     userName = sharedPreferences!.getString('userName') ?? ''; 
     userType = "${sharedPreferences!.getString('userType')}";
     userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
     employeeName = "${sharedPreferences!.getString('employeeName')}";
+    employeeCode = "${sharedPreferences!.getString('employeeCode')}";
     userID = "${sharedPreferences!.getString('userId')}";
   }
 
@@ -563,7 +565,7 @@ void _onSelectedRecordType(String selectedValue) {
                               padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
                               margin: EdgeInsets.only(top: 4.h),
                               decoration: ContDecoration.contDecoration,
-                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                              child: Text("$employeeName - $employeeCode",style: AllTextStyle.searchTypeTxtStyle),
                             ))
                         ],
                       ): Container(),
@@ -856,7 +858,7 @@ void _onSelectedRecordType(String selectedValue) {
                                 "",
                                 "",
                                 "",
-                                employeeId??"",
+                                userType == "a" || userType == "m" ? employeeId??"" : userEmployeeId??"",
                                 "$backEndFirstDate",
                                 "$backEndSecondtDate",
                                 "a",
@@ -868,7 +870,7 @@ void _onSelectedRecordType(String selectedValue) {
                                 "",
                                 "",
                                 "",
-                                employeeId??"",
+                                userType == "a" || userType == "m" ? employeeId??"" : userEmployeeId??"",
                                 "$backEndFirstDate",
                                 "$backEndSecondtDate",
                                 "a",
@@ -898,7 +900,7 @@ void _onSelectedRecordType(String selectedValue) {
                             else if (isUserWiseClicked && isWithoutDetailsClicked) {
                               data = 'showByUserWithoutDetails';
                               Provider.of<SalesProvider>(context, listen: false).getSales(
-                                userId??"",
+                                userType == "a" || userType == "m" ? userId??"" : userID??"",
                                 "",
                                 "",
                                 "",
@@ -910,7 +912,7 @@ void _onSelectedRecordType(String selectedValue) {
                             else if (isUserWiseClicked && isWithDetailsClicked) {
                               data = 'showByUserWithDetails';
                               Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
-                                userId??"",
+                                userType == "a" || userType == "m" ? userId??"" : userID??"",
                                 "",
                                 "",
                                 "",

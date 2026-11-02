@@ -1,6 +1,8 @@
 import 'package:auto_mall/home_screen.dart';
+import 'package:auto_mall/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../auth/login_screen.dart';
 import '../main.dart';
 
@@ -57,28 +59,35 @@ class SplashScreenState extends State<AnimatedSplashScreen> with SingleTickerPro
         height: double.infinity,
         width: double.infinity,
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("images/splash.jpg"),
-            fit: BoxFit.fill,
-          ),
+        color: Colors.white,
         ),
-        child: Container(
-          color: Colors.black.withOpacity(0.85), 
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ScaleTransition(
-                  scale: _animation,
-                  child: Image.asset(
-                    'images/splashlogo.png',
-                    width: 350.w,
-                    height: 300.h,
-                  ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ScaleTransition(
+                scale: _animation,
+                child: Image.asset(
+                  'images/automlogo.jpeg',
+                  width: 280.w,
+                  height: 250.h,
                 ),
-              ],
-            ),
+              ),
+              SizedBox(height: 5.h),
+              ScaleTransition(
+                scale: _animation,
+                child: Text(
+                  'Auto Mall',
+                  style: GoogleFonts.limelight(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                  color: AppColors.appColor,
+                ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

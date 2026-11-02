@@ -38,12 +38,14 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   String? userEmployeeId = "";
   String? userType = "";
   String? employeeName = "";
+  String? employeeCode = "";
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
     userName = sharedPreferences!.getString('userName') ?? ''; 
     userType = "${sharedPreferences!.getString('userType')}";
     userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
     employeeName = "${sharedPreferences!.getString('employeeName')}";
+    employeeCode = "${sharedPreferences!.getString('employeeCode')}";
     userID = "${sharedPreferences!.getString('userId')}";
   }
 
@@ -344,7 +346,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                     employeeId = id;
                                   });
                                 },
-                                displayText: (e) => e.employeeName??"",
+                                displayText: (e) => "${e.employeeName} - ${e.employeeId}",
                                 valueId: (e) => e.employeeSlNo.toString(),
                               )
                               ),
@@ -353,9 +355,9 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                             child: Container(
                               height: 25.h,
                               padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
-                              margin: EdgeInsets.only(top: 4.h),
+                              margin: EdgeInsets.only(top: 4.h,bottom: 4.h),
                               decoration: ContDecoration.contDecoration,
-                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                              child: Text("$employeeName - $employeeCode",style: AllTextStyle.searchTypeTxtStyle),
                             ))
                           ],
                         ), 
@@ -495,6 +497,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                                           customerId = '';
                                                           mobileNumberController.clear();
                                                           addressController.clear();
+                                                          nameController.clear();
                                                         });
                                                       },
                                                       child: Padding(
@@ -640,7 +643,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           return null;
                                         },
                                         decoration: InputDecoration(
-                                          contentPadding: customerId==""? EdgeInsets.symmetric(vertical: 5.h,horizontal: 5.w): EdgeInsets.symmetric(vertical: 11.5.h,horizontal: 5.w),
+                                          contentPadding: customerType == "N" || customerType == "G" ? EdgeInsets.symmetric(vertical: 5.h,horizontal: 5.w) : EdgeInsets.symmetric(vertical: 11.5.h,horizontal: 5.w),
                                           border: InputBorder.none,
                                           focusedBorder:TextFieldInputBorder.focusEnabledBorder,
                                           enabledBorder:TextFieldInputBorder.focusEnabledBorder,
@@ -675,7 +678,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                         },
                                         enabled: isEnabled,
                                         decoration: InputDecoration(
-                                          contentPadding: customerId==""? EdgeInsets.only(bottom: 5.h,left: 5.w): EdgeInsets.symmetric(vertical: 12.h,horizontal: 5.w),
+                                          contentPadding: customerType == "N" || customerType == "G" ? EdgeInsets.only(bottom: 5.h,left: 5.w): EdgeInsets.symmetric(vertical: 12.h,horizontal: 5.w),
                                           border: InputBorder.none,
                                           focusedBorder:TextFieldInputBorder.focusEnabledBorder,
                                           enabledBorder:TextFieldInputBorder.focusEnabledBorder
@@ -1841,7 +1844,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
         "sales": {
           "isOrder": "1",
           "isCourier": isCourier ? "1" : "0",
-          "employeeId": employeeId ?? "0",
+          "employeeId": userType == "a" || userType == "m" ? employeeId ?? "0" : userEmployeeId??"",
           "courierId": isCourier ? (courierId ?? "0") : "0",
           "customerId": customerId ?? "0",
           "salesDate": "$backEndFirstDate",

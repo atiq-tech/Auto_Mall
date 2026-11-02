@@ -3,6 +3,17 @@ import 'package:auto_mall/auth/global_logout.dart';
 import 'package:auto_mall/home_screen.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
+import 'package:auto_mall/widgets/customer%20_list_screen.dart';
+import 'package:auto_mall/widgets/customer_due_list_screen.dart';
+import 'package:auto_mall/widgets/customer_entry_screen.dart';
+import 'package:auto_mall/widgets/order_entry_screen.dart';
+import 'package:auto_mall/widgets/pending_order_record_screen.dart';
+import 'package:auto_mall/widgets/product_list_screen.dart';
+import 'package:auto_mall/widgets/sales_entry_screen.dart';
+import 'package:auto_mall/widgets/sales_invoice_list_screen.dart';
+import 'package:auto_mall/widgets/sales_record_screen.dart';
+import 'package:auto_mall/widgets/visit_entry_screen.dart';
+import 'package:auto_mall/widgets/visits_history_screen.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,40 +36,76 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
     sharedPreferences = await SharedPreferences.getInstance();
     userName = "${sharedPreferences?.getString('userName')}";
     userType = "${sharedPreferences?.getString('userType')}";
-    salesEntry = '${sharedPreferences?.getString("sales")}';
-    salesInvoice = '${sharedPreferences?.getString("salesinvoice")}';
-    salesRecord = '${sharedPreferences?.getString("salesrecord")}';
-    customerList = '${sharedPreferences?.getString("customerlist")}';
-    orderEntry = '${sharedPreferences?.getString("order_entry")}';
-    orderRecord = '${sharedPreferences?.getString("orderRecord")}';
-    customerEntry = '${sharedPreferences?.getString("customer")}';
-    productList = '${sharedPreferences?.getString("productlist")}';
-    categoryList = '${sharedPreferences?.getString("category")}';
-    currentStock = '${sharedPreferences?.getString("currentStock")}';
-    attendanceEntry = '${sharedPreferences?.getString("attendanceEntry")}';
-    attendanceRecord = '${sharedPreferences?.getString("attendanceRecord")}';
-    visitEntry = '${sharedPreferences?.getString("visitEntry")}';
-    visitRecord = '${sharedPreferences?.getString("visitEntryRecord")}';
+    userID = "${sharedPreferences?.getString('userId')}";
     setState(() {
     });
 
   }
   String? userName = "";
   String? userType = "";
-  String? salesEntry;
-  String? salesRecord;
-  String? salesInvoice;
-  String? orderEntry;
-  String? orderRecord;
-  String? customerList;
-  String? customerEntry;
-  String? productList;
-  String? categoryList;
-  String? currentStock;
-  String? attendanceEntry;
-  String? attendanceRecord;
-  String? visitEntry;
-  String? visitRecord;
+  String? userID = "";
+
+
+  // Check page access permission
+bool hasPageAccess(String permission) {
+  // Admin and master users can access all pages
+  if (userType == "a" || userType == "m") {
+    return true;
+  }
+
+  return sharedPreferences!.getString(permission) == "true";
+}
+
+// Navigate only if the user has permission
+void openPageWithAccess({
+  required String permission,
+  required Widget page,
+}) {
+  if (hasPageAccess(permission)) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  } else {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          icon: const Icon(
+            Icons.lock_outline,
+            color: Colors.red,
+            size: 40,
+          ),
+          title: const Text(
+            "Access Denied!",
+            textAlign: TextAlign.center,
+          ),
+          content: const Text(
+            "You don't have permission to access this page.",
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.appColor,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 
   @override
   void initState() {
@@ -99,12 +146,14 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
                   Container(
                     padding: EdgeInsets.all(3.r),
                     decoration: BoxDecoration(
+                      color: AppColors.appColor,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.orderCardColor, width: 2.5.w),
+                      border: Border.all(color: const Color.fromARGB(255, 255, 255, 255), width: 2.5.w),
                     ),
                     child: CircleAvatar(
-                      radius: 35.r,
-                      backgroundImage: AssetImage("images/mainlogo.jpg"),
+                      backgroundColor: AppColors.appColor,
+                      radius: 32.r,
+                      backgroundImage: AssetImage("images/automlogo.jpeg"),
                     ),
                   ),
                  SizedBox(width: 14.w),
@@ -148,136 +197,80 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
               },
               child: Custom_List_Tile(icon: Icons.home, icon_name: "Home Page")),
           Divider(height: 1.h,thickness: 1.0),
+
           InkWell(
-              onTap: (){
-                if(orderEntry == "true"|| userType=="m"|| userType== "a"){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
-              },
-              child: Custom_List_Tile(icon: Icons.border_all, icon_name: "Order Entry")),
+            onTap: (){
+              openPageWithAccess( permission: "order_entry",page: const OrderEntryScreen());
+            },
+            child: Custom_List_Tile(icon: Icons.border_all, icon_name: "Order Entry")),
+
           Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){
-                if(orderRecord == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderRecordScreen()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "orderRecord",page: const PendingOrderRecordScreen());
               },
               child: Custom_List_Tile(icon: Icons.pending, icon_name: "Pending Order")),
-          // Divider(height: 1.h,thickness: 1.0),
-          // InkWell(
-          //     onTap: (){
-          //       if(salesInvoice == "true"|| userType=="m"|| userType== "a"){
-          //         //Navigator.push(context, MaterialPageRoute(builder: (context) => const AllOrderInvoicePage()));
-          //       }
-          //       else{
-          //         showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-          //       }
-          //       },
-          //     child: Custom_List_Tile(icon: Icons.inbox_rounded, icon_name: "Order Invoice")),
+   
           Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){
-                if(salesEntry == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryPage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
-                },
+                openPageWithAccess(permission: "sales",page: const SalesEntryScreen());
+              },
               child: Custom_List_Tile(icon: Icons.sim_card_alert_sharp, icon_name: "Sales Entry")),
           Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){
-                if(salesRecord == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordPage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "salesrecord",page: const SalesRecordScreen());
               },
               child: Custom_List_Tile(icon: Icons.library_books, icon_name: "Sales Record")),
           Divider(height: 1.h,thickness: 1.0),
+
           InkWell(
               onTap: (){
-                if(salesInvoice == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const AllSalesInvoicePage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "salesinvoice",page: const SalesInvoiceListScreen());
               },
               child: Custom_List_Tile(icon: Icons.insert_invitation_outlined, icon_name: "Sales Invoice")),
            Divider(height: 1.h,thickness: 1.0),
           InkWell(
               onTap: (){
-                if(productList == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductListScreen()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "productlist",page: const ProductListScreen());
               },
               child: Custom_List_Tile(icon: Icons.production_quantity_limits, icon_name: "Product List")),
-
           Divider(height: 1.h,thickness: 1.0),
-         InkWell(
-              onTap: (){
-                if(categoryList == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const CategoryListScreen()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
-                },
-              child: Custom_List_Tile(icon: Icons.category, icon_name: "Customer Due")),
-          Divider(height: 1.h,thickness: 1.0),
+         
+        
           InkWell(
               onTap: (){
-                if(customerEntry == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomerEntryPage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "customer",page: CustomerEntryScreen());
                 },
               child: Custom_List_Tile(icon: Icons.dashboard_customize_outlined, icon_name: "Customer Entry")),
           Divider(height: 1.h,thickness: 1.0),
+
+        
         InkWell(
               onTap: (){
-                if(customerList == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomerListPage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+               openPageWithAccess(permission: "customerlist",page: CustomerListScreen());
               },
               child: Custom_List_Tile(icon: Icons.list_alt_outlined, icon_name: "Customer List")),
           Divider(height: 1.h,thickness: 1.0),
+
+           InkWell(
+              onTap: (){
+                 openPageWithAccess(permission: "customerDue",page: const CustomerDueListScreen());
+                },
+              child: Custom_List_Tile(icon: Icons.category, icon_name: "Customer Due")),
+          Divider(height: 1.h,thickness: 1.0),
+
           InkWell(
               onTap: (){
-                if(visitEntry == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) =>  const VisitEntryPage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "visitEntry",page: const VisitEntryScreen());
               },
               child: Custom_List_Tile(icon: Icons.visibility, icon_name: "Visit Entry")),
           Divider(height: 1.h,thickness: 1.0),
+
           InkWell(
               onTap: (){
-                if(visitRecord == "true"|| userType=="m"|| userType== "a"){
-                  //Navigator.push(context, MaterialPageRoute(builder: (context) =>  const VisitHistoryPage()));
-                }
-                else{
-                  showCustomDialog(context, '⚠️Warning', 'It is not authorized for you to access this page!');
-                }
+                openPageWithAccess(permission: "visitEntryRecord",page: const VisitsHistoryScreen());
               },
               child: Custom_List_Tile(icon: Icons.visibility, icon_name: "Visit List")),
           Divider(height: 1.h,thickness: 1.0),

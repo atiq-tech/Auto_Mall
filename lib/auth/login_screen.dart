@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:auto_mall/home_screen.dart';
 import 'package:auto_mall/utils/utils.dart';
 import 'package:dio/dio.dart';
@@ -46,11 +48,59 @@ class _LogInPageState extends State<LogInPage> {
       await sharedPreferences?.setString('token', item["token"]?.toString() ?? '');
       await sharedPreferences?.setString('sessionId', item["session_id"]?.toString() ?? '');
       await sharedPreferences?.setString('userName', user["FullName"]?.toString() ?? '');
-      await sharedPreferences?.setString('userId', user["User_ID"]?.toString() ?? '');
+      await sharedPreferences?.setString('userId', user["User_SlNo"]?.toString() ?? '');
       await sharedPreferences?.setString('userType', user["UserType"]?.toString() ?? '');
-      await sharedPreferences?.setString('employeeId', user["User_SlNo"]?.toString() ?? '');
       await sharedPreferences?.setString('branch', user["branch_id"]?.toString() ?? '');
       await sharedPreferences?.setString('branchName', user["Branch_name"]?.toString() ?? '');
+      await sharedPreferences?.setString('employeeId', user["employee_id"]?.toString() ?? '');
+      await sharedPreferences?.setString('employeeCode', user["Employee_ID"]?.toString() ?? '');
+      await sharedPreferences?.setString('employeeName', user["Employee_Name"]?.toString() ?? '');
+      
+      
+
+      // Access permissions
+      final accessData = item["access"];
+      List<String> accessList = [];
+      if (accessData != null && accessData is Map) {
+        final accessString = accessData["access"];
+        if (accessString != null && accessString.toString().isNotEmpty) {
+          try {
+            final decodedAccess = jsonDecode(accessString.toString());
+            if (decodedAccess is List) {
+              accessList = decodedAccess.map((e) => e.toString()).toList();
+            }
+          } catch (e) {
+            print("Access parsing error: $e");
+          }
+        }
+      }
+      // Save access permissions in SharedPreferences
+      final accessPreferences = <String, String>{
+        "sales": "sales",
+        "salesinvoice": "salesinvoice",
+        "salesrecord": "salesrecord",
+        "customerlist": "customerlist",
+        "order_entry": "order",
+        "orderRecord": "pendingorder",
+        "orderinvoice": "orderinvoice",
+        "customer": "customer",
+        "productlist": "productlist",
+        "category": "category",
+        "currentStock": "currentStock",
+        "attendanceEntry": "attendance_report",
+        "visitEntry": "visit_entry",
+        "visitEntryRecord": "visit_entry_record",
+        "customerDue": "customerDue",
+      };
+
+      for (final entry in accessPreferences.entries) {
+        await sharedPreferences!.setString(entry.key,
+          accessList.contains(entry.value).toString(),
+        );
+      }
+      // Optional: save the complete access list
+      await sharedPreferences!.setString("access",jsonEncode(accessList));
+
 
       if (!mounted) return;
       setState(() {

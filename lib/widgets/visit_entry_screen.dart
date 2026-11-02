@@ -1,5 +1,3 @@
-import 'dart:convert';
-//import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:auto_mall/common_widget/buildBeautifulLoading.dart';
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
 import 'package:auto_mall/models/customers_model.dart';
@@ -7,6 +5,7 @@ import 'package:auto_mall/models/employees_model.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
 import 'package:auto_mall/providers/visites_provider.dart';
+import 'package:auto_mall/utils/animation_snackbar.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +72,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
   String? employeeName = "";
   String? employeeSlNo;
   String? employeeId = "";
+  String? employeeCode = "";
   String? customerId;
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
@@ -80,6 +80,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     userType = "${sharedPreferences!.getString('userType')}";
     userEmployeeId = "${sharedPreferences!.getString('employeeId')}";
     employeeName = "${sharedPreferences!.getString('employeeName')}";
+    employeeCode = "${sharedPreferences!.getString('employeeCode')}";
     userID = "${sharedPreferences!.getString('userId')}";
   }
 
@@ -91,7 +92,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     super.initState();
     _initializeData();
     Provider.of<EmployeesProvider>(context,listen: false).getEmployees();
-    Provider.of<VisitesProvider>(context, listen: false).getVisites("","","","");
+    Provider.of<VisitesProvider>(context, listen: false).getVisites("","",backEndFirstDate, backEndFirstDate);
     Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
     userName = _employeeCustomerController.text;
     print("eeeeeeeeee======  ${_employeeCustomerController.text}");
@@ -137,7 +138,9 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     mainScrollController.addListener(mainScrollListener);
     final employeesData = Provider.of<EmployeesProvider>(context).employeesList;
     ///get Customer
-    final customersData = Provider.of<CustomersProvider>(context).customersList.where((element) => element.customerSlNo!="").toList();
+    final customersData = Provider.of<CustomersProvider>(context).customersList
+    .where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
+    .toList();
     ///get Visits
     final visitesData = Provider.of<VisitesProvider>(context).visitesList;
     print("visitsData length=====> ${visitesData.length} ");
@@ -397,18 +400,18 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                                     employeeId = id;
                                   });
                                 },
-                                displayText: (e) => e.employeeName??"",
+                                displayText: (e) => "${e.employeeName} - ${e.employeeId}",
                                 valueId: (e) => e.employeeSlNo.toString(),
                               )
                             ),
-                          ):Expanded(
+                          ): Expanded(
                             flex: 11,
                             child: Container(
                               height: 25.h,
                               padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
-                              margin: EdgeInsets.only(top: 4.h),
+                              margin: EdgeInsets.only(top: 4.h,bottom: 4.h),
                               decoration: ContDecoration.contDecoration,
-                              child: Text("$employeeName",style: AllTextStyle.searchTypeTxtStyle),
+                              child: Text("$employeeName - $employeeCode",style: AllTextStyle.searchTypeTxtStyle),
                             ))
                         ],
                       ),
@@ -450,12 +453,6 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                             if(_customerNameController.text==''){
                               Utils.errorSnackBar(context, "Please Select Customer");
                             }
-                            else if(_nameController.text==''){
-                              Utils.errorSnackBar(context, "Name is required");
-                            }
-                            else if(_phoneController.text==''){
-                              Utils.errorSnackBar(context, "Phone field is required");
-                            }
                             else if(_employeeController.text == '') {
                                 Utils.errorSnackBar(context, "Employee field is required");
                             }
@@ -463,8 +460,8 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                               setState(() {
                                 visitEntryBtnClk = true;
                               });
-                              addVisit(context).then((value){
-                               // Provider.of<VisitesProvider>(context, listen: false).getVisites("",userType == "m"||userType == "a" ? "$employeeSlNo" : userEmployeeId, "", "");
+                              addVisites(context).then((value){
+                                Provider.of<VisitesProvider>(context, listen: false).getVisites("","",backEndFirstDate, backEndFirstDate);
                                 setState(() {
                                 });
                               });
@@ -566,32 +563,24 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
       _noteController.text="";
     });
   }
-  Future<String> addVisit(BuildContext context) async {
+  Future<String> addVisites(BuildContext context) async {
     print("name=====${_nameController.text.trim()}");
     print("customer_id=====$customerId");
     print("Customer_Address=====${_addressController.text.trim()}");
     print("phone=====${_phoneController.text.trim()}");
-    print("Employee_Name=====${_employeeController.text.trim()}");
+    print("Employee_Name=====${employeeId}");
     print("visit_date=====$backEndFirstDate");
     print("note=====${_noteController.text.trim()}");
-    String link = "${baseUrl}api/v1/addVisit";
-    var data = {
-      "name":_nameController.text.trim(),
-      "customer_id":customerId,
-      "Customer_Address":_addressController.text.trim(),
-      "phone":_phoneController.text.trim(),
-      "Employee_Name":_employeeController.text.trim(),
-      "visit_date": backEndFirstDate,
-      "note": _noteController.text.trim(),
-    };
-    FormData formData = FormData.fromMap({
-      "visit": jsonEncode(data),
-    });
     SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
     try {
-      var response = await Dio().post(
-        link,
-        data: formData,
+      var response = await Dio().post(addVisit,
+        data:  {
+          "customerId": customerId,
+          "address":_addressController.text.trim(),
+          "employeeId": userType == "a" || userType == "m" ? employeeId ?? "0" : userEmployeeId??"",
+          "date": backEndFirstDate,
+          "note": _noteController.text.trim(),
+        },
         options: Options(headers: {
           "Content-Type": "application/json",
           'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
@@ -606,34 +595,17 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
           visitEntryBtnClk = false;
         });
         emptyMethod();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color.fromARGB(255, 4, 108, 156),
-            duration: const Duration(seconds: 2),
-            content: Center(child: Text("${item["message"]}", style: const TextStyle(color: Colors.white)),
-            ),
-          ),
-        );
+        CustomSnackBar.showTopSnackBar(context, "${item["message"]}");
         return "true";
       } else {
         setState(() {
           visitEntryBtnClk = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.black,
-            duration: const Duration(seconds: 2),
-            content: Center(
-              child: Text(
-                "${item["message"]}",
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ),
-        );
+        Utils.showTopSnackBar(context, "${item["message"]}");
         return "false";
       }
     } catch (e) {
+      Utils.showTopSnackBar(context, "$e");
       print("Error: $e");
       return "false";
     }

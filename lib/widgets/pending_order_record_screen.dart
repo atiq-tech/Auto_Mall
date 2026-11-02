@@ -31,7 +31,7 @@ class _PendingOrderRecordScreenState extends State<PendingOrderRecordScreen> {
 
   SharedPreferences? sharedPreferences;
   String userName = "";
-  String userID = "";
+  String? userID = "";
   String userEmployeeId = "";
   String userType = "";
   Future<void> _initializeData() async {
@@ -395,7 +395,7 @@ void _onSelectedRecordType(String selectedValue) {
                               if (isWithoutDetailsClicked) {
                                 data = 'showAllWithoutDetails';
                                 Provider.of<PendingOrderProvider>(context, listen: false).getPendingOrder(
-                                  "", 
+                                  userID??"", 
                                   "", 
                                   "", 
                                   "",
@@ -408,7 +408,7 @@ void _onSelectedRecordType(String selectedValue) {
                               else if (isWithDetailsClicked) {
                                 data = 'showAllWithDetails';
                                 Provider.of<PendingOrderRecordProvider>(context, listen: false).getPendingOrderRecord(
-                                  "", 
+                                  userID??"", 
                                   "", 
                                   "", 
                                   "",

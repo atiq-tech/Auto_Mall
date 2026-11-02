@@ -14,6 +14,7 @@ import 'package:auto_mall/widgets/sales_entry_screen.dart';
 import 'package:auto_mall/widgets/sales_invoice_list_screen.dart';
 import 'package:auto_mall/widgets/sales_record_screen.dart';
 import 'package:auto_mall/widgets/visit_entry_screen.dart';
+import 'package:auto_mall/widgets/visits_history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -32,20 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String? userID = "";
   String? userEmployeeId = "";
   String? employeeName = "";
-  String? salesEntry;
-  String? salesRecord;
-  String? salesInvoice;
-  String? orderEntry;
-  String? orderRecord;
-  String? customerList;
-  String? customerEntry;
-  String? productList;
-  String? categoryList;
-  String? currentStock;
-  String? attendanceEntry;
-  String? attendanceRecord;
-  String? visitEntry;
-  String? visitRecord;
 
   Future<void> _initializeData() async {
     userName = sharedPreferences.getString('userName') ?? ''; 
@@ -53,22 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     userEmployeeId = "${sharedPreferences.getString('employeeId')}";
     employeeName = "${sharedPreferences.getString('employeeName')}";
     userID = "${sharedPreferences.getString('userId')}";
-    salesEntry = '${sharedPreferences.getString("sales")}';
-    salesInvoice = '${sharedPreferences.getString("salesinvoice")}';
-    salesRecord = '${sharedPreferences.getString("salesrecord")}';
-    customerList = '${sharedPreferences.getString("customerlist")}';
-    orderEntry = '${sharedPreferences.getString("order_entry")}';
-    orderRecord = '${sharedPreferences.getString("orderRecord")}';
-    customerEntry = '${sharedPreferences.getString("customer")}';
-    productList = '${sharedPreferences.getString("productlist")}';
-    categoryList = '${sharedPreferences.getString("category")}';
-    currentStock = '${sharedPreferences.getString("currentStock")}';
-    attendanceEntry = '${sharedPreferences.getString("attendanceEntry")}';
-    attendanceRecord = '${sharedPreferences.getString("attendanceRecord")}';
-    visitEntry = '${sharedPreferences.getString("visitEntry")}';
-    visitRecord = '${sharedPreferences.getString("visitEntryRecord")}';
     setState(() {
-      
     });
     print("userName===========$userName");
   }
@@ -83,6 +55,51 @@ class _HomeScreenState extends State<HomeScreen> {
     return "Good Evening!";
   } else {
     return "Good Night!";
+  }
+}
+
+// Check page access permission
+bool hasPageAccess(String permission) {
+  // Admin and master users can access all pages
+  if (userType == "a" || userType == "m") {
+    return true;
+  }
+  return sharedPreferences.getString(permission) == "true";
+}
+// Navigate only if the user has permission
+void openPageWithAccess({required String permission,required Widget page}) {
+  if (hasPageAccess(permission)) {
+    Navigator.push(context,MaterialPageRoute(builder: (context) => page));
+  } else {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          icon: const Icon(Icons.lock_outline,color: Colors.red,size: 40),
+          title: const Text("Access Denied!",textAlign: TextAlign.center),
+          content: const Text(
+            "You don't have permission to access this page.",
+            textAlign: TextAlign.center,
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.appColor,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -105,12 +122,12 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
         title: Row(
           children: [
             Container(
-              height: 55.h,
-              width: 64.w,
+              height: 35.h,
+              width: 35.w,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100.r),
                 image: const DecorationImage(
-                  image: AssetImage("images/splashlogo.png"),
+                  image: AssetImage("images/automlogo.jpeg"),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -323,111 +340,28 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                   return GestureDetector(
                     onTap: () {
                       if (index == 0) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderEntryScreen()));
-                        
-                        //   if (orderEntry == "true" || userType == "m" || userType == "a") {
-                        //    Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderEntryScreen()));
-                        //   } else {
-                        //     showCustomDialog(context);
-                        //   }
-                      } 
-                      else if (index == 1) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => const PendingOrderRecordScreen()));
-                        // if (orderRecord == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const OrderRecordScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                        //else if (index == 2) {
-                        //Navigator.push(context,MaterialPageRoute(builder: (context) => const PendingOrderRecordScreen()));
-                        // if (salesInvoice == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CODRecordScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                        //} 
-                      else if (index == 2) {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryScreen()));
-                        // if (salesEntry == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesEntryScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 3) {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordScreen()));
-                        // if (salesRecord == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const SalesRecordPage()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 4) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => const SalesInvoiceListScreen()));
-                        // if (salesInvoice == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const SalesInvoiceListScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 5) {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => ProductListScreen()));
-                        // if (productList == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const ProductListScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 6) {
-                         Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
-                        // if (categoryList == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CategoryListScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 7) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerListScreen()));
-                        // if (customerEntry == "true" || userType == "m" || userType == "a") {
-                        //    Navigator.push(context,MaterialPageRoute(builder: (context) => CustomerEntryScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 8) {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerDueListScreen()));
-                        // if (customerList == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context,MaterialPageRoute(builder: (context) => const CustomerListScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      else if (index == 9) {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryScreen()));
-                        // if (visitEntry == "true" || userType == "m" || userType == "a") {
-                        //   Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitEntryScreen()));
-                        // } else {
-                        //   showCustomDialog(context);
-                        // }
-                      } 
-                      // else if (index == 11) {
-                      //   if (visitRecord == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context, MaterialPageRoute(builder: (context) => const VisitHistoryPage()));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else if (index == 12) {
-                      //   if (attendanceEntry == "true" || userType == "m" || userType == "a") {
-                      //     Navigator.push(context, MaterialPageRoute(builder: (context) => AttendanceEntry(latiduteValue: latitude,LongitudeValue: longitude)));
-                      //   } else {
-                      //     showCustomDialog(context);
-                      //   }
-                      // } 
-                      // else {
-                      //   Navigator.push(context, MaterialPageRoute(builder: (context) => const OutletMapScreen()));
-                      // }
+                        openPageWithAccess(permission: "order_entry",page: const OrderEntryScreen());
+                      } else if (index == 1) {
+                        openPageWithAccess(permission: "orderRecord",page: const PendingOrderRecordScreen());
+                      } else if (index == 2) {
+                        openPageWithAccess(permission: "sales",page: const SalesEntryScreen());
+                      } else if (index == 3) {
+                        openPageWithAccess(permission: "salesrecord",page: const SalesRecordScreen());
+                      } else if (index == 4) {
+                        openPageWithAccess(permission: "salesinvoice",page: const SalesInvoiceListScreen());
+                      } else if (index == 5) {
+                        openPageWithAccess(permission: "productlist",page: ProductListScreen());
+                      } else if (index == 6) {
+                        openPageWithAccess(permission: "customer",page: CustomerEntryScreen());
+                      } else if (index == 7) {
+                        openPageWithAccess(permission: "customerlist",page: CustomerListScreen());
+                      } else if (index == 8) {
+                        openPageWithAccess(permission: "customerDue",page: const CustomerDueListScreen());
+                      } else if (index == 9) {
+                        openPageWithAccess(permission: "visitEntry",page: const VisitEntryScreen());
+                      } else if (index == 10) {
+                        openPageWithAccess(permission: "visitEntryRecord",page: const VisitsHistoryScreen());
+                      }
                     },
                     child: Container(
                       decoration: BoxDecoration(
