@@ -55,52 +55,61 @@ class _LogInPageState extends State<LogInPage> {
       await sharedPreferences?.setString('employeeId', user["employee_id"]?.toString() ?? '');
       await sharedPreferences?.setString('employeeCode', user["Employee_ID"]?.toString() ?? '');
       await sharedPreferences?.setString('employeeName', user["Employee_Name"]?.toString() ?? '');
-      
-      
 
-      // Access permissions
-      final accessData = item["access"];
+       // =====================================
+      // Access Permissions
+      // =====================================
+
+      final dynamic accessData = item["access"];
       List<String> accessList = [];
-      if (accessData != null && accessData is Map) {
-        final accessString = accessData["access"];
-        if (accessString != null && accessString.toString().isNotEmpty) {
-          try {
-            final decodedAccess = jsonDecode(accessString.toString());
-            if (decodedAccess is List) {
-              accessList = decodedAccess.map((e) => e.toString()).toList();
-            }
-          } catch (e) {
-            print("Access parsing error: $e");
+      if (accessData != null) {
+        try {
+          dynamic decodedAccess;
+          if (accessData is String) {
+            // API returns access as a JSON String
+            decodedAccess = jsonDecode(accessData);
+          } else {
+            // Supports List responses as well
+            decodedAccess = accessData;
           }
+
+          if (decodedAccess is List) {
+            accessList = decodedAccess.map((e) => e.toString()).toList();
+          }
+        } catch (e) {
+          print("Access parsing error: $e");
         }
       }
-      // Save access permissions in SharedPreferences
-      final accessPreferences = <String, String>{
+
+      print("Access List: $accessList");
+
+      // Map SharedPreferences keys to API permissions
+      final Map<String, String> accessPreferences = {
         "sales": "sales",
         "salesinvoice": "salesinvoice",
         "salesrecord": "salesrecord",
         "customerlist": "customerlist",
         "order_entry": "order",
         "orderRecord": "pendingorder",
+        "codPending": "codpending",
         "orderinvoice": "orderinvoice",
         "customer": "customer",
         "productlist": "productlist",
         "category": "category",
         "currentStock": "currentStock",
         "attendanceEntry": "attendance_report",
-        "visitEntry": "visit_entry",
-        "visitEntryRecord": "visit_entry_record",
+        "visitEntry": "visit",
+        "visitEntryRecord": "visitList",
         "customerDue": "customerDue",
       };
 
+      // Save each permission as true or false
       for (final entry in accessPreferences.entries) {
-        await sharedPreferences!.setString(entry.key,
-          accessList.contains(entry.value).toString(),
-        );
+        await sharedPreferences!.setBool(entry.key,accessList.contains(entry.value));
       }
-      // Optional: save the complete access list
-      await sharedPreferences!.setString("access",jsonEncode(accessList));
 
+      // Save the complete access list
+      await sharedPreferences!.setString("access",jsonEncode(accessList));      
 
       if (!mounted) return;
       setState(() {

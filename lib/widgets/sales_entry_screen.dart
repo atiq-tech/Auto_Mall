@@ -558,7 +558,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           return Padding(
                                             padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 8.w),
                                             child: Text(
-                                              suggestion.displayName ?? suggestion.customerName ?? '',
+                                              suggestion.displayName??"",
                                               style: AllTextStyle.dropDownlistStyle,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -566,7 +566,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           );
                                         },
                                         onSelected: (CustomersModel suggestion) {
-                                          customerController.text = suggestion.customerName ?? suggestion.displayName ?? '';
+                                          customerController.text = suggestion.displayName ?? '';
                                           setState(() {
                                             customerId = suggestion.customerSlNo?.toString() ?? '';
                                             customerSlNo = suggestion.customerSlNo?.toString() ?? '';
@@ -596,7 +596,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                         },
                                       ),
                                     ),
-                                                                      ),
+                                   ),
                                 ],
                               ), // drop down
                               Visibility(

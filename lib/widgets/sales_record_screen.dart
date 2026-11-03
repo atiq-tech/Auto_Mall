@@ -381,8 +381,8 @@ void _onSelectedRecordType(String selectedValue) {
     Provider.of<ProductsProvider>(context,listen: false).getProducts();
     Provider.of<AreasProvider>(context, listen: false).getAreas();
     Provider.of<UsersProvider>(context,listen: false).getUsers();
-    Provider.of<SalesProvider>(context,listen: false).getSales("", "", "", "", "", "", "a");
-    Provider.of<SaleRecordsProvider>(context,listen: false).getSaleRecords("", "", "", "", "", "", "a");
+    Provider.of<SalesProvider>(context,listen: false).salesList = [];
+    Provider.of<SaleRecordsProvider>(context,listen: false).saleRecordsList = [];
     Provider.of<SaleDetailsProvider>(context,listen: false).getSaleDetails("", "", "",  "","a");
     super.initState();
   }
@@ -783,7 +783,7 @@ void _onSelectedRecordType(String selectedValue) {
                             if (isAllTypeClicked && isWithoutDetailsClicked) {
                               data = 'showAllWithoutDetails';
                               Provider.of<SalesProvider>(context, listen: false).getSales(
-                                "",
+                                userType == "a" || userType == "m" ? userId??"" : userID??"",
                                 "",
                                 "",
                                 "",
@@ -795,7 +795,7 @@ void _onSelectedRecordType(String selectedValue) {
                             else if (isAllTypeClicked && isWithDetailsClicked) {
                               data = 'showAllWithDetails';
                               Provider.of<SaleRecordsProvider>(context, listen: false).getSaleRecords(
-                                "",
+                                userType == "a" || userType == "m" ? userId??"" : userID??"",
                                 "",
                                 "",
                                 "",

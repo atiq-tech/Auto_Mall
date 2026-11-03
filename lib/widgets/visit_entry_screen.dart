@@ -82,6 +82,10 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     employeeName = "${sharedPreferences!.getString('employeeName')}";
     employeeCode = "${sharedPreferences!.getString('employeeCode')}";
     userID = "${sharedPreferences!.getString('userId')}";
+    print("userEmployeeId====> $userEmployeeId");
+    setState(() {
+      Provider.of<VisitesProvider>(context, listen: false).getVisites("",userEmployeeId,backEndFirstDate, backEndFirstDate);
+    });
   }
 
   @override
@@ -92,7 +96,6 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     super.initState();
     _initializeData();
     Provider.of<EmployeesProvider>(context,listen: false).getEmployees();
-    Provider.of<VisitesProvider>(context, listen: false).getVisites("","",backEndFirstDate, backEndFirstDate);
     Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
     userName = _employeeCustomerController.text;
     print("eeeeeeeeee======  ${_employeeCustomerController.text}");
@@ -394,10 +397,10 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                                 controller: _employeeController,
                                 suggestionList: employeesData,
                                 hintText: 'Select Employee',
-                                selectedValueId: employeeId,
+                                selectedValueId: userEmployeeId,
                                 onValueIdChanged: (id) {
                                   setState(() {
-                                    employeeId = id;
+                                    userEmployeeId = id;
                                   });
                                 },
                                 displayText: (e) => "${e.employeeName} - ${e.employeeId}",
@@ -451,17 +454,17 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                           onTap: () async {
                               Utils.closeKeyBoard(context);
                             if(_customerNameController.text==''){
-                              Utils.errorSnackBar(context, "Please Select Customer");
+                              Utils.showTopSnackBar(context, "Please Select Customer");
                             }
-                            else if(_employeeController.text == '') {
-                                Utils.errorSnackBar(context, "Employee field is required");
-                            }
+                            else if(_employeeController.text == '' && (userType == "a" || userType == "m")){ {
+                              Utils.showTopSnackBar(context, "Employee field is required");
+                            }}
                             else{
                               setState(() {
                                 visitEntryBtnClk = true;
                               });
                               addVisites(context).then((value){
-                                Provider.of<VisitesProvider>(context, listen: false).getVisites("","",backEndFirstDate, backEndFirstDate);
+                                Provider.of<VisitesProvider>(context, listen: false).getVisites("",userEmployeeId,backEndFirstDate, backEndFirstDate);
                                 setState(() {
                                 });
                               });
@@ -564,20 +567,13 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
     });
   }
   Future<String> addVisites(BuildContext context) async {
-    print("name=====${_nameController.text.trim()}");
-    print("customer_id=====$customerId");
-    print("Customer_Address=====${_addressController.text.trim()}");
-    print("phone=====${_phoneController.text.trim()}");
-    print("Employee_Name=====${employeeId}");
-    print("visit_date=====$backEndFirstDate");
-    print("note=====${_noteController.text.trim()}");
     SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
     try {
       var response = await Dio().post(addVisit,
         data:  {
           "customerId": customerId,
           "address":_addressController.text.trim(),
-          "employeeId": userType == "a" || userType == "m" ? employeeId ?? "0" : userEmployeeId??"",
+          "employeeId": userEmployeeId ?? "",
           "date": backEndFirstDate,
           "note": _noteController.text.trim(),
         },

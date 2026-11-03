@@ -4,6 +4,7 @@ import 'package:auto_mall/main.dart';
 import 'package:auto_mall/utils/all_textstyle.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
+import 'package:auto_mall/widgets/cod_pending_order_list_screen.dart';
 import 'package:auto_mall/widgets/customer_due_list_screen.dart';
 import 'package:auto_mall/widgets/pending_order_record_screen.dart';
 import 'package:auto_mall/widgets/customer%20_list_screen.dart';
@@ -60,11 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // Check page access permission
 bool hasPageAccess(String permission) {
+
   // Admin and master users can access all pages
   if (userType == "a" || userType == "m") {
     return true;
   }
-  return sharedPreferences.getString(permission) == "true";
+
+  // Check permission from SharedPreferences
+  return sharedPreferences.getBool(permission) ?? false;
 }
 // Navigate only if the user has permission
 void openPageWithAccess({required String permission,required Widget page}) {
@@ -78,8 +82,15 @@ void openPageWithAccess({required String permission,required Widget page}) {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          icon: const Icon(Icons.lock_outline,color: Colors.red,size: 40),
-          title: const Text("Access Denied!",textAlign: TextAlign.center),
+          icon: const Icon(
+            Icons.lock_outline,
+            color: Colors.red,
+            size: 40,
+          ),
+          title: const Text(
+            "Access Denied!",
+            textAlign: TextAlign.center,
+          ),
           content: const Text(
             "You don't have permission to access this page.",
             textAlign: TextAlign.center,
@@ -122,7 +133,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
         title: Row(
           children: [
             Container(
-              height: 35.h,
+              height: 34.h,
               width: 35.w,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100.r),
@@ -344,22 +355,24 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                       } else if (index == 1) {
                         openPageWithAccess(permission: "orderRecord",page: const PendingOrderRecordScreen());
                       } else if (index == 2) {
-                        openPageWithAccess(permission: "sales",page: const SalesEntryScreen());
+                        openPageWithAccess(permission: "codPending",page: const CodPendingOrderListScreen());
                       } else if (index == 3) {
-                        openPageWithAccess(permission: "salesrecord",page: const SalesRecordScreen());
+                        openPageWithAccess(permission: "sales",page: const SalesEntryScreen());
                       } else if (index == 4) {
-                        openPageWithAccess(permission: "salesinvoice",page: const SalesInvoiceListScreen());
+                        openPageWithAccess(permission: "salesrecord",page: const SalesRecordScreen());
                       } else if (index == 5) {
-                        openPageWithAccess(permission: "productlist",page: ProductListScreen());
+                        openPageWithAccess(permission: "salesinvoice",page: const SalesInvoiceListScreen());
                       } else if (index == 6) {
-                        openPageWithAccess(permission: "customer",page: CustomerEntryScreen());
+                        openPageWithAccess(permission: "productlist",page: ProductListScreen());
                       } else if (index == 7) {
-                        openPageWithAccess(permission: "customerlist",page: CustomerListScreen());
+                        openPageWithAccess(permission: "customer",page: CustomerEntryScreen());
                       } else if (index == 8) {
-                        openPageWithAccess(permission: "customerDue",page: const CustomerDueListScreen());
+                        openPageWithAccess(permission: "customerlist",page: CustomerListScreen());
                       } else if (index == 9) {
-                        openPageWithAccess(permission: "visitEntry",page: const VisitEntryScreen());
+                        openPageWithAccess(permission: "customerDue",page: const CustomerDueListScreen());
                       } else if (index == 10) {
+                        openPageWithAccess(permission: "visitEntry",page: const VisitEntryScreen());
+                      } else if (index == 11) {
                         openPageWithAccess(permission: "visitEntryRecord",page: const VisitsHistoryScreen());
                       }
                     },

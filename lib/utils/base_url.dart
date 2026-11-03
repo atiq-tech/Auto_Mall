@@ -31,7 +31,7 @@ String companyProfile = "${baseUrl}get-company-profile";
 List screenItems = [
   {"name": "Order Entry", "image": "images/order.png"},
   {"name": "Pending Order", "image": "images/orecord.png"},
-  //{"name": "Order Invoice", "image": "images/oinv.png"},
+  {"name": "COD Pending List", "image": "images/cod.png"},
   {"name": "Sales Entry", "image": "images/sales.png"},
   {"name": "Sales Record", "image": "images/srecord.png"},
   {"name": "Sales Invoice", "image": "images/sinv.png"}, 

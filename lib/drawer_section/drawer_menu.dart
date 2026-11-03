@@ -3,6 +3,7 @@ import 'package:auto_mall/auth/global_logout.dart';
 import 'package:auto_mall/home_screen.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/utils/base_url.dart';
+import 'package:auto_mall/widgets/cod_pending_order_list_screen.dart';
 import 'package:auto_mall/widgets/customer%20_list_screen.dart';
 import 'package:auto_mall/widgets/customer_due_list_screen.dart';
 import 'package:auto_mall/widgets/customer_entry_screen.dart';
@@ -46,26 +47,21 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
   String? userID = "";
 
 
-  // Check page access permission
+// Check page access permission
 bool hasPageAccess(String permission) {
+
   // Admin and master users can access all pages
   if (userType == "a" || userType == "m") {
     return true;
   }
 
-  return sharedPreferences!.getString(permission) == "true";
+  // Check permission from SharedPreferences
+  return sharedPreferences!.getBool(permission) ?? false;
 }
-
 // Navigate only if the user has permission
-void openPageWithAccess({
-  required String permission,
-  required Widget page,
-}) {
+void openPageWithAccess({required String permission,required Widget page}) {
   if (hasPageAccess(permission)) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => page),
-    );
+    Navigator.push(context,MaterialPageRoute(builder: (context) => page));
   } else {
     showDialog(
       context: context,
@@ -210,6 +206,13 @@ void openPageWithAccess({
                 openPageWithAccess(permission: "orderRecord",page: const PendingOrderRecordScreen());
               },
               child: Custom_List_Tile(icon: Icons.pending, icon_name: "Pending Order")),
+   
+          Divider(height: 1.h,thickness: 1.0),
+          InkWell(
+              onTap: (){
+                openPageWithAccess(permission: "codPending",page: const CodPendingOrderListScreen());
+              },
+              child: Custom_List_Tile(icon: Icons.local_shipping, icon_name: "COD Pending List")),
    
           Divider(height: 1.h,thickness: 1.0),
           InkWell(

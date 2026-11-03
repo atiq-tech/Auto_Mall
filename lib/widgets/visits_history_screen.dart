@@ -46,6 +46,7 @@ class _VisitsHistoryScreenState extends State<VisitsHistoryScreen> {
     employeeCode = "${sharedPreferences?.getString('employeeCode')}";
     designationName = "${sharedPreferences?.getString('designationName')}";
     userType = "${sharedPreferences?.getString('userType')}";
+    print("userEmployeeId====> $userEmployeeId");
   }
   
   //main dropdowns logic
@@ -215,7 +216,7 @@ String? firstPickedDate;
     _getDropdownSize(Duration.zero);
     if (!mounted) return;
     Provider.of<CustomersProvider>(context,listen: false).getCustomers("");
-    Provider.of<VisitesProvider>(context, listen: false).getVisites("","","","");
+    Provider.of<VisitesProvider>(context, listen: false).visitesList = [];
     Provider.of<EmployeesProvider>(context, listen: false).getEmployees();
   });
     super.initState();
@@ -311,10 +312,10 @@ String? firstPickedDate;
                           controller: employeeController,
                           suggestionList: employeesData,
                           hintText: 'Select Employee',
-                          selectedValueId: employeeId,
+                          selectedValueId: userEmployeeId,
                           onValueIdChanged: (id) {
                             setState(() {
-                              employeeId = id;
+                              userEmployeeId = id;
                             });
                           },
                           displayText: (e) => e.employeeName??"",
@@ -328,7 +329,7 @@ String? firstPickedDate;
                           padding: EdgeInsets.symmetric(vertical: 3.h,horizontal: 5.w),
                           margin: EdgeInsets.only(bottom: 4.h),
                           decoration: ContDecoration.contDecoration,
-                          child: Text("$userEmployeeName",style: AllTextStyle.searchTypeTxtStyle),
+                          child: Text("$userEmployeeName - $employeeCode",style: AllTextStyle.searchTypeTxtStyle),
                         ))
                     ],
                   ): Container(),
@@ -440,12 +441,12 @@ String? firstPickedDate;
                           setState(() {
                             Provider.of<VisitesProvider>(context, listen: false).getVisites(
                               isCustomers == true ? customerId ?? "" : "",
-                              isEmployees == true ? employeeId ?? "" : userEmployeeId ??"",
+                              userEmployeeId ?? "",
                               "$backEndFirstDate",
                               "$backEndSecondtDate",
                             );
                             print("customerId====> $customerId");
-                            print("employeeId====> $employeeId");
+                            print("employeeId====> $userEmployeeId");
                           });
                         },
 

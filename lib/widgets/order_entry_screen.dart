@@ -543,7 +543,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           return Padding(
                                             padding: EdgeInsets.symmetric(vertical: 3.h, horizontal: 8.w),
                                             child: Text(
-                                              suggestion.displayName ?? suggestion.customerName ?? '',
+                                              suggestion.displayName??"",
                                               style: AllTextStyle.dropDownlistStyle,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -551,7 +551,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           );
                                         },
                                         onSelected: (CustomersModel suggestion) {
-                                          customerController.text = suggestion.customerName ?? suggestion.displayName ?? '';
+                                          customerController.text = suggestion.displayName??"";
                                           setState(() {
                                             customerId = suggestion.customerSlNo?.toString() ?? '';
                                             customerSlNo = suggestion.customerSlNo?.toString() ?? '';

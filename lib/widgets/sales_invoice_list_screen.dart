@@ -34,10 +34,16 @@ class _SalesInvoiceListScreenState extends State<SalesInvoiceListScreen> {
   String? _selectedInvoice;
   double totalDue = 0.0;
   String userName = "";
+  String userID = "";
   SharedPreferences? sharedPreferences;
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
     userName = "${sharedPreferences?.getString('userName')}";
+    userID = "${sharedPreferences!.getString('userId')}";
+    print("userName: $userName, userID: $userID");
+    setState(() {
+      Provider.of<SalesProvider>(context, listen: false).getSales(userID, "", "", "","", "","a");
+    });
   }
 
   String companyName = "";
@@ -77,7 +83,6 @@ class _SalesInvoiceListScreenState extends State<SalesInvoiceListScreen> {
   void initState() {
     getCompanyProfile();
     _initializeData();
-    Provider.of<SalesProvider>(context, listen: false).getSales("", "", "", "","", "","a");
     Provider.of<InvoiceProvider>(context, listen: false).getInvoice(context, "");
     // TODO: implement initState
     super.initState();
