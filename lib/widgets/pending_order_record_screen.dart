@@ -395,7 +395,7 @@ void _onSelectedRecordType(String selectedValue) {
                               if (isWithoutDetailsClicked) {
                                 data = 'showAllWithoutDetails';
                                 Provider.of<PendingOrderProvider>(context, listen: false).getPendingOrder(
-                                  userID??"", 
+                                  userType == "a" || userType == "m" ? "" : userID ?? "",
                                   "", 
                                   "", 
                                   "",
@@ -408,7 +408,7 @@ void _onSelectedRecordType(String selectedValue) {
                               else if (isWithDetailsClicked) {
                                 data = 'showAllWithDetails';
                                 Provider.of<PendingOrderRecordProvider>(context, listen: false).getPendingOrderRecord(
-                                  userID??"", 
+                                  userType == "a" || userType == "m" ? "" : userID ?? "",
                                   "", 
                                   "", 
                                   "",

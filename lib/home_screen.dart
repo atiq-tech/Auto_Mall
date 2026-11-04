@@ -61,16 +61,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 // Check page access permission
 bool hasPageAccess(String permission) {
-
-  // Admin and master users can access all pages
   if (userType == "a" || userType == "m") {
     return true;
   }
-
-  // Check permission from SharedPreferences
   return sharedPreferences.getBool(permission) ?? false;
 }
-// Navigate only if the user has permission
 void openPageWithAccess({required String permission,required Widget page}) {
   if (hasPageAccess(permission)) {
     Navigator.push(context,MaterialPageRoute(builder: (context) => page));
@@ -80,17 +75,10 @@ void openPageWithAccess({required String permission,required Widget page}) {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(15.r),
           ),
-          icon: const Icon(
-            Icons.lock_outline,
-            color: Colors.red,
-            size: 40,
-          ),
-          title: const Text(
-            "Access Denied!",
-            textAlign: TextAlign.center,
-          ),
+          icon: Icon(Icons.lock_outline,color: Colors.red,size: 40.r),
+          title: const Text("Access Denied!",textAlign: TextAlign.center),
           content: const Text(
             "You don't have permission to access this page.",
             textAlign: TextAlign.center,
@@ -132,16 +120,9 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
         foregroundColor: Colors.white,
         title: Row(
           children: [
-            Container(
-              height: 34.h,
-              width: 35.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100.r),
-                image: const DecorationImage(
-                  image: AssetImage("images/automlogo.jpeg"),
-                  fit: BoxFit.cover,
-                ),
-              ),
+            CircleAvatar(
+              radius: 17.r,
+              backgroundImage: const AssetImage("images/automlogo.jpeg"),
             ),
             SizedBox(width: 10.w),
             Text(
@@ -325,7 +306,7 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                   ),
                   SizedBox(width: 5.w),
                   Text(
-                    DateFormat('E d MMMM, yyyy').format(DateTime.now()),
+                    DateFormat('EEEE, dd\n MMMM, yyyy').format(DateTime.now()),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 10.sp,

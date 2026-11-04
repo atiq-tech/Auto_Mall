@@ -63,8 +63,8 @@ class _SalesRecordScreenState extends State<SalesRecordScreen> {
   }
 
   String? firstPickedDate;
-  var backEndFirstDate;
-  var backEndSecondtDate;
+  String? backEndFirstDate;
+  String? backEndSecondtDate;
 
   var toDay = DateTime.now();
   void _firstSelectedDate() async {

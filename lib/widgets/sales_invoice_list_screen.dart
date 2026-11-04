@@ -50,7 +50,7 @@ class _SalesInvoiceListScreenState extends State<SalesInvoiceListScreen> {
   String repotHeading = "";
   String dueStatus = "";
   String invoiceNote = "";
-  String CompanyLogothum = "";
+  String companyLogothum = "";
   String footerImg = "";
 
    void getCompanyProfile() async {
@@ -69,7 +69,7 @@ class _SalesInvoiceListScreenState extends State<SalesInvoiceListScreen> {
 
         setState(() {
           companyName = data['Company_Name'] ?? "";
-          CompanyLogothum = data['Company_Logo_thum'] ?? "";
+          companyLogothum = data['Company_Logo_thum'] ?? "";
           dueStatus = data['dueStatus'] ?? "";
           invoiceNote = data['InvoiceNote'] ?? "";
         });
@@ -107,7 +107,7 @@ Future<void> printInvoice(InvoiceModel? data) async {
   if (data == null || data.sales!.isEmpty) return;
 
   String currentDateTime = DateFormat('M/d/yy, h:mm a').format(DateTime.now());
-  final Uint8List? netHeader = await _fetchImage("$baseUrl$CompanyLogothum");
+  final Uint8List? netHeader = await _fetchImage("$baseUrl$companyLogothum");
 
   final pdf = pw.Document();
 
@@ -141,26 +141,26 @@ Future<void> printInvoice(InvoiceModel? data) async {
                   ],
                 ),
 
-                // QR Code
-                pw.Column(
-                  children: [
-                    pw.Container(
-                      width: 55.w,
-                      height: 55.h,
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(width: 0.7.w),
-                      ),
-                      alignment: pw.Alignment.center,
-                      padding: pw.EdgeInsets.all(2.r),
-                      child: pw.BarcodeWidget(
-                        barcode: pw.Barcode.qrCode(),
-                        data: "https://demo.automallerp.com/sale_invoice_print/43",
-                        width: 50.w,
-                        height: 50.h,
-                      ),
-                    ),
-                  ],
-                ),
+                // // QR Code
+                // pw.Column(
+                //   children: [
+                //     pw.Container(
+                //       width: 55.w,
+                //       height: 55.h,
+                //       decoration: pw.BoxDecoration(
+                //         border: pw.Border.all(width: 0.7.w),
+                //       ),
+                //       alignment: pw.Alignment.center,
+                //       padding: pw.EdgeInsets.all(2.r),
+                //       child: pw.BarcodeWidget(
+                //         barcode: pw.Barcode.qrCode(),
+                //         data: "https://demo.automallerp.com/sale_invoice_print/43",
+                //         width: 50.w,
+                //         height: 50.h,
+                //       ),
+                //     ),
+                //   ],
+                // ),
                 // Authorized Signature
                 pw.Column(
                   children: [

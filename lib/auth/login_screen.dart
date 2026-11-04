@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:auto_mall/home_screen.dart';
 import 'package:auto_mall/utils/utils.dart';
 import 'package:dio/dio.dart';
@@ -233,16 +232,6 @@ class _LogInPageState extends State<LogInPage> {
                             height: 130.h,
                             width: 250.w,
                             decoration: BoxDecoration(
-                              // color: const Color.fromARGB(255, 2, 29, 70).withOpacity(0.25),
-                              // borderRadius: BorderRadius.circular(16.r),
-                              // //border: Border.all(color: Colors.cyan.shade200, width: 2.w),
-                              // boxShadow: [
-                              //   BoxShadow(
-                              //     color: Colors.black.withOpacity(0.4),
-                              //     blurRadius: 12.r,
-                              //     offset: const Offset(0, 6),
-                              //   ),
-                              // ],
                               image: const DecorationImage(
                                 image: AssetImage("images/splashlogo.png"),
                                 fit: BoxFit.fill,
@@ -270,28 +259,6 @@ class _LogInPageState extends State<LogInPage> {
                             ),
                             ),
                           ),
-                          // SizedBox(height: 15.h),
-                          // Center(
-                          //   child: SizedBox(
-                          //     height: 30.0.h,
-                          //     width: 300.0.w,
-                          //     child: Marquee(
-                          //       text: 'Welcome to Auto Mall Sales Management App',
-                          //       style: TextStyle(fontSize: 20.0.sp, fontWeight: FontWeight.w600, color: Colors.cyan.shade200),
-                          //       scrollAxis: Axis.horizontal,
-                          //       crossAxisAlignment: CrossAxisAlignment.center,
-                          //       blankSpace: 50.0,
-                          //       velocity: 50.0,
-                          //       pauseAfterRound: Duration(seconds: 1),
-                          //       startPadding: 10.0,
-                          //       accelerationDuration: Duration(seconds: 1),
-                          //       accelerationCurve: Curves.linear,
-                          //       decelerationDuration: Duration(milliseconds: 500),
-                          //       decelerationCurve: Curves.easeOut,
-                          //     ),
-                          //   ),
-                          // ),
-                          // Title
                           SizedBox(height: 15.h),
                           // Login Card
                           Container(

@@ -445,8 +445,6 @@ String? firstPickedDate;
                               "$backEndFirstDate",
                               "$backEndSecondtDate",
                             );
-                            print("customerId====> $customerId");
-                            print("employeeId====> $userEmployeeId");
                           });
                         },
 

@@ -15,7 +15,6 @@ import 'package:auto_mall/widgets/sales_invoice_list_screen.dart';
 import 'package:auto_mall/widgets/sales_record_screen.dart';
 import 'package:auto_mall/widgets/visit_entry_screen.dart';
 import 'package:auto_mall/widgets/visits_history_screen.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -46,19 +45,13 @@ class _DrawerDemoPageState extends State<DrawerDemoPage> {
   String? userType = "";
   String? userID = "";
 
-
 // Check page access permission
 bool hasPageAccess(String permission) {
-
-  // Admin and master users can access all pages
   if (userType == "a" || userType == "m") {
     return true;
   }
-
-  // Check permission from SharedPreferences
   return sharedPreferences!.getBool(permission) ?? false;
 }
-// Navigate only if the user has permission
 void openPageWithAccess({required String permission,required Widget page}) {
   if (hasPageAccess(permission)) {
     Navigator.push(context,MaterialPageRoute(builder: (context) => page));
@@ -68,17 +61,10 @@ void openPageWithAccess({required String permission,required Widget page}) {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(15.r),
           ),
-          icon: const Icon(
-            Icons.lock_outline,
-            color: Colors.red,
-            size: 40,
-          ),
-          title: const Text(
-            "Access Denied!",
-            textAlign: TextAlign.center,
-          ),
+          icon: Icon(Icons.lock_outline,color: Colors.red,size: 40.r),
+          title: const Text("Access Denied!",textAlign: TextAlign.center),
           content: const Text(
             "You don't have permission to access this page.",
             textAlign: TextAlign.center,
@@ -102,10 +88,8 @@ void openPageWithAccess({required String permission,required Widget page}) {
   }
 }
 
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _initializeData();
   }

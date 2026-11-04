@@ -40,15 +40,11 @@ class _CodPendingOrderListScreenState extends State<CodPendingOrderListScreen> {
     userName = "${sharedPreferences?.getString('userName')}";
     userID = "${sharedPreferences?.getString('userId')}";
     userType = "${sharedPreferences?.getString('userType')}";
-    print("userEmployeeId==== $userEmployeeId");
-    print("userName==== $userName");
-    print("userID==== $userID");
-    print("userType==== $userType");
   }
 
   String? firstPickedDate;
-  var backEndFirstDate;
-  var backEndSecondtDate;
+  String backEndFirstDate = "";
+  String backEndSecondtDate = "";
 
   var toDay = DateTime.now();
   void _firstSelectedDate() async {
@@ -395,7 +391,7 @@ void _onSelectedRecordType(String selectedValue) {
                               if (isWithoutDetailsClicked) {
                                 data = 'showAllWithoutDetails';
                                 Provider.of<PendingOrderProvider>(context, listen: false).getPendingOrder(
-                                  userID??"", 
+                                  userType == "a" || userType == "m" ? "" : userID ?? "",
                                   "", 
                                   "", 
                                   "",
@@ -408,7 +404,7 @@ void _onSelectedRecordType(String selectedValue) {
                               else if (isWithDetailsClicked) {
                                 data = 'showAllWithDetails';
                                 Provider.of<PendingOrderRecordProvider>(context, listen: false).getPendingOrderRecord(
-                                  userID??"", 
+                                  userType == "a" || userType == "m" ? "" : userID ?? "",
                                   "", 
                                   "", 
                                   "",

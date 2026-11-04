@@ -127,26 +127,26 @@ Future<void> printInvoice(InvoiceModel? data) async {
                   ],
                 ),
 
-                // QR Code
-                pw.Column(
-                  children: [
-                    pw.Container(
-                      width: 55.w,
-                      height: 55.h,
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(width: 0.7.w),
-                      ),
-                      alignment: pw.Alignment.center,
-                      padding: pw.EdgeInsets.all(2.r),
-                      child: pw.BarcodeWidget(
-                        barcode: pw.Barcode.qrCode(),
-                        data: "https://demo.automallerp.com/sale_invoice_print/43",
-                        width: 50.w,
-                        height: 50.h,
-                      ),
-                    ),
-                  ],
-                ),
+                // // QR Code
+                // pw.Column(
+                //   children: [
+                //     pw.Container(
+                //       width: 55.w,
+                //       height: 55.h,
+                //       decoration: pw.BoxDecoration(
+                //         border: pw.Border.all(width: 0.7.w),
+                //       ),
+                //       alignment: pw.Alignment.center,
+                //       padding: pw.EdgeInsets.all(2.r),
+                //       child: pw.BarcodeWidget(
+                //         barcode: pw.Barcode.qrCode(),
+                //         data: "https://demo.automallerp.com/sale_invoice_print/43",
+                //         width: 50.w,
+                //         height: 50.h,
+                //       ),
+                //     ),
+                //   ],
+                // ),
                 // Authorized Signature
                 pw.Column(
                   children: [
