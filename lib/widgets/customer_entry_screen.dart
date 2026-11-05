@@ -602,14 +602,8 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                             DataCell(
                               Center(
                                 child: Text(
-                                  customersData[index].addTime == null ||
-                                          customersData[index].addTime.toString().isEmpty
-                                      ? ""
-                                      : DateFormat('dd-MM-yyyy').format(
-                                          DateTime.parse(
-                                            customersData[index].addTime.toString(),
-                                          ),
-                                        ),
+                                  customersData[index].addTime == null || customersData[index].addTime.toString().isEmpty
+                                      ? "" : DateFormat('dd-MM-yyyy').format(DateTime.parse(customersData[index].addTime.toString())),
                                   style: AllTextStyle.tableDataTextStyle,
                                 ),
                               ),

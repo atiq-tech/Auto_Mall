@@ -43,6 +43,7 @@ class Utils{
   static void closeKeyBoard(BuildContext context) {
     FocusScope.of(context).requestFocus(FocusNode());
   }
+  
   static String formatFrontEndDate(var date) {
     late DateTime dateTime;
     if (date is String) {
@@ -50,10 +51,9 @@ class Utils{
     } else {
       dateTime = date;
     }
-
     return DateFormat('dd-MM-yyyy').format(dateTime);
-    // return DateFormat('yyyy-MM-dd').format(dateTime);
   }
+
   static String formatBackEndDate(var date) {
     late DateTime dateTime;
     if (date is String) {
@@ -61,9 +61,7 @@ class Utils{
     } else {
       dateTime = date;
     }
-
     return DateFormat('y-MM-dd').format(dateTime);
-    // return DateFormat('yyyy-MM-dd').format(dateTime);
   }
 
   //............ Toast Message ............
@@ -187,7 +185,6 @@ class Utils{
   }
 }
 
-
 extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
@@ -200,7 +197,6 @@ extension StringExtension on String {
     "${element[0].toUpperCase()}${element.substring(1).toLowerCase()}").join(" ");
   }
 }
-
 
 class _AnimatedTopSnackBar extends StatefulWidget {
   final String message;
@@ -281,9 +277,7 @@ class _AnimatedTopSnackBarState extends State<_AnimatedTopSnackBar> with SingleT
                 children: [
                   Icon(Icons.error_outline, color: Colors.white),
                   SizedBox(width: 12.w),
-                  Expanded(
-                    child: Text(widget.message,style: TextStyle(color: Colors.white, fontSize: 16.sp)),
-                  ),
+                  Expanded(child: Text(widget.message,style: TextStyle(color: Colors.white, fontSize: 16.sp))),
                 ],
               ),
             ),

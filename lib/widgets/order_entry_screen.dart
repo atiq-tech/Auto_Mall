@@ -244,7 +244,6 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   Widget build(BuildContext context) {
     final employeesData = Provider.of<EmployeesProvider>(context).employeesList;
     final customersData = Provider.of<CustomersProvider>(context).customersList;
-    print("customersData======${customersData.length}");
     final productsData = Provider.of<ProductsProvider>(context).productsList;
     final bankAccountsData = Provider.of<BankAccountsProvider>(context).bankAccounts;
     final couriersData = Provider.of<CouriersProvider>(context).couriersList;
@@ -252,8 +251,7 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
         appBar: CustomAppBar(title: "Order Entry"),
         body: ModalProgressHUD(
           blur: 2,
-          inAsyncCall: false,
-          //inAsyncCall: CustomerListProvider.isCustomerTypeChange,
+          inAsyncCall: CustomersProvider.isCustomersLoading,
           progressIndicator: Utils.showSpinKitLoad(),
           child: Container(
             padding: EdgeInsets.all(8.r),
@@ -487,24 +485,23 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                               hintText: 'Select Customer',
                                               isDense: true,
                                               hintStyle: AllTextStyle.dropDownlistStyle,
-                                              suffixIcon: customerId == ''
-                                                  ? null
-                                                  : GestureDetector(
-                                                      onTap: () {
-                                                        setState(() {
-                                                          customerController.clear();
-                                                          fieldController.clear();
-                                                          customerId = '';
-                                                          mobileNumberController.clear();
-                                                          addressController.clear();
-                                                          nameController.clear();
-                                                        });
-                                                      },
-                                                      child: Padding(
-                                                        padding: EdgeInsets.only(left: 25.w),
-                                                        child: Icon(Icons.close, size: 16.r),
-                                                      ),
+                                              suffixIcon: customerId == '' ? null
+                                                : GestureDetector(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        customerController.clear();
+                                                        fieldController.clear();
+                                                        customerId = '';
+                                                        mobileNumberController.clear();
+                                                        addressController.clear();
+                                                        nameController.clear();
+                                                      });
+                                                    },
+                                                    child: Padding(
+                                                      padding: EdgeInsets.only(left: 25.w),
+                                                      child: Icon(Icons.close, size: 16.r),
                                                     ),
+                                                  ),
                                             ),
                                             onChanged: (value) {
                                               if (value.isEmpty) {
@@ -516,28 +513,19 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                           );
                                         },
                                         suggestionsCallback: (pattern) async {
-                                          // ছোট delay দিলে suggestions ভালো কাজ করে
                                           await Future.delayed(const Duration(milliseconds: 100));
-
                                           if (customersData.isEmpty) return [];
-
                                           final query = pattern.toLowerCase().trim();
-
                                           if (query.isEmpty) {
-                                            // কিছু না লিখলে পুরো লিস্ট দেখাবে
                                             return customersData;
                                           }
-
                                           return customersData
-                                              .where((element) {
-                                                final name = (element.displayName ?? '').toLowerCase();
-                                                final code = (element.customerCode ?? '').toLowerCase();
-                                                final customerName = (element.customerName ?? '').toLowerCase();
-                                                return name.contains(query) ||
-                                                    code.contains(query) ||
-                                                    customerName.contains(query);
-                                              })
-                                              .toList();
+                                            .where((element) {
+                                              final name = (element.displayName ?? '').toLowerCase();
+                                              final code = (element.customerCode ?? '').toLowerCase();
+                                              final customerName = (element.customerName ?? '').toLowerCase();
+                                              return name.contains(query) || code.contains(query) || customerName.contains(query);
+                                            }).toList();
                                         },
                                         itemBuilder: (context, suggestion) {
                                           return Padding(

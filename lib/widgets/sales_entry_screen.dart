@@ -261,7 +261,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
   Widget build(BuildContext context) {
     final employeesData = Provider.of<EmployeesProvider>(context).employeesList;
     final customersData = Provider.of<CustomersProvider>(context).customersList;
-    print("customersData======${customersData.length}");
     final productsData = Provider.of<ProductsProvider>(context).productsList;
     final bankAccountsData = Provider.of<BankAccountsProvider>(context).bankAccounts;
     return Scaffold(
@@ -488,7 +487,7 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                       decoration: ContDecoration.contDecoration,
                                       child: TypeAheadField<CustomersModel>(
                                         controller: customerController,
-                                        hideOnEmpty: false,          // ← খালি থাকলেও list দেখাবে
+                                        hideOnEmpty: false,          
                                         hideOnLoading: false,
                                         debounceDuration: const Duration(milliseconds: 200),
                                         builder: (context, fieldController, focusNode) {
@@ -531,28 +530,19 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                           );
                                         },
                                         suggestionsCallback: (pattern) async {
-                                          // ছোট delay দিলে suggestions ভালো কাজ করে
                                           await Future.delayed(const Duration(milliseconds: 100));
-
                                           if (customersData.isEmpty) return [];
-
                                           final query = pattern.toLowerCase().trim();
-
                                           if (query.isEmpty) {
-                                            // কিছু না লিখলে পুরো লিস্ট দেখাবে
                                             return customersData;
                                           }
-
                                           return customersData
-                                              .where((element) {
-                                                final name = (element.displayName ?? '').toLowerCase();
-                                                final code = (element.customerCode ?? '').toLowerCase();
-                                                final customerName = (element.customerName ?? '').toLowerCase();
-                                                return name.contains(query) ||
-                                                    code.contains(query) ||
-                                                    customerName.contains(query);
-                                              })
-                                              .toList();
+                                            .where((element) {
+                                              final name = (element.displayName ?? '').toLowerCase();
+                                              final code = (element.customerCode ?? '').toLowerCase();
+                                              final customerName = (element.customerName ?? '').toLowerCase();
+                                              return name.contains(query) || code.contains(query) || customerName.contains(query);
+                                            }).toList();
                                         },
                                         itemBuilder: (context, suggestion) {
                                           return Padding(
@@ -572,9 +562,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                             customerSlNo = suggestion.customerSlNo?.toString() ?? '';
                                             customerType = suggestion.customerType?.toString() ?? '';
                                             previousDue = suggestion.previousDue?.toString() ?? '';
-
-                                            print("customer selected ======> $customerId");
-
                                             if (customerId == "0" || customerId == 'null') {
                                               isVisible = true;
                                               isEnabled = true;
@@ -582,7 +569,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               mobileNumberController.clear();
                                               addressController.clear();
                                             } else {
-                                              print("Yes has $customerId");
                                               isEnabled = false;
                                               isVisible = false;
                                               customerMobile = suggestion.customerMobile;
@@ -590,7 +576,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               customerAddress = suggestion.customerAddress;
                                               addressController.text = suggestion.customerAddress?.toString() ?? '';
                                             }
-                                            print('isVisible $isVisible');
                                             previousDueAmount(customerId??"");
                                           });
                                         },

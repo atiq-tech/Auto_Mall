@@ -524,7 +524,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                       ],
                       rows: List.generate(
                        visitesData.length > 100 ? 100 : visitesData.length,
-                            (int index) => DataRow(
+                          (int index) => DataRow(
                           color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor) : WidgetStateProperty.resolveWith(getColors),
                           cells: <DataCell>[
                             DataCell(Center(child: Text(visitesData[index].customerCode??"",style: AllTextStyle.tableDataTextStyle))),
@@ -534,9 +534,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                             DataCell(
                               Center(
                                 child: Text(
-                                  visitesData[index].date != null
-                                      ? DateFormat('yyyy-MM-dd').format(visitesData[index].date!)
-                                      : "",
+                                  visitesData[index].date != null ? DateFormat('yyyy-MM-dd').format(visitesData[index].date!) : "",
                                   style: AllTextStyle.tableDataTextStyle,
                                 ),
                               ),
