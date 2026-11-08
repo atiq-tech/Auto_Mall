@@ -493,12 +493,14 @@ String? firstPickedDate;
                        showCheckboxColumn: true,
                        border: TableBorder.all(color: Colors.cyan.shade100, width: 1.w),
                        columns: [
-                         DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit Date',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Customer Address',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit By',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit Area',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Phone',style: AllTextStyle.tableHeadTextStyle)))),
-                        DataColumn(label: Expanded(child: Center(child: Text('Visit Date',style: AllTextStyle.tableHeadTextStyle)))),
-                        DataColumn(label: Expanded(child: Center(child: Text('Note',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit Note',style: AllTextStyle.tableHeadTextStyle)))),                        
                       ],
                       
                        rows: [
@@ -506,26 +508,26 @@ String? firstPickedDate;
                           visitesData.length,
                           (int index) => DataRow(
                              color: isCustomers == true ? index % 2 == 0
-                                     ? WidgetStateProperty.resolveWith(AppColors.getColors)
-                                     : WidgetStateProperty.resolveWith(AppColors.getCustomer)
-                                    : index % 2 == 0
-                                            ? WidgetStateProperty.resolveWith(AppColors.getColors)
-                                            : WidgetStateProperty.resolveWith(AppColors.getAll),
+                              ? WidgetStateProperty.resolveWith(AppColors.getColors)
+                              : WidgetStateProperty.resolveWith(AppColors.getCustomer)
+                              : index % 2 == 0
+                              ? WidgetStateProperty.resolveWith(AppColors.getColors)
+                              : WidgetStateProperty.resolveWith(AppColors.getAll),
                             cells: <DataCell>[
-                              DataCell(Center(child: Text(visitesData[index].customerCode??"",style: AllTextStyle.tableDataTextStyle))),
-                              DataCell(Center(child: Text(visitesData[index].customerName??"",style: AllTextStyle.tableDataTextStyle))),
-                              DataCell(Center(child: Text(visitesData[index].customerAddress??"",style: AllTextStyle.tableDataTextStyle))),
-                              DataCell(Center(child: Text(visitesData[index].customerMobile??"",style: AllTextStyle.tableDataTextStyle))),
                               DataCell(
                                 Center(
                                   child: Text(
-                                    visitesData[index].date != null
-                                        ? DateFormat('yyyy-MM-dd').format(visitesData[index].date!)
-                                        : "",
+                                    visitesData[index].date != null ? DateFormat('yyyy-MM-dd').format(visitesData[index].date!) : "",
                                     style: AllTextStyle.tableDataTextStyle,
                                   ),
                                 ),
                               ),
+                              DataCell(Center(child: Text(visitesData[index].customerCode??"",style: AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(visitesData[index].customerName??"",style: AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(visitesData[index].customerAddress??"",style: AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(visitesData[index].employeeName??"",style: AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(visitesData[index].address??"",style: AllTextStyle.tableDataTextStyle))),
+                              DataCell(Center(child: Text(visitesData[index].customerMobile??"",style: AllTextStyle.tableDataTextStyle))),
                               DataCell(Center(child: Text(visitesData[index].note??"",style: AllTextStyle.tableDataTextStyle))),
                             ],
                           ),

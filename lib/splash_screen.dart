@@ -70,8 +70,8 @@ class SplashScreenState extends State<AnimatedSplashScreen> with SingleTickerPro
                 scale: _animation,
                 child: Image.asset(
                   'images/automlogo.jpeg',
-                  width: 280.w,
-                  height: 250.h,
+                  width: 200.w,
+                  height: 200.h,
                 ),
               ),
               SizedBox(height: 5.h),

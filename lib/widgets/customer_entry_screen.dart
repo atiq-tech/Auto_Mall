@@ -31,14 +31,15 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
   Color getColors(Set<WidgetState> states) {
     return Colors.white;
   }
-  final TextEditingController _employeeController = TextEditingController();
-  final TextEditingController _customerNameController = TextEditingController();
-  final TextEditingController _ownerNameController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _mobileController = TextEditingController();
-  final TextEditingController _officePhoneController = TextEditingController();
-  final TextEditingController _previousDueController = TextEditingController();
-  final TextEditingController _creditLimitController = TextEditingController();
+  var employeeController = TextEditingController();
+  var customerNameController = TextEditingController();
+  var ownerNameController = TextEditingController();
+  var addressController = TextEditingController();
+  var mobileController = TextEditingController();
+  var officePhoneController = TextEditingController();
+  var previousDueController = TextEditingController();
+  var creditLimitController = TextEditingController();
+  var areaController = TextEditingController();
 
   SharedPreferences? sharedPreferences;
   Future<void> _initializeData() async {
@@ -56,31 +57,6 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
   String? userEmployeeId = "";
   String userName = "";
   String userType = "";
-
-  // File? _image;
-  // Future<void> _pickImage() async {
-  //   try {
-  //     final pickedFile = await ImagePicker().pickImage(
-  //       source: ImageSource.camera,
-  //       maxWidth: 800.w,
-  //       maxHeight: 800.h,
-  //       imageQuality: 80,
-  //     );
-
-  //     if (pickedFile != null) {
-  //       if (mounted) {
-  //         setState(() {
-  //           _image = File(pickedFile.path);
-  //         });
-  //       }
-  //     } else {
-  //       print("No image selected.");
-  //     }
-  //   } catch (e) {
-  //     print("Error picking image: $e");
-  //   }
-  // }
-
 
   @override
   void initState() {
@@ -131,8 +107,6 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
     }
   }
 
-  var areaController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     mainScrollController.addListener(mainScrollListener);
@@ -175,7 +149,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                             height: 25.h,
                             child: TextField(
                               style: AllTextStyle.dropDownlistStyle,
-                              controller: _customerNameController,
+                              controller: customerNameController,
                               decoration: InputDecoration(
                                 hintText: "Enter Customer Name",
                                 hintStyle: AllTextStyle.textValueStyle,
@@ -202,7 +176,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                             height: 25.h,
                             child: TextField(
                               style:  AllTextStyle.dropDownlistStyle,
-                              controller: _ownerNameController,
+                              controller: ownerNameController,
                               decoration: InputDecoration(
                                 hintText: "Enter Owner Name",
                                 hintStyle:  AllTextStyle.textValueStyle,
@@ -229,7 +203,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                             height: 25.h,
                             child: TextField(
                               style: AllTextStyle.dropDownlistStyle,
-                              controller: _addressController,
+                              controller: addressController,
                               decoration: InputDecoration(
                                 hintText: "Enter Address Name",
                                 hintStyle: AllTextStyle.textValueStyle,
@@ -287,7 +261,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.dropDownlistStyle,
-                                        controller: _mobileController,
+                                        controller: mobileController,
                                         decoration: InputDecoration(
                                           hintText: "Enter Mobile No",
                                           hintStyle: AllTextStyle.textValueStyle,
@@ -315,7 +289,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.dropDownlistStyle,
-                                        controller: _officePhoneController,
+                                        controller: officePhoneController,
                                         keyboardType: TextInputType.phone,
                                         decoration: InputDecoration(
                                           hintText: "Enter Phone No",
@@ -343,7 +317,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.dropDownlistStyle,
-                                        controller: _previousDueController,
+                                        controller: previousDueController,
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
                                           hintText: "0",
@@ -371,7 +345,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                                       height: 25.h,
                                       child: TextField(
                                         style: AllTextStyle.dropDownlistStyle,
-                                        controller: _creditLimitController,
+                                        controller: creditLimitController,
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
                                           hintText: "0",
@@ -391,55 +365,6 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                             ],),
                           ),
                         ),
-                        // Expanded(
-                        //   flex: 1,
-                        //   child: Column(
-                        //     mainAxisAlignment: MainAxisAlignment.center,
-                        //     children: <Widget>[
-                        //       _image != null
-                        //           ? Container(
-                        //         height: 85.h,
-                        //         width: 100.w,
-                        //         decoration: BoxDecoration(
-                        //           borderRadius: BorderRadius.circular(5.r),
-                        //           image: DecorationImage(
-                        //             image: FileImage(_image!),
-                        //             fit: BoxFit.cover,
-                        //           ),
-                        //         ),
-                        //       ) : Container(
-                        //         height: 85.h,
-                        //         width: 100.w,
-                        //         decoration: BoxDecoration(
-                        //           color: Colors.white,
-                        //           borderRadius: BorderRadius.circular(5.r),
-                        //           border: Border.all(color: Colors.white,width: 2.w)
-                        //         ),
-                        //         child: Center(child: Text("No Image Available",textAlign:TextAlign.center,style: TextStyle(color: Colors.grey,fontSize: 12.sp,fontWeight: FontWeight.w600))),
-                        //       ),
-                        //       SizedBox(height: 5.h),
-                        //       InkWell(
-                        //         onTap: () async {
-                        //           await _pickImage();
-                        //         },
-                        //         child: Container(
-                        //           decoration: BoxDecoration(
-                        //             color: Colors.teal.shade600,
-                        //             borderRadius: BorderRadius.circular(5.r),
-                        //             boxShadow: [
-                        //               BoxShadow(color: Colors.grey.withOpacity(0.6),spreadRadius: 2.r,blurRadius: 5.r, offset: const Offset(0, 3)),
-                        //             ],
-                        //           ),
-                        //           child: Padding(
-                        //             padding: EdgeInsets.all(4.r),
-                        //             child: Center(child: Text(
-                        //                 "Select Image",style: TextStyle(fontSize: 12.sp,color: Colors.white,fontWeight: FontWeight.w500))),
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
                       ],
                     ),
                     SizedBox(height: 4.h),
@@ -527,22 +452,22 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                       child: InkWell(
                         onTap: () async {
                           Utils.closeKeyBoard(context);
-                          if(_customerNameController.text==''){
+                          if(customerNameController.text==''){
                             Utils.errorSnackBar(context, "Customer name is required");
                           }
                           else if(areaController.text==''){
                             Utils.errorSnackBar(context, "Area field is required");
                           }
                           else{
+                          setState(() {
+                            customerEntryBtnClk = true;
+                          });
+                            customerEntry(context).then((value){
+                            Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
                             setState(() {
-                              customerEntryBtnClk = true;
                             });
-                                customerEntry(context).then((value){
-                                 Provider.of<CustomersProvider>(context, listen: false).getCustomers("");
-                                 setState(() {
-                                });
-                            });
-                           }
+                          });
+                          }
                         },
                         child: Container(
                           height: 25.h,
@@ -631,37 +556,34 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
   }
   emptyMethod() {
     setState(() {
-      _customerNameController.text = "";
-      _mobileController.text = "";
-      _officePhoneController.text = "";
-      _addressController.text = "";
-      _ownerNameController.text = "";
+      customerNameController.text = "";
+      mobileController.text = "";
+      officePhoneController.text = "";
+      addressController.text = "";
+      ownerNameController.text = "";
       areaController.text = "";
-      _employeeController.text="";
-      _creditLimitController.text = "";
-      _previousDueController.text = "";
+      employeeController.text="";
+      creditLimitController.text = "";
+      previousDueController.text = "";
     });
   }
 
   bool customerEntryBtnClk = false;
   Future<String> customerEntry(BuildContext context) async {
-
     var data = {
-      "Customer_Name": _customerNameController.text.trim(),
+      "Customer_Name": customerNameController.text.trim(),
       "Customer_Type": _customerType.toString().trim(),
-      "Customer_Mobile": _mobileController.text.trim(),
-      "Customer_OfficePhone": _officePhoneController.text.trim(),
-      "Customer_Address": _addressController.text.trim(),
-      "owner_name": _ownerNameController.text.trim(),
+      "Customer_Mobile": mobileController.text.trim(),
+      "Customer_OfficePhone": officePhoneController.text.trim(),
+      "Customer_Address": addressController.text.trim(),
+      "owner_name": ownerNameController.text.trim(),
       "area_ID": areaId.toString().trim(),
-      "Customer_Credit_Limit": _creditLimitController.text.trim(),
-      "previous_due": _previousDueController.text.trim(),
+      "Customer_Credit_Limit": creditLimitController.text.trim(),
+      "previous_due": previousDueController.text.trim(),
       "Customer_Email": "",
       "Customer_Phone": "",
     };
-
     SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
-
     try {
       var response = await Dio().post(addCustomer,
         data: data, 
@@ -674,7 +596,6 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
       );
 
       var item = response.data;
-
       if (item["success"] == true) {
         setState(() {
           customerEntryBtnClk = false;
@@ -698,84 +619,4 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
       return "false";
     }
   }
-
-  // bool customerEntryBtnClk = false;
-  // Future<String> customerEntry(BuildContext context) async {
-  //   String link = "${baseUrl}api/v1/addCustomer";
-  //   var data = {
-  //       "Customer_Name": _customerNameController.text.trim(),
-  //       "Customer_Type":_Get_customerType.toString().trim(),
-  //       "Customer_Mobile":_mobileController.text.trim(),
-  //       "Customer_OfficePhone":_officePhoneController.text.trim(),
-  //       "Customer_Address":_addressController.text.trim(),
-  //       "owner_name": _OwnerNameController.text.trim(),
-  //       "area_ID":areaSlNo.toString().trim(),
-  //       "Customer_Credit_Limit":_creditLimitController.text.trim(),
-  //       "previous_due":_previousDueController.text.trim(),
-  //       "Customer_Email": "",
-  //       "Customer_Phone": "",
-  //   };
-
-  //   FormData formData = FormData.fromMap({
-  //     "data": jsonEncode(data),
-  //     if (_image != null)
-  //       "image": await MultipartFile.fromFile(_image!.path, filename: "customer_image.jpg"),
-  //   });
-  //   SharedPreferences? sharedPreferences = await SharedPreferences.getInstance();
-  //   try {
-  //     var response = await Dio().post(link, data: formData,
-  //       options: Options(headers: {
-  //         "Content-Type": "multipart/form-data",
-  //         'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-  //         "Authorization": "Bearer ${sharedPreferences.getString("token")}",
-  //       }),
-  //     );
-  //    var item = jsonDecode(response.data);
-  //     if (item["success"] == true) {
-  //       setState(() {
-  //         customerEntryBtnClk = false;
-  //       });
-  //       emptyMethod();
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           backgroundColor: const Color.fromARGB(255, 4, 108, 156),
-  //           duration: const Duration(seconds: 2),
-  //           content: Center(child: Text("${item["message"]}", style: const TextStyle(color: Colors.white))),
-  //         ),
-  //       );
-  //       return "true";
-  //     } else {
-  //       setState(() {
-  //         customerEntryBtnClk = false;
-  //       });
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           backgroundColor: Colors.black,
-  //           duration: const Duration(seconds: 2),
-  //           content: Center(child: Text("${item["message"]}", style: const TextStyle(color: Colors.red)))),
-  //       );
-  //       return "false";
-  //     }
-  //   } catch (e) {
-  //     print("Error: $e");
-  //     return "false";
-  //   }
-  // }
-  
-
-  // Future<void> getLocationFromCoordinates(double lat, double lng) async {
-  //   final response = await http.get(Uri.parse(
-  //       'https://nominatim.openstreetmap.org/reverse?lat=$lat&lon=$lng&format=json'));
-  //   if (response.statusCode == 200) {
-  //     final data = json.decode(response.body);
-  //     String location = data['display_name'] ?? "Unknown Location";
-  //     setState(() {
-  //       _locationController.text = location;
-  //     });
-  //   } else {
-  //     setState(() {
-  //       _locationController.text = "Error fetching location";
-  //     });
-  //   }
-  // }
 }

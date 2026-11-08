@@ -34,6 +34,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _visitedAddressController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _employeeCustomerController = TextEditingController();
 
@@ -347,7 +348,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                       SizedBox(height: 4.h),
                       Row(
                         children: [
-                          Expanded(flex: 6,child: Text("Visit Date",style: AllTextStyle.textFieldHeadStyle)),
+                          Expanded(flex: 6,child: Text("Visited Date",style: AllTextStyle.textFieldHeadStyle)),
                           const Expanded(flex: 1, child: Text(":")),
                           Expanded(
                             flex: 11,
@@ -386,7 +387,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(flex: 6, child: Text("Employee", style: AllTextStyle.searchTypeTxtStyle)),
+                          Expanded(flex: 6, child: Text("Visited By", style: AllTextStyle.searchTypeTxtStyle)),
                           Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
                           userType == "a" || userType == "m" ? Expanded(
                             flex: 11,
@@ -421,7 +422,35 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                       SizedBox(height: 4.h),
                       Row(
                         children: [
-                          Expanded(flex: 6,child: Text("Note",style: AllTextStyle.textFieldHeadStyle)),
+                          Expanded(flex: 6,child: Text("Visited Address",style: AllTextStyle.textFieldHeadStyle)),
+                          const Expanded(flex: 1, child: Text(":")),
+                          Expanded(
+                            flex: 11,
+                            child: SizedBox(
+                              height: 45.h,
+                              child: TextField(
+                                style: AllTextStyle.dropDownlistStyle,
+                                controller: _visitedAddressController,
+                                maxLines: 2,
+                                decoration: InputDecoration(
+                                  hintText: "Enter Visited Address",
+                                  hintStyle: AllTextStyle.textValueStyle,
+                                  contentPadding: EdgeInsets.only(left: 5.w),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border:InputBorder.none,
+                                  focusedBorder:TextFieldInputBorder.focusEnabledBorder,
+                                  enabledBorder: TextFieldInputBorder.focusEnabledBorder
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      Row(
+                        children: [
+                          Expanded(flex: 6,child: Text("Visited Note",style: AllTextStyle.textFieldHeadStyle)),
                           const Expanded(flex: 1, child: Text(":")),
                           Expanded(
                             flex: 11,
@@ -515,22 +544,20 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                       showCheckboxColumn: true,
                       border: TableBorder.all(color: Colors.blueGrey.shade100, width: 1),
                       columns: [
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit Date',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Customer Id',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Customer Name',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Customer Address',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit By',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit Area',style: AllTextStyle.tableHeadTextStyle)))),
                         DataColumn(label: Expanded(child: Center(child: Text('Phone',style: AllTextStyle.tableHeadTextStyle)))),
-                        DataColumn(label: Expanded(child: Center(child: Text('Visit Date',style: AllTextStyle.tableHeadTextStyle)))),
-                        DataColumn(label: Expanded(child: Center(child: Text('Note',style: AllTextStyle.tableHeadTextStyle)))),
+                        DataColumn(label: Expanded(child: Center(child: Text('Visit Note',style: AllTextStyle.tableHeadTextStyle)))),
                       ],
                       rows: List.generate(
                        visitesData.length > 100 ? 100 : visitesData.length,
                           (int index) => DataRow(
                           color: index % 2 == 0 ? WidgetStateProperty.resolveWith(getColor) : WidgetStateProperty.resolveWith(getColors),
                           cells: <DataCell>[
-                            DataCell(Center(child: Text(visitesData[index].customerCode??"",style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text(visitesData[index].customerName??"",style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text(visitesData[index].customerAddress??"",style: AllTextStyle.tableDataTextStyle))),
-                            DataCell(Center(child: Text(visitesData[index].customerMobile??"",style: AllTextStyle.tableDataTextStyle))),
                             DataCell(
                               Center(
                                 child: Text(
@@ -539,6 +566,12 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
                                 ),
                               ),
                             ),
+                            DataCell(Center(child: Text(visitesData[index].customerCode??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].customerName??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].customerAddress??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].employeeName??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].address??"",style: AllTextStyle.tableDataTextStyle))),
+                            DataCell(Center(child: Text(visitesData[index].customerMobile??"",style: AllTextStyle.tableDataTextStyle))),
                             DataCell(Center(child: Text(visitesData[index].note??"",style: AllTextStyle.tableDataTextStyle))),
                           ],
                         ),
@@ -562,6 +595,8 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
       _addressController.text = "";
       _employeeController.text="";
       _noteController.text="";
+      _visitedAddressController.text="";
+      customerId = "";
     });
   }
   Future<String> addVisites(BuildContext context) async {
@@ -570,7 +605,7 @@ class _VisitEntryScreenState extends State<VisitEntryScreen> {
       var response = await Dio().post(addVisit,
         data:  {
           "customerId": customerId,
-          "address":_addressController.text.trim(),
+          "address":_visitedAddressController.text.trim(),
           "employeeId": userEmployeeId ?? "",
           "date": backEndFirstDate,
           "note": _noteController.text.trim(),

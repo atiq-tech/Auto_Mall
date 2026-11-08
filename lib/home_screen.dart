@@ -27,7 +27,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   String? userName = "";
   String? userImage;
   String? userType = "";
@@ -101,12 +101,32 @@ void openPageWithAccess({required String permission,required Widget page}) {
     );
   }
 }
-
+late AnimationController _controller;
+late Animation<double> _animation;
 @override
   void initState() {
     _initializeData();
     // TODO: implement initState
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+     _controller.forward();
+  }
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
 var scaffoldKey = GlobalKey<ScaffoldState>();
@@ -120,18 +140,24 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
         foregroundColor: Colors.white,
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 17.r,
-              backgroundImage: const AssetImage("images/automlogo.jpeg"),
+            ScaleTransition(
+              scale: _animation,
+              child: CircleAvatar(
+                radius: 17.r,
+                backgroundImage: const AssetImage("images/automlogo.jpeg"),
+              ),
             ),
             SizedBox(width: 10.w),
-            Text(
-              "Auto Mall",
-              style: TextStyle(
-                fontSize: 18.sp,
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.5.w,
+            ScaleTransition(
+              scale: _animation,
+              child: Text(
+                "Auto Mall",
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5.w,
+                ),
               ),
             ),
           ],
@@ -388,23 +414,29 @@ var scaffoldKey = GlobalKey<ScaffoldState>();
                                   ),
                                 ],
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10.r),
-                                child: Image.asset("${screenItems[index]["image"]}",fit: BoxFit.contain),
+                              child: ScaleTransition(
+                                 scale: _animation,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.r),
+                                  child: Image.asset("${screenItems[index]["image"]}",fit: BoxFit.contain),
+                                ),
                               ),
                             ),
                           ),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 2.w),
-                            child: Text(
-                              '${screenItems[index]["name"]}',
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF2D2D2D),
+                            child: ScaleTransition(
+                              scale: _animation,
+                              child: Text(
+                                '${screenItems[index]["name"]}',
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF2D2D2D),
+                                ),
                               ),
                             ),
                           ),

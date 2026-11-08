@@ -30,7 +30,7 @@ class DrawerDemoPage extends StatefulWidget {
   State<DrawerDemoPage> createState() => _DrawerDemoPageState();
 }
 
-class _DrawerDemoPageState extends State<DrawerDemoPage> {
+class _DrawerDemoPageState extends State<DrawerDemoPage> with SingleTickerProviderStateMixin {
   SharedPreferences? sharedPreferences;
   Future<void> _initializeData() async {
     sharedPreferences = await SharedPreferences.getInstance();
@@ -87,11 +87,31 @@ void openPageWithAccess({required String permission,required Widget page}) {
     );
   }
 }
-
+late AnimationController _controller;
+late Animation<double> _animation;
   @override
   void initState() {
     super.initState();
     _initializeData();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _animation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+     _controller.forward();
+  }
+ @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -130,10 +150,13 @@ void openPageWithAccess({required String permission,required Widget page}) {
                       shape: BoxShape.circle,
                       border: Border.all(color: const Color.fromARGB(255, 255, 255, 255), width: 2.5.w),
                     ),
-                    child: CircleAvatar(
-                      backgroundColor: AppColors.appColor,
-                      radius: 32.r,
-                      backgroundImage: AssetImage("images/automlogo.jpeg"),
+                    child: ScaleTransition(
+                      scale: _animation,
+                      child: CircleAvatar(
+                        backgroundColor: AppColors.appColor,
+                        radius: 32.r,
+                        backgroundImage: AssetImage("images/automlogo.jpeg"),
+                      ),
                     ),
                   ),
                  SizedBox(width: 14.w),
