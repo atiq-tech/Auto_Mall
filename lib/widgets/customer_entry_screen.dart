@@ -81,8 +81,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
         _listViewScrollController.position.maxScrollExtent &&
         !_listViewScrollController.position.outOfRange) {
       if (mainScrollController.offset == 0) {
-        mainScrollController.animateTo(50,
-            duration: const Duration(milliseconds: 200), curve: Curves.linear);
+        mainScrollController.animateTo(50, duration: const Duration(milliseconds: 200), curve: Curves.linear);
       }
       setState(() {
         _physics = const NeverScrollableScrollPhysics();
@@ -112,8 +111,7 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
     mainScrollController.addListener(mainScrollListener);
     final areasData = Provider.of<AreasProvider>(context).areasList;
     final customersData = Provider.of<CustomersProvider>(context).customersList
-    .where((customer) =>customer.customerName != "Cash Customer" && customer.customerName != "New Customer")
-    .toList();
+    .where((customer) => customer.customerName != "Cash Customer" && customer.customerName != "New Customer").toList();
     return Scaffold(
       appBar: CustomAppBar(title: "Customer Entry"),
       body: SingleChildScrollView(
@@ -248,122 +246,119 @@ class _CustomerEntryScreenState extends State<CustomerEntryScreen> {
                       children: [
                         Expanded(
                           flex: 3,
-                          child: Container(
-                           // padding: EdgeInsets.only(right: 6.w),
-                            child: Column(children: [
-                              Row(
-                                children: [
-                                  Expanded(flex: 6,child: Text("Mobile",style: AllTextStyle.textFieldHeadStyle)),
-                                  const Expanded(flex: 1, child: Text(":")),
-                                  Expanded(
-                                    flex: 11,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.dropDownlistStyle,
-                                        controller: mobileController,
-                                        decoration: InputDecoration(
-                                          hintText: "Enter Mobile No",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          contentPadding: EdgeInsets.only(left: 5.w),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder: TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder: TextFieldInputBorder.focusEnabledBorder
-                                        ),
-                                        keyboardType: TextInputType.phone,
+                          child: Column(children: [
+                            Row(
+                              children: [
+                                Expanded(flex: 6,child: Text("Mobile",style: AllTextStyle.textFieldHeadStyle)),
+                                const Expanded(flex: 1, child: Text(":")),
+                                Expanded(
+                                  flex: 11,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.dropDownlistStyle,
+                                      controller: mobileController,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter Mobile No",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        contentPadding: EdgeInsets.only(left: 5.w),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder
+                                      ),
+                                      keyboardType: TextInputType.phone,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            Row(
+                              children: [
+                                Expanded(flex: 6,child: Text("Office Phone",style: AllTextStyle.textFieldHeadStyle)),
+                                const Expanded(flex: 1, child: Text(":")),
+                                Expanded(
+                                  flex: 11,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.dropDownlistStyle,
+                                      controller: officePhoneController,
+                                      keyboardType: TextInputType.phone,
+                                      decoration: InputDecoration(
+                                        hintText: "Enter Phone No",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        contentPadding: EdgeInsets.only(left: 5.w),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Expanded(flex: 6,child: Text("Office Phone",style: AllTextStyle.textFieldHeadStyle)),
-                                  const Expanded(flex: 1, child: Text(":")),
-                                  Expanded(
-                                    flex: 11,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.dropDownlistStyle,
-                                        controller: officePhoneController,
-                                        keyboardType: TextInputType.phone,
-                                        decoration: InputDecoration(
-                                          hintText: "Enter Phone No",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          contentPadding: EdgeInsets.only(left: 5.w),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder: TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder: TextFieldInputBorder.focusEnabledBorder
-                                        ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            Row(
+                              children: [
+                                Expanded(flex: 6,child: Text("Previous Due",style: AllTextStyle.textFieldHeadStyle)),
+                                const Expanded(flex: 1, child: Text(":")),
+                                Expanded(
+                                  flex: 11,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.dropDownlistStyle,
+                                      controller: previousDueController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: "0",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        contentPadding: EdgeInsets.only(left: 5.w),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Expanded(flex: 6,child: Text("Previous Due",style: AllTextStyle.textFieldHeadStyle)),
-                                  const Expanded(flex: 1, child: Text(":")),
-                                  Expanded(
-                                    flex: 11,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.dropDownlistStyle,
-                                        controller: previousDueController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          hintText: "0",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          contentPadding: EdgeInsets.only(left: 5.w),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder: TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder: TextFieldInputBorder.focusEnabledBorder,
-                                        ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 4.h),
+                            Row(
+                              children: [
+                                Expanded(flex: 6,child: Text("Credit Limit",style: AllTextStyle.textFieldHeadStyle)),
+                                const Expanded(flex: 1, child: Text(":")),
+                                Expanded(
+                                  flex: 11,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: TextField(
+                                      style: AllTextStyle.dropDownlistStyle,
+                                      controller: creditLimitController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        hintText: "0",
+                                        hintStyle: AllTextStyle.textValueStyle,
+                                        contentPadding: EdgeInsets.only(left: 5.w),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        border: InputBorder.none,
+                                        focusedBorder: TextFieldInputBorder.focusEnabledBorder,
+                                        enabledBorder: TextFieldInputBorder.focusEnabledBorder,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(height: 4.h),
-                              Row(
-                                children: [
-                                  Expanded(flex: 6,child: Text("Credit Limit",style: AllTextStyle.textFieldHeadStyle)),
-                                  const Expanded(flex: 1, child: Text(":")),
-                                  Expanded(
-                                    flex: 11,
-                                    child: SizedBox(
-                                      height: 25.h,
-                                      child: TextField(
-                                        style: AllTextStyle.dropDownlistStyle,
-                                        controller: creditLimitController,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          hintText: "0",
-                                          hintStyle: AllTextStyle.textValueStyle,
-                                          contentPadding: EdgeInsets.only(left: 5.w),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          border: InputBorder.none,
-                                          focusedBorder: TextFieldInputBorder.focusEnabledBorder,
-                                          enabledBorder: TextFieldInputBorder.focusEnabledBorder,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],),
-                          ),
+                                ),
+                              ],
+                            ),
+                          ],),
                         ),
                       ],
                     ),

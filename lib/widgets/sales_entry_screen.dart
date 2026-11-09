@@ -227,35 +227,34 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
         "Authorization": "${sharedPreferences.getString("token")}",
       }),
     );
-
     setState(() {
       availableStock = int.tryParse(response!.data.toString()) ?? 0;
     });
     print("availableStock=========$availableStock");
   }
 
-    String? previousDue;
+  String? previousDue;
   void previousDueAmount(String? customerId) async {
-  SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  try {
-    final response = await Dio().post(customerDue,
-      data: {
-        "customerId": customerId
-        },
-       options: Options(headers: {
-        "Content-Type": "application/json",
-        'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
-        "Authorization": "${sharedPreferences.getString("token")}",
-      }),
-    );
-    final data = response.data;
-    setState(() {
-      previousDue = "${data[0]['dueAmount'] ?? '0'}";
-    });
-  } catch (e) {
-    print("Error: $e");
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      final response = await Dio().post(customerDue,
+        data: {
+          "customerId": customerId
+          },
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }),
+      );
+      final data = response.data;
+      setState(() {
+        previousDue = "${data[0]['dueAmount'] ?? '0'}";
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -501,24 +500,23 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                               hintText: 'Select Customer',
                                               isDense: true,
                                               hintStyle: AllTextStyle.dropDownlistStyle,
-                                              suffixIcon: customerId == ''
-                                                  ? null
-                                                  : GestureDetector(
-                                                      onTap: () {
-                                                        setState(() {
-                                                          customerController.clear();
-                                                          fieldController.clear();
-                                                          customerId = '';
-                                                          mobileNumberController.clear();
-                                                          addressController.clear();
-                                                          nameController.clear();
-                                                        });
-                                                      },
-                                                      child: Padding(
-                                                        padding: EdgeInsets.only(left: 25.w),
-                                                        child: Icon(Icons.close, size: 16.r),
-                                                      ),
-                                                    ),
+                                              suffixIcon: customerId == '' ? null
+                                                : GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      customerController.clear();
+                                                      fieldController.clear();
+                                                      customerId = '';
+                                                      mobileNumberController.clear();
+                                                      addressController.clear();
+                                                      nameController.clear();
+                                                    });
+                                                  },
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(left: 25.w),
+                                                    child: Icon(Icons.close, size: 16.r),
+                                                  ),
+                                                ),
                                             ),
                                             onChanged: (value) {
                                               if (value.isEmpty) {
@@ -657,7 +655,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                 ],
                               ),
                               // mobile
-                          
                               Row(
                                 children: [
                                   Padding(
@@ -691,8 +688,6 @@ class _SalesEntryScreenState extends State<SalesEntryScreen> {
                                   ),
                                 ],
                               ),
-                          
-                              //address
                             ],
                           ),
                         ),
