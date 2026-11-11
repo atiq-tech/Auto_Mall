@@ -33,6 +33,7 @@ class CommonTypeAheadField<T> extends StatelessWidget {
       decoration: ContDecoration.contDecoration,
       child: TypeAheadField<T>(
         controller: controller,
+
         builder: (context, fieldController, focusNode) {
           return TextField(
             controller: fieldController,
@@ -40,11 +41,16 @@ class CommonTypeAheadField<T> extends StatelessWidget {
             enabled: enabled,
             style: AllTextStyle.textValueStyle,
             decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(bottom: 10.h, left: 5.0.w),
+              contentPadding: EdgeInsets.only(
+                bottom: 10.h,
+                left: 5.w,
+              ),
               isDense: true,
               hintText: hintText,
               hintStyle: AllTextStyle.dropDownlistStyle,
-              suffixIcon: selectedValueId == null || selectedValueId == '' || fieldController.text == ''
+              suffixIcon: selectedValueId == null ||
+                      selectedValueId == '' ||
+                      fieldController.text == ''
                   ? null
                   : GestureDetector(
                       onTap: () {
@@ -54,19 +60,28 @@ class CommonTypeAheadField<T> extends StatelessWidget {
                       },
                       child: Padding(
                         padding: EdgeInsets.all(5.r),
-                        child: Icon(Icons.close, size: 16.r),
+                        child: Icon(
+                          Icons.close,
+                          size: 16.r,
+                        ),
                       ),
                     ),
-              suffixIconConstraints: BoxConstraints(maxHeight: 30.h),
+              suffixIconConstraints: BoxConstraints(
+                maxHeight: 30.h,
+              ),
               filled: true,
               fillColor: Colors.white,
               border: InputBorder.none,
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.blue.shade200),
+                borderSide: BorderSide(
+                  color: Colors.blue.shade200,
+                ),
                 borderRadius: BorderRadius.circular(5.r),
               ),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                  color: Colors.grey.shade300,
+                ),
                 borderRadius: BorderRadius.circular(5.r),
               ),
             ),
@@ -81,16 +96,25 @@ class CommonTypeAheadField<T> extends StatelessWidget {
             },
           );
         },
+
         suggestionsCallback: (pattern) async {
-          return Future.delayed(const Duration(milliseconds: 300), () {
-            return suggestionList
-                .where((item) => displayText(item).toLowerCase().contains(pattern.toLowerCase()))
-                .toList();
-          });
+
+          // সর্বশেষ suggestion list ব্যবহার
+          final currentList = suggestionList;
+
+          return currentList.where((item) {
+            return displayText(item)
+                .toLowerCase()
+                .contains(pattern.toLowerCase());
+          }).toList();
         },
+
         itemBuilder: (context, T suggestion) {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+            padding: EdgeInsets.symmetric(
+              horizontal: 6.w,
+              vertical: 4.h,
+            ),
             child: Text(
               displayText(suggestion),
               style: TextStyle(fontSize: 12.sp),
@@ -99,6 +123,7 @@ class CommonTypeAheadField<T> extends StatelessWidget {
             ),
           );
         },
+
         onSelected: (T suggestion) {
           controller.text = displayText(suggestion);
           onValueIdChanged(valueId(suggestion));
@@ -107,3 +132,107 @@ class CommonTypeAheadField<T> extends StatelessWidget {
     );
   }
 }
+
+// class CommonTypeAheadField<T> extends StatelessWidget {
+//   final TextEditingController controller;
+//   final List<T> suggestionList;
+//   final String hintText;
+//   final String? selectedValueId;
+//   final Function(String?) onValueIdChanged;
+//   final String Function(T) displayText;
+//   final String Function(T) valueId;
+//   final bool enabled;
+
+//   const CommonTypeAheadField({
+//     super.key,
+//     required this.controller,
+//     required this.suggestionList,
+//     required this.hintText,
+//     required this.selectedValueId,
+//     required this.onValueIdChanged,
+//     required this.displayText,
+//     required this.valueId,
+//     this.enabled = true,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       height: 25.h,
+//       decoration: ContDecoration.contDecoration,
+//       child: TypeAheadField<T>(
+//         controller: controller,
+//         builder: (context, fieldController, focusNode) {
+//           return TextField(
+//             controller: fieldController,
+//             focusNode: focusNode,
+//             enabled: enabled,
+//             style: AllTextStyle.textValueStyle,
+//             decoration: InputDecoration(
+//               contentPadding: EdgeInsets.only(bottom: 10.h, left: 5.0.w),
+//               isDense: true,
+//               hintText: hintText,
+//               hintStyle: AllTextStyle.dropDownlistStyle,
+//               suffixIcon: selectedValueId == null || selectedValueId == '' || fieldController.text == ''
+//                   ? null
+//                   : GestureDetector(
+//                       onTap: () {
+//                         controller.clear();
+//                         fieldController.clear();
+//                         onValueIdChanged(null);
+//                       },
+//                       child: Padding(
+//                         padding: EdgeInsets.all(5.r),
+//                         child: Icon(Icons.close, size: 16.r),
+//                       ),
+//                     ),
+//               suffixIconConstraints: BoxConstraints(maxHeight: 30.h),
+//               filled: true,
+//               fillColor: Colors.white,
+//               border: InputBorder.none,
+//               focusedBorder: OutlineInputBorder(
+//                 borderSide: BorderSide(color: Colors.blue.shade200),
+//                 borderRadius: BorderRadius.circular(5.r),
+//               ),
+//               enabledBorder: OutlineInputBorder(
+//                 borderSide: BorderSide(color: Colors.grey.shade300),
+//                 borderRadius: BorderRadius.circular(5.r),
+//               ),
+//             ),
+//             onTap: () {
+//               if (selectedValueId != null &&
+//                   selectedValueId != '' &&
+//                   selectedValueId != 'null') {
+//                 controller.clear();
+//                 fieldController.clear();
+//                 onValueIdChanged(null);
+//               }
+//             },
+//           );
+//         },
+//         suggestionsCallback: (pattern) async {
+//           return Future.delayed(const Duration(milliseconds: 300), () {
+//             return suggestionList
+//                 .where((item) => displayText(item).toLowerCase().contains(pattern.toLowerCase()))
+//                 .toList();
+//           });
+//         },
+//         itemBuilder: (context, T suggestion) {
+//           return Padding(
+//             padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 4.h),
+//             child: Text(
+//               displayText(suggestion),
+//               style: TextStyle(fontSize: 12.sp),
+//               maxLines: 1,
+//               overflow: TextOverflow.ellipsis,
+//             ),
+//           );
+//         },
+//         onSelected: (T suggestion) {
+//           controller.text = displayText(suggestion);
+//           onValueIdChanged(valueId(suggestion));
+//         },
+//       ),
+//     );
+//   }
+// }

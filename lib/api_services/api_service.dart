@@ -2,17 +2,21 @@ import 'dart:convert';
 import 'package:auto_mall/models/areas_model.dart';
 import 'package:auto_mall/models/bank_accounts_model.dart';
 import 'package:auto_mall/models/categories_model.dart';
+import 'package:auto_mall/models/cities_model.dart';
 import 'package:auto_mall/models/couriers_model.dart';
 import 'package:auto_mall/models/customer_due_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/models/employees_model.dart';
 import 'package:auto_mall/models/invoice_model.dart';
+import 'package:auto_mall/models/pathao_areas_model.dart';
 import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/models/sale_details_model.dart';
 import 'package:auto_mall/models/sale_records_model.dart';
 import 'package:auto_mall/models/sales_model.dart';
+import 'package:auto_mall/models/stores_model.dart';
 import 'package:auto_mall/models/users_model.dart';
 import 'package:auto_mall/models/visites_model.dart';
+import 'package:auto_mall/models/zones_model.dart';
 import 'package:auto_mall/utils/base_url.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -399,4 +403,84 @@ class ApiService{
     return null;
   }
 
+ //==================cities List =======================
+  static fetchCitiesApi() async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(cities,
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => CitiesModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+  
+  //==================stores List =======================
+  static fetchStoresApi() async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    try {
+      Response response = await Dio().post(stores,
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => StoresModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+
+  //==================zones List =======================
+  static fetchZonesApi(String? cityId) async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    print("cityId: $cityId");
+    print("zones: $zones");
+    print("pathao zones: ${zones}/$cityId");
+    try {
+      Response response = await Dio().post("$zones/$cityId",
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => ZonesModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+
+  //==================get-pathaw-areas List =======================
+  static fetchPathaoAreasApi(String? zoneId) async {
+    SharedPreferences? sharedPreferences;
+    sharedPreferences = await SharedPreferences.getInstance();
+    print("zoneId: $zoneId");
+    print("pathao areas: $pathaoAreas/$zoneId");
+    try {
+      Response response = await Dio().post("$pathaoAreas/$zoneId",
+        options: Options(headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'ci_session=${sharedPreferences.getString("sessionId")}',
+          "Authorization": "${sharedPreferences.getString("token")}",
+        }));
+      var item = response.data;
+      return List.from(item).map((e) => PathaoAreasModel.fromMap(e)).toList();
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
 }

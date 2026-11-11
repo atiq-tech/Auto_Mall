@@ -25,6 +25,11 @@ String saleDetails = "${baseUrl}get-sale-details";
 String ordersRecords = "${baseUrl}orders/records";
 String bankAccounts = "${baseUrl}get-bank-accounts";
 String companyProfile = "${baseUrl}get-company-profile";
+String cities = "${baseUrl}get-cities";
+String stores = "${baseUrl}get-stores";
+String zones = "${baseUrl}get-zones";
+String pathaoAreas = "${baseUrl}get-pathaw-areas";
+
 
 
 

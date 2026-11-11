@@ -1,15 +1,24 @@
 import 'package:auto_mall/common_widget/type_ahead_searching_field.dart';
 import 'package:auto_mall/models/bank_accounts_model.dart';
+import 'package:auto_mall/models/cities_model.dart';
 import 'package:auto_mall/models/couriers_model.dart';
 import 'package:auto_mall/models/customers_model.dart';
 import 'package:auto_mall/models/employees_model.dart';
+import 'package:auto_mall/models/pathao_areas_model.dart';
 import 'package:auto_mall/models/products_model.dart';
 import 'package:auto_mall/models/sales_cart_model.dart';
+import 'package:auto_mall/models/stores_model.dart';
+import 'package:auto_mall/models/zones_model.dart';
+import 'package:auto_mall/providers/areas_provider.dart';
 import 'package:auto_mall/providers/bank_accounts_provider.dart';
+import 'package:auto_mall/providers/cities_provider.dart';
 import 'package:auto_mall/providers/couriers_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
+import 'package:auto_mall/providers/pathao_areas_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
+import 'package:auto_mall/providers/stores_provider.dart';
+import 'package:auto_mall/providers/zones_provider.dart';
 import 'package:auto_mall/utils/animation_snackbar.dart';
 import 'package:auto_mall/utils/app_colors.dart';
 import 'package:auto_mall/widgets/order_invoice_screen.dart';
@@ -76,12 +85,27 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   final invoiceNoController = TextEditingController();
   final vatPercentageController = TextEditingController();
   final accountController = TextEditingController();
+  final disPercentController = TextEditingController();
+  final disAmountController = TextEditingController();
+
   bool isCredit = false;
   final creditController = TextEditingController();
   bool isCourier = false;
   final courierController = TextEditingController();
-  final disPercentController = TextEditingController();
-  final disAmountController = TextEditingController();
+
+   bool isPathao = false;
+  final storeController = TextEditingController();
+  final cityController = TextEditingController();
+  final zoneController = TextEditingController();
+  final areaController = TextEditingController();
+  final weightController = TextEditingController();
+ 
+  bool isCarry = false;
+  final storeCarryController = TextEditingController();
+  final cityCarryController = TextEditingController();
+  final zoneCarryController = TextEditingController();
+  final areaCarryController = TextEditingController();
+
 
   var customerSlNo;
   String? customerType = '';
@@ -93,6 +117,10 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
   String? employeeId;
   String? bankAccountId;
   String? courierId;
+  String? storeId;
+  String? cityId;
+  String? zoneId;
+  String? areaId;
   String level = "retail";
   String? productUnit;
   double subtotal = 0;
@@ -191,6 +219,11 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     Provider.of<ProductsProvider>(context,listen: false).getProducts();
     Provider.of<BankAccountsProvider>(context,listen: false).getBankAccounts();
     Provider.of<CouriersProvider>(context,listen: false).getCouriers();
+    Provider.of<StoresProvider>(context,listen: false).getStores();
+    Provider.of<CitiesProvider>(context,listen: false).getCities();
+    Provider.of<AreasProvider>(context,listen: false).getAreas();
+    Provider.of<ZonesProvider>(context,listen: false).getZones(cityId);
+    Provider.of<PathaoAreasProvider>(context,listen: false).getPathaoAreas(zoneId);
     quantityController.text = "1";
     discountPercentController.text = "0";
     firstPickedDate = Utils.formatFrontEndDate(DateTime.now());
@@ -247,6 +280,10 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
     final productsData = Provider.of<ProductsProvider>(context).productsList;
     final bankAccountsData = Provider.of<BankAccountsProvider>(context).bankAccounts;
     final couriersData = Provider.of<CouriersProvider>(context).couriersList;
+    final storesData = Provider.of<StoresProvider>(context).storesList;
+    final citiesData = Provider.of<CitiesProvider>(context).citiesList;
+    final areasData = Provider.of<PathaoAreasProvider>(context).pathaoAreasList;
+    final zonesData = Provider.of<ZonesProvider>(context).zonesList; 
     return Scaffold(
         appBar: CustomAppBar(title: "Order Entry"),
         body: ModalProgressHUD(
@@ -1606,27 +1643,59 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                               SizedBox(height: 4.h),
                               Row(
                                 children: [
-                                  Transform.scale(
-                                    scale: 0.75,
-                                    child: Checkbox(
-                                      value: isCredit,
-                                      activeColor: AppColors.appColor,
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: const VisualDensity(horizontal: -4,vertical: -4),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          isCredit = value ?? false;               
-                                          if (!isCredit) {
-                                            creditController.clear();
-                                          }
-                                        });
-                                      },
-                                    ),
+                                  Row(
+                                    children: [
+                                      Transform.scale(
+                                        scale: 0.75,
+                                        child: Checkbox(
+                                          value: isCredit,
+                                          activeColor: AppColors.appColor,
+                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          visualDensity: const VisualDensity(horizontal: -4,vertical: -4),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              isCredit = value ?? false;               
+                                              if (!isCredit) {
+                                                creditController.clear();
+                                              }
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      Text('Is Credit',style: AllTextStyle.textFieldHeadStyle),
+                                    ],
+                                  ), 
+                                  SizedBox(width: 50.w),
+                                  Row(
+                                    children: [
+                                      Transform.scale(
+                                      scale: 0.75,
+                                      child: Checkbox(
+                                        value: isCourier,
+                                        activeColor: AppColors.appColor,
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: const VisualDensity(horizontal: -4,vertical: -4),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            isCourier = value ?? false;               
+                                            if (!isCourier) {
+                                              courierController.clear();
+                                            }
+                                          });
+                                        },
+                                      ),
+                                      ),
+                                      Text('Is Courier',style: AllTextStyle.textFieldHeadStyle),
+                                    ],
                                   ),
-                                  Expanded(flex: 4, child: Text('Is Credit',style: AllTextStyle.textFieldHeadStyle)),
+                                ],
+                              ),
+                              isCredit == true ? Row(
+                                children: [
+                                  Expanded(flex: 5, child: Text('Credit',style: AllTextStyle.textFieldHeadStyle)),
                                   Expanded(flex: 1, child: Text(':',style: AllTextStyle.textFieldHeadStyle)),
-                                  isCredit == true ? Expanded(
-                                    flex: 15,
+                                  Expanded(
+                                    flex: 14,
                                     child: SizedBox(
                                       height: 25.h,
                                       child: TextField(
@@ -1641,54 +1710,279 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
                                         focusedBorder:TextFieldInputBorder.focusEnabledBorder,
                                         enabledBorder:TextFieldInputBorder.focusEnabledBorder
                                       ),
-                                     ),
                                     ),
-                                  ):Expanded(flex: 15, child: SizedBox()),
+                                    ),
+                                  )
                                 ],
-                              ),
+                              ):SizedBox(),
                               SizedBox(height: 4.h),
-                              Row(
+                              isCourier == true ? Row(
                                 children: [
-                                  Transform.scale(
-                                    scale: 0.75,
-                                    child: Checkbox(
-                                      value: isCourier,
-                                      activeColor: AppColors.appColor,
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: const VisualDensity(horizontal: -4,vertical: -4),
-                                      onChanged: (value) {
+                                  Expanded(flex: 5, child: Text('Courier',style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(flex: 1, child: Text(':',style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(
+                                  flex: 14,
+                                  child: SizedBox(
+                                    height: 25.h,
+                                    child: CommonTypeAheadField<CouriersModel>(
+                                      controller: courierController,
+                                      suggestionList: couriersData,
+                                      hintText: 'Select Courier',
+                                      selectedValueId: courierId,
+                                      onValueIdChanged: (id) {
                                         setState(() {
-                                          isCourier = value ?? false;               
-                                          if (!isCourier) {
-                                            courierController.clear();
+                                          courierId = id;
+
+                                          final selectedCourier = couriersData.firstWhere(
+                                            (c) => c.id.toString() == id,
+                                          );
+
+                                          if (selectedCourier.name == "Pathao") {
+                                            isPathao = true;
+                                            storeCarryController.clear();
+                                            storeId = "";
+                                            cityCarryController.clear();
+                                            cityId = "";
+                                            zoneCarryController.clear();
+                                            zoneId = "";
+                                            areaCarryController.clear();
+                                            areaId = "";
+                                            isCarry = false;
+                                          } else if (selectedCourier.name == "Carry Bee") {
+                                            isCarry = true;
+                                            storeController.clear();
+                                            storeId = "";
+                                            cityController.clear();
+                                            cityId = "";
+                                            zoneController.clear();
+                                            zoneId = "";
+                                            areaController.clear();
+                                            areaId = "";
+                                            isPathao = false;
+                                          } else {
+                                            isPathao = false;
+                                            isCarry = false;
                                           }
                                         });
                                       },
+                                      displayText: (c) => c.name ?? "",
+                                      valueId: (c) => c.id.toString(),
                                     ),
                                   ),
-                                  Expanded(flex: 4, child: Text('Is Courier',style: AllTextStyle.textFieldHeadStyle)),
+                                )
+                                ],
+                              ):SizedBox(),
+                              isPathao == true ? Row(
+                                children: [
+                                  Expanded(flex: 5, child: Text('Store',style: AllTextStyle.textFieldHeadStyle)),
                                   Expanded(flex: 1, child: Text(':',style: AllTextStyle.textFieldHeadStyle)),
-                                  isCourier == true ? Expanded(
-                                    flex: 15,
-                                    child: SizedBox(
+                                  Expanded(
+                                    flex: 14,
+                                    child: Container(
                                       height: 25.h,
-                                      child: CommonTypeAheadField<CouriersModel>(
-                                        controller: courierController,
-                                        suggestionList: couriersData,
-                                        hintText: 'Select Courier',
-                                        selectedValueId: courierId,
+                                      margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
+                                      child: CommonTypeAheadField<StoresModel>(
+                                        controller: storeController,
+                                        suggestionList: storesData,
+                                        hintText: 'Select Store',
+                                        selectedValueId: storeId,
                                         onValueIdChanged: (id) {
                                           setState(() {
-                                            courierId = id;
+                                            storeId = id;
                                           });
                                         },
-                                        displayText: (c) => c.name??"",
-                                        valueId: (c) => c.id.toString(),
+                                        displayText: (s) => s.storeName,
+                                        valueId: (s) => s.storeId.toString(),
                                       )
                                     ),
-                                  ):Expanded(flex: 15, child: SizedBox()),
+                                  )
                                 ],
-                              ),
+                              ): isCarry == true ? Row(
+                                children: [
+                                  Expanded(flex: 5, child: Text('Store',style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(flex: 1, child: Text(':',style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(
+                                    flex: 14,
+                                    child: Container(
+                                      height: 25.h,
+                                      margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
+                                      child: CommonTypeAheadField<StoresModel>(
+                                        controller: storeCarryController,
+                                        suggestionList: storesData,
+                                        hintText: 'Select Store',
+                                        selectedValueId: storeId,
+                                        onValueIdChanged: (id) {
+                                          setState(() {
+                                            storeId = id;
+                                          });
+                                        },
+                                        displayText: (s) => s.storeName,
+                                        valueId: (s) => s.storeId.toString(),
+                                      )
+                                    ),
+                                  )
+                                ],
+                              ):SizedBox(),
+                              // ================= CITY =================
+
+                              if (isPathao == true || isCarry == true)
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: Text(
+                                        'City',
+                                        style: AllTextStyle.textFieldHeadStyle,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Text(
+                                        ':',
+                                        style: AllTextStyle.textFieldHeadStyle,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 14,
+                                      child: SizedBox(
+                                        height: 25.h,
+                                        child: CommonTypeAheadField<CitiesModel>(
+                                          controller: cityController,
+                                          suggestionList: citiesData,
+                                          hintText: 'Select City',
+                                          selectedValueId: cityId,
+
+                                          onValueIdChanged: (id) async {
+
+                                            // City change হলে আগের Zone reset
+                                            setState(() {
+                                              cityId = id;
+                                              zoneId = "";
+                                              zoneController.clear();
+                                            });
+
+                                            // নতুন City অনুযায়ী API hit
+                                            await Provider.of<ZonesProvider>(
+                                              context,
+                                              listen: false,
+                                            ).getZones(id);
+                                          },
+
+                                          displayText: (c) => c.cityName,
+                                          valueId: (c) => c.cityId.toString(),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                              // ================= ZONE =================
+
+                              if (isPathao == true || isCarry == true)
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 5,
+                                      child: Text(
+                                        'Zone',
+                                        style: AllTextStyle.textFieldHeadStyle,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 1,
+                                      child: Text(
+                                        ':',
+                                        style: AllTextStyle.textFieldHeadStyle,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 14,
+                                      child: Container(
+                                        height: 25.h,
+                                        margin: EdgeInsets.only(
+                                          top: 4.h,
+                                          bottom: 4.h,
+                                        ),
+                                        child: CommonTypeAheadField<ZonesModel>(
+                                          key: ValueKey('zone_$cityId'),
+
+                                          controller: zoneController,
+                                          suggestionList: zonesData,
+                                          hintText: 'Select Zone',
+                                          selectedValueId: zoneId,
+
+                                          onValueIdChanged: (id) async {
+                                            setState(() {
+                                              zoneId = id;
+                                              areaId = "";
+                                              areaController.clear();
+                                            });
+                                            await Provider.of<PathaoAreasProvider>(
+                                              context,
+                                              listen: false,
+                                            ).getPathaoAreas(id);
+                                          },
+
+                                          displayText: (z) => z.zoneName,
+                                          valueId: (z) => z.zoneId.toString(),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              isPathao == true || isCarry == true ? Row(
+                                children: [
+                                  Expanded(flex: 5, child: Text('Area',style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(flex: 1, child: Text(':',style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(
+                                    flex: 14,
+                                    child: SizedBox(
+                                      height: 25.h,
+                                      child: CommonTypeAheadField<PathaoAreasModel>(
+                                        key: ValueKey('area_$zoneId'),
+                                        controller: areaController,
+                                        suggestionList: areasData,
+                                        hintText: 'Select Area',
+                                        selectedValueId: areaId,
+                                        onValueIdChanged: (id) {
+                                          setState(() {
+                                            areaId = id;
+                                          });
+                                        },
+                                        displayText: (a) => a.areaName,
+                                        valueId: (a) => a.areaId.toString(),
+                                      )
+                                    ),
+                                  )
+                                ],
+                              ):SizedBox(),
+                              isPathao == true ? Row(
+                                children: [
+                                  Expanded(flex: 5,child: Text("Weight", style: AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(flex: 1,child: Text(":",style:AllTextStyle.textFieldHeadStyle)),
+                                  Expanded(
+                                    flex: 14,
+                                    child: Container(
+                                      height: 25.h,
+                                      margin: EdgeInsets.only(top: 4.h, bottom: 4.h),
+                                      child: TextField(
+                                        style: AllTextStyle.textValueStyle,
+                                        controller: weightController,
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(contentPadding: EdgeInsets.only(top: 5.h, left: 5.w),
+                                            hintText: "0",
+                                            hintStyle: AllTextStyle.textValueStyle,
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            border: InputBorder.none,
+                                            focusedBorder:TextFieldInputBorder.focusEnabledBorder,
+                                            enabledBorder:TextFieldInputBorder.focusEnabledBorder
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ):SizedBox(),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
@@ -1851,7 +2145,16 @@ class _OrderEntryScreenState extends State<OrderEntryScreen> {
               ? "0"
               : previousDue,
           "note": "",
-          "exchangeTotal": "0", // change this if you have exchange logic
+          "exchangeTotal": "0",
+          "storeId": storeId ?? "0",
+          "storeName": storeController.text.trim(),
+          "cityId": cityId ?? "0",
+          "cityName": cityController.text.trim(),
+          "zoneId": zoneId ?? "0",
+          "zoneName": zoneController.text.trim(),
+          "areaId": areaId ?? "0",
+          "areaName": areaController.text.trim(),
+          "weight": weightController.text.trim(), 
         },
         "customer": {
           "Customer_SlNo": customerId ?? "0",

@@ -2,19 +2,23 @@
 import 'package:auto_mall/providers/areas_provider.dart';
 import 'package:auto_mall/providers/bank_accounts_provider.dart';
 import 'package:auto_mall/providers/categories_provider.dart';
+import 'package:auto_mall/providers/cities_provider.dart';
 import 'package:auto_mall/providers/couriers_provider.dart';
 import 'package:auto_mall/providers/customer_due_provider.dart';
 import 'package:auto_mall/providers/customers_provider.dart';
 import 'package:auto_mall/providers/employees_provider.dart';
 import 'package:auto_mall/providers/invoice_provider.dart';
+import 'package:auto_mall/providers/pathao_areas_provider.dart';
 import 'package:auto_mall/providers/pending_order_provider.dart';
 import 'package:auto_mall/providers/pending_order_record_provider.dart';
 import 'package:auto_mall/providers/products_provider.dart';
 import 'package:auto_mall/providers/sale_details_provider.dart';
 import 'package:auto_mall/providers/sale_records_provider.dart';
 import 'package:auto_mall/providers/sales_provider.dart';
+import 'package:auto_mall/providers/stores_provider.dart';
 import 'package:auto_mall/providers/users_provider.dart';
 import 'package:auto_mall/providers/visites_provider.dart';
+import 'package:auto_mall/providers/zones_provider.dart';
 import 'package:auto_mall/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -38,14 +42,17 @@ class AutoMallApp extends StatelessWidget {
       designSize: const Size(360, 690),
       builder: (context, child) => MultiProvider(
        providers: [
+          
           ChangeNotifierProvider<UsersProvider>(create: (_) => UsersProvider()),
           ChangeNotifierProvider<AreasProvider>(create: (_) => AreasProvider()),
+          ChangeNotifierProvider<StoresProvider>(create: (_) => StoresProvider()),
           ChangeNotifierProvider<VisitesProvider>(create: (_) => VisitesProvider()),
           ChangeNotifierProvider<ProductsProvider>(create: (_) => ProductsProvider()),
           ChangeNotifierProvider<EmployeesProvider>(create: (_) => EmployeesProvider()),
           ChangeNotifierProvider<CategoriesProvider>(create: (_) => CategoriesProvider()),
           ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
           ChangeNotifierProvider<CustomerDueProvider>(create: (_) => CustomerDueProvider()),
+          ChangeNotifierProvider<PathaoAreasProvider>(create: (_) => PathaoAreasProvider()),
           ChangeNotifierProvider<PendingOrderProvider>(create: (_) => PendingOrderProvider()),
           ChangeNotifierProvider<PendingOrderRecordProvider>(create: (_) => PendingOrderRecordProvider()),
           ChangeNotifierProvider<BankAccountsProvider>(create: (_) => BankAccountsProvider()),
@@ -54,7 +61,9 @@ class AutoMallApp extends StatelessWidget {
           ChangeNotifierProvider<CustomersProvider>(create: (_) => CustomersProvider()),
           ChangeNotifierProvider<CouriersProvider>(create: (_) => CouriersProvider()),
           ChangeNotifierProvider<InvoiceProvider>(create: (_) => InvoiceProvider()),
+          ChangeNotifierProvider<CitiesProvider>(create: (_) => CitiesProvider()),
           ChangeNotifierProvider<SalesProvider>(create: (_) => SalesProvider()),
+          ChangeNotifierProvider<ZonesProvider>(create: (_) => ZonesProvider()),
         ],
         child: MaterialApp(
           navigatorKey: navigatorKey,
